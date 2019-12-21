@@ -9,6 +9,7 @@ in golang.
 ### Open issues
 
 [ ] Serialize / Deserialize Xor8 type.
+[ ] Add api to populate keys to precomputed Xor8 instances.
 
 ### Benchmarks
 
