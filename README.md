@@ -6,6 +6,6 @@ in [rust-lang](https://www.rust-lang.org/), Journal of Experimental Algorithmics
 This package is a port from its [Original implementation](https://github.com/FastFilter/xorfilter)
 in golang.
 
-**Open issues**:
+**Open issues**
 
-[ ] Serialize / Deserialize Xor8 type
+[ ] Serialize / Deserialize Xor8 type.
