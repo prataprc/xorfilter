@@ -1,3 +1,9 @@
+//! Library implements xor-filter.
+//!
+//! This is a port of its
+//! [original implementation](https://github.com/FastFilter/xorfilter)
+//! written in golang.
+
 fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
     h = h.overflowing_mul(0xff51afd7ed558ccd).0;
@@ -53,7 +59,11 @@ struct KeyIndex {
     index: u32,
 }
 
-// Xor8 offers a 0.3% false-positive probability
+/// Type Xor8 is probabilistic data-structure to test membership of an
+/// element in a set.
+///
+/// This implementation has a false positive rate of about 0.3%
+/// and a memory usage of less than 9 bits per entry for sizeable sets.
 pub struct Xor8 {
     seed: u64,
     block_length: u32,
@@ -61,8 +71,9 @@ pub struct Xor8 {
 }
 
 impl Xor8 {
-    // Populate fills the filter with provided keys.
-    // The caller is responsible to ensure that there are no duplicate keys.
+    /// Populate fills the filter with provided keys.
+    ///
+    /// The caller is responsible to ensure that there are no duplicate keys.
     pub fn populate(keys: &Vec<u64>) -> Box<Xor8> {
         let (size, mut rngcounter) = (keys.len(), 1_u64);
         let capacity = {
@@ -255,7 +266,7 @@ impl Xor8 {
         filter
     }
 
-    // contains tell you whether the key is likely part of the set
+    /// Contains tell you whether the key is likely part of the set.
     pub fn contains(&self, key: u64) -> bool {
         let hash = mixsplit(key, self.seed);
         let f = fingerprint(hash) as u8;
