@@ -1,0 +1,5 @@
+*.swp
+target
+Cargo.lock
+.vimsession
+core
