@@ -333,7 +333,7 @@ mod tests {
 
         let (falsesize, mut matches) = (1000000, 0_f64);
         let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
-        println!("bits per entry {}", bpv);
+        println!("bits per entry {} bits", bpv);
         assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
 
         for _ in 0..falsesize {
@@ -342,7 +342,7 @@ mod tests {
             }
         }
         let fpp = matches * 100.0 / (falsesize as f64);
-        println!("false positive rate {}", fpp);
+        println!("false positive rate {}%", fpp);
         assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
     }
 }
