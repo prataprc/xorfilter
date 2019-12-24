@@ -80,32 +80,20 @@ impl Xor8 {
             let capacity = 32 + ((1.23 * (size as f64)).ceil() as u32);
             capacity / 3 * 3 // round it down to a multiple of 3
         };
-        let mut filter: Box<Xor8> = {
-            let mut filter = Box::new(Xor8 {
-                seed: splitmix64(&mut rngcounter),
-                block_length: capacity / 3,
-                finger_prints: Vec::with_capacity(capacity as usize),
-            });
-            filter
-                .finger_prints
-                .resize(capacity as usize, Default::default());
-            filter
-        };
+        let mut filter: Box<Xor8> = Box::new(Xor8 {
+            seed: splitmix64(&mut rngcounter),
+            block_length: capacity / 3,
+            finger_prints: vec![Default::default(); capacity as usize],
+        });
 
-        let mut q0: Vec<KeyIndex> = Vec::with_capacity(filter.block_length as usize);
-        q0.resize(filter.block_length as usize, Default::default());
-        let mut q1: Vec<KeyIndex> = Vec::with_capacity(filter.block_length as usize);
-        q1.resize(filter.block_length as usize, Default::default());
-        let mut q2: Vec<KeyIndex> = Vec::with_capacity(filter.block_length as usize);
-        q2.resize(filter.block_length as usize, Default::default());
-        let mut stack: Vec<KeyIndex> = Vec::with_capacity(size);
-        stack.resize(size, Default::default());
-        let mut sets0: Vec<XorSet> = Vec::with_capacity(filter.block_length as usize);
-        sets0.resize(filter.block_length as usize, Default::default());
-        let mut sets1: Vec<XorSet> = Vec::with_capacity(filter.block_length as usize);
-        sets1.resize(filter.block_length as usize, Default::default());
-        let mut sets2: Vec<XorSet> = Vec::with_capacity(filter.block_length as usize);
-        sets2.resize(filter.block_length as usize, Default::default());
+        let block_length = filter.block_length as usize;
+        let mut q0: Vec<KeyIndex> = vec![Default::default(); block_length];
+        let mut q1: Vec<KeyIndex> = vec![Default::default(); block_length];
+        let mut q2: Vec<KeyIndex> = vec![Default::default(); block_length];
+        let mut stack: Vec<KeyIndex> = vec![Default::default(); size];
+        let mut sets0: Vec<XorSet> = vec![Default::default(); block_length];
+        let mut sets1: Vec<XorSet> = vec![Default::default(); block_length];
+        let mut sets2: Vec<XorSet> = vec![Default::default(); block_length];
         loop {
             for i in 0..size {
                 let key = keys[i];
@@ -117,8 +105,10 @@ impl Xor8 {
                 sets2[hs.h2 as usize].xor_mask ^= hs.h;
                 sets2[hs.h2 as usize].count += 1;
             }
+
             // scan for values with a count of one
             let (mut q0_size, mut q1_size, mut q2_size) = (0, 0, 0);
+
             for i in 0..(filter.block_length as usize) {
                 if sets0[i].count == 1 {
                     q0[q0_size].index = i as u32;
