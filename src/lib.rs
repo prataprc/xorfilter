@@ -6,24 +6,24 @@
 
 fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
-    h = h.overflowing_mul(0xff51afd7ed558ccd).0;
+    h = h.wrapping_mul(0xff51afd7ed558ccd);
     h ^= h >> 33;
-    h = h.overflowing_mul(0xc4ceb9fe1a85ec53).0;
+    h = h.wrapping_mul(0xc4ceb9fe1a85ec53);
     h ^= h >> 33;
     h
 }
 
 // returns random number, modifies the seed
 fn splitmix64(seed: &mut u64) -> u64 {
-    *seed = (*seed).overflowing_add(0x9E3779B97F4A7C15).0;
+    *seed = (*seed).wrapping_add(0x9E3779B97F4A7C15);
     let mut z = *seed;
-    z = (z ^ (z >> 30)).overflowing_mul(0xBF58476D1CE4E5B9).0;
-    z = (z ^ (z >> 27)).overflowing_mul(0x94D049BB133111EB).0;
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB);
     z ^ (z >> 31)
 }
 
 fn mixsplit(key: u64, seed: u64) -> u64 {
-    murmur64(key.overflowing_add(seed).0)
+    murmur64(key.wrapping_add(seed))
 }
 
 fn rotl64(n: u64, c: i64) -> u64 {
