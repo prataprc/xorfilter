@@ -41,3 +41,8 @@ this rust-lang implementation, using random set of keys.
 bits per entry 9.864 bits
 false positive rate 0.3866%
 ```
+
+### Resources
+
+* [Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters](https://arxiv.org/abs/1912.08258)
+* [A blog post by one of the author](https://lemire.me/blog/2019/12/19/xor-filters-faster-and-smaller-than-bloom-filters/)
