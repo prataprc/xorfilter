@@ -8,7 +8,7 @@ This package is a port from its [golang implementation](https://github.com/FastF
 ### Open issues
 
 * [ ] Serialize / Deserialize Xor8 type.
-* [ ] Add api to populate keys to precomputed Xor8 instances.
+* [ ] Incrementally adding keys to a pre-built Xor8 instance.
 
 ### Benchmarks
 
