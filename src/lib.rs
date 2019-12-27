@@ -4,6 +4,10 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
+use std::fs::File;
+use std::io;
+use std::io::{Error, ErrorKind, Read, Write};
+
 fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
     h = h.wrapping_mul(0xff51afd7ed558ccd);
@@ -64,6 +68,7 @@ struct KeyIndex {
 ///
 /// This implementation has a false positive rate of about 0.3%
 /// and a memory usage of less than 9 bits per entry for sizeable sets.
+#[derive(PartialEq, Debug)]
 pub struct Xor8 {
     seed: u64,
     block_length: u32,
@@ -295,6 +300,79 @@ impl Xor8 {
     fn geth2(&self, hash: u64) -> u32 {
         let r2 = rotl64(hash, 42) as u32;
         reduce(r2, self.block_length)
+    }
+}
+
+impl Xor8 {
+    /// File signature write on first 4 bytes of file.
+    /// ^ stands for xor
+    /// TL stands for filter
+    /// 1 stands for version 1
+    const SIGNATURE_V1: [u8; 4] = [b'^', b'T', b'L', 1];
+
+    /// Write to file in binary format
+    /// TODO Add chechsum of finger_prints into file headers
+    pub fn write_file(&self, path: &str) -> io::Result<usize> {
+        let n_fp = self.finger_prints.len() as u32; // u32 should be enough (4GB finger_prints)
+
+        let mut f = File::create(path)?;
+        let mut n_write = 0;
+        n_write += f.write(&Xor8::SIGNATURE_V1)?; // 4 bytes
+        n_write += f.write(&self.seed.to_be_bytes())?; // 8 bytes
+        n_write += f.write(&self.block_length.to_be_bytes())?; // 4 bytes
+        n_write += f.write(&n_fp.to_be_bytes())?; // 4 bytes
+        n_write += f.write(&self.finger_prints)?;
+
+        let n_expect = 4 + 8 + 4 + 4 + self.finger_prints.len();
+        if n_write == n_expect {
+            Ok(n_write)
+        } else {
+            Err(Error::new(
+                ErrorKind::InvalidData,
+                "Write data size mismatch",
+            ))
+        }
+    }
+
+    /// Read from file in binary format
+    pub fn read_file(path: &str) -> io::Result<Self> {
+        let mut buf_signature = [0_u8; 4];
+        let mut buf_seed = [0_u8; 8];
+        let mut buf_block_length = [0_u8; 4];
+        let mut buf_n_fp = [0_u8; 4];
+
+        let mut f = File::open(path)?;
+        f.read_exact(&mut buf_signature)?;
+        if buf_signature
+            .iter()
+            .zip(&Xor8::SIGNATURE_V1)
+            .any(|(a, b)| a != b)
+        {
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "File signature incorrect",
+            ));
+        }
+
+        f.read_exact(&mut buf_seed)?;
+        f.read_exact(&mut buf_block_length)?;
+        f.read_exact(&mut buf_n_fp)?;
+        let n_fp = u32::from_be_bytes(buf_n_fp) as usize;
+        let mut finger_prints: Vec<u8> = Vec::with_capacity(n_fp);
+        let n_read = f.read_to_end(&mut finger_prints)?;
+
+        if n_read == n_fp {
+            Ok(Xor8 {
+                seed: u64::from_be_bytes(buf_seed),
+                block_length: u32::from_be_bytes(buf_block_length),
+                finger_prints,
+            })
+        } else {
+            Err(Error::new(
+                ErrorKind::InvalidData,
+                "Read data size mismatch",
+            ))
+        }
     }
 }
 
