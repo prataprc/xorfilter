@@ -3,7 +3,6 @@ extern crate test;
 
 use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
 
-use std::fmt::Write;
 use test::Bencher;
 
 use xorfilter::Xor8;
