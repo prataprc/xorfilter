@@ -382,7 +382,7 @@ mod tests {
     use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
 
     #[test]
-    fn test_basic() {
+    fn test_basic1() {
         let seed: u128 = random();
         println!("seed {}", seed);
         let mut rng = SmallRng::from_seed(seed.to_le_bytes());
@@ -406,6 +406,39 @@ mod tests {
 
         for _ in 0..falsesize {
             if filter.contains(rng.gen()) {
+                matches += 1_f64;
+            }
+        }
+        let fpp = matches * 100.0 / (falsesize as f64);
+        println!("false positive rate {}%", fpp);
+        assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
+    }
+
+    #[test]
+    fn test_basic2() {
+        let mut seed: u64 = random();
+        println!("seed {}", seed);
+
+        let testsize = 10000;
+        let mut keys: Vec<u64> = Vec::with_capacity(testsize);
+        keys.resize(testsize, Default::default());
+        for i in 0..keys.len() {
+            keys[i] = splitmix64(&mut seed);
+        }
+
+        let filter = Xor8::populate(&keys);
+        for key in keys.into_iter() {
+            assert!(filter.contains(key), "key {} not present", key);
+        }
+
+        let (falsesize, mut matches) = (1000000, 0_f64);
+        let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
+        println!("bits per entry {} bits", bpv);
+        assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
+
+        for _ in 0..falsesize {
+            let v = splitmix64(&mut seed);
+            if filter.contains(v) {
                 matches += 1_f64;
             }
         }
