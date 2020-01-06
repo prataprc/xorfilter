@@ -75,17 +75,17 @@ impl Xor8 {
     /// Populate fills the filter with provided keys.
     ///
     /// The caller is responsible to ensure that there are no duplicate keys.
-    pub fn populate(keys: &Vec<u64>) -> Box<Xor8> {
+    pub fn new(keys: &Vec<u64>) -> Self {
         let (size, mut rngcounter) = (keys.len(), 1_u64);
         let capacity = {
             let capacity = 32 + ((1.23 * (size as f64)).ceil() as u32);
             capacity / 3 * 3 // round it down to a multiple of 3
         };
-        let mut filter: Box<Xor8> = Box::new(Xor8 {
+        let mut filter: Xor8 = Xor8 {
             seed: splitmix64(&mut rngcounter),
             block_length: capacity / 3,
             finger_prints: vec![Default::default(); capacity as usize],
-        });
+        };
 
         let block_length = filter.block_length as usize;
         let mut q0: Vec<KeyIndex> = vec![Default::default(); block_length];
@@ -390,7 +390,7 @@ mod tests {
             keys[i] = rng.gen();
         }
 
-        let filter = Xor8::populate(&keys);
+        let filter = Xor8::new(&keys);
         for key in keys.into_iter() {
             assert!(filter.contains(key), "key {} not present", key);
         }
@@ -422,7 +422,7 @@ mod tests {
             keys[i] = splitmix64(&mut seed);
         }
 
-        let filter = Xor8::populate(&keys);
+        let filter = Xor8::new(&keys);
         for key in keys.into_iter() {
             assert!(filter.contains(key), "key {} not present", key);
         }

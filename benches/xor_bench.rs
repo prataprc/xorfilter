@@ -19,7 +19,7 @@ fn bench_populate_100000(b: &mut Bencher) {
         keys[i] = rng.gen();
     }
 
-    b.iter(|| Xor8::populate(&keys));
+    b.iter(|| Xor8::new(&keys));
 }
 
 #[bench]
@@ -34,7 +34,7 @@ fn bench_contains_100000(b: &mut Bencher) {
         keys[i] = rng.gen();
     }
 
-    let filter = Xor8::populate(&keys);
+    let filter = Xor8::new(&keys);
     let mut n = 0;
     b.iter(|| {
         filter.contains(keys[n % keys.len()]);
