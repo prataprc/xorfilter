@@ -91,7 +91,7 @@ impl Xor8 {
         let mut q0: Vec<KeyIndex> = vec![Default::default(); block_length];
         let mut q1: Vec<KeyIndex> = vec![Default::default(); block_length];
         let mut q2: Vec<KeyIndex> = vec![Default::default(); block_length];
-        let mut stack: Vec<KeyIndex> = vec![Default::default(); size];
+        let mut stack: Vec<KeyIndex> = Vec::with_capacity(size);
         let mut sets0: Vec<XorSet> = vec![Default::default(); block_length];
         let mut sets1: Vec<XorSet> = vec![Default::default(); block_length];
         let mut sets2: Vec<XorSet> = vec![Default::default(); block_length];
@@ -132,7 +132,9 @@ impl Xor8 {
                     q2_size += 1;
                 }
             }
-            let mut stacksize = 0;
+
+            stack.clear();
+
             while q0_size + q1_size + q2_size > 0 {
                 while q0_size > 0 {
                     q0_size -= 1;
@@ -144,10 +146,9 @@ impl Xor8 {
                     let hash = keyindexvar.hash;
                     let h1 = filter.geth1(hash);
                     let h2 = filter.geth2(hash);
-                    stack[stacksize] = keyindexvar;
-                    stacksize += 1;
-                    sets1[h1 as usize].xor_mask ^= hash;
+                    stack.push(keyindexvar);
 
+                    sets1[h1 as usize].xor_mask ^= hash;
                     sets1[h1 as usize].count -= 1;
                     if sets1[h1 as usize].count == 1 {
                         q1[q1_size].index = h1;
@@ -172,8 +173,8 @@ impl Xor8 {
                     let h0 = filter.geth0(hash);
                     let h2 = filter.geth2(hash);
                     keyindexvar.index += filter.block_length;
-                    stack[stacksize] = keyindexvar;
-                    stacksize += 1;
+                    stack.push(keyindexvar);
+
                     sets0[h0 as usize].xor_mask ^= hash;
                     sets0[h0 as usize].count -= 1;
                     if sets0[h0 as usize].count == 1 {
@@ -199,9 +200,8 @@ impl Xor8 {
                     let h0 = filter.geth0(hash);
                     let h1 = filter.geth1(hash);
                     keyindexvar.index += 2 * filter.block_length;
+                    stack.push(keyindexvar);
 
-                    stack[stacksize] = keyindexvar;
-                    stacksize += 1;
                     sets0[h0 as usize].xor_mask ^= hash;
                     sets0[h0 as usize].count -= 1;
                     if sets0[h0 as usize].count == 1 {
@@ -219,7 +219,7 @@ impl Xor8 {
                 }
             }
 
-            if stacksize == size {
+            if stack.len() == size {
                 break;
             }
 
@@ -235,10 +235,7 @@ impl Xor8 {
             filter.seed = splitmix64(&mut rngcounter)
         }
 
-        let mut stacksize = size;
-        while stacksize > 0 {
-            stacksize -= 1;
-            let ki = stack[stacksize];
+        while let Some(ki) = stack.pop() {
             let mut val = fingerprint(ki.hash) as u8;
             if ki.index < filter.block_length {
                 val ^= filter.finger_prints[(filter.geth1(ki.hash) + filter.block_length) as usize]
