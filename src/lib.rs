@@ -88,17 +88,16 @@ impl Xor8 {
         };
 
         let block_length = filter.block_length as usize;
-        let mut q0: Vec<KeyIndex> = vec![Default::default(); block_length];
-        let mut q1: Vec<KeyIndex> = vec![Default::default(); block_length];
-        let mut q2: Vec<KeyIndex> = vec![Default::default(); block_length];
+        let mut q0: Vec<KeyIndex> = Vec::with_capacity(block_length);
+        let mut q1: Vec<KeyIndex> = Vec::with_capacity(block_length);
+        let mut q2: Vec<KeyIndex> = Vec::with_capacity(block_length);
         let mut stack: Vec<KeyIndex> = Vec::with_capacity(size);
         let mut sets0: Vec<XorSet> = vec![Default::default(); block_length];
         let mut sets1: Vec<XorSet> = vec![Default::default(); block_length];
         let mut sets2: Vec<XorSet> = vec![Default::default(); block_length];
         loop {
-            for i in 0..size {
-                let key = keys[i];
-                let hs = filter.geth0h1h2(key);
+            for key in keys {
+                let hs = filter.geth0h1h2(*key);
                 sets0[hs.h0 as usize].xor_mask ^= hs.h;
                 sets0[hs.h0 as usize].count += 1;
                 sets1[hs.h1 as usize].xor_mask ^= hs.h;
@@ -107,39 +106,32 @@ impl Xor8 {
                 sets2[hs.h2 as usize].count += 1;
             }
 
-            // scan for values with a count of one
-            let (mut q0_size, mut q1_size, mut q2_size) = (0, 0, 0);
+            q0.clear();
+            q1.clear();
+            q2.clear();
 
             for i in 0..(filter.block_length as usize) {
                 if sets0[i].count == 1 {
-                    q0[q0_size].index = i as u32;
-                    q0[q0_size].hash = sets0[i].xor_mask;
-                    q0_size += 1;
+                    q0.push(KeyIndex{index: i as u32, hash: sets0[i].xor_mask});
                 }
             }
 
             for i in 0..(filter.block_length as usize) {
                 if sets1[i].count == 1 {
-                    q1[q1_size].index = i as u32;
-                    q1[q1_size].hash = sets1[i].xor_mask;
-                    q1_size += 1;
+                    q1.push(KeyIndex{index: i as u32, hash: sets1[i].xor_mask});
                 }
             }
             for i in 0..(filter.block_length as usize) {
                 if sets2[i].count == 1 {
-                    q2[q2_size].index = i as u32;
-                    q2[q2_size].hash = sets2[i].xor_mask;
-                    q2_size += 1;
+                    q2.push(KeyIndex{index: i as u32, hash: sets2[i].xor_mask});
                 }
             }
 
             stack.clear();
 
-            while q0_size + q1_size + q2_size > 0 {
-                while q0_size > 0 {
-                    q0_size -= 1;
-                    let (keyindexvar, index) = (q0[q0_size], q0[q0_size].index as usize);
-                    if sets0[index].count == 0 {
+            while !q0.is_empty() || !q1.is_empty() || !q2.is_empty() {
+                while let Some(keyindexvar) = q0.pop(){
+                    if sets0[keyindexvar.index as usize].count == 0 {
                         // not actually possible after the initial scan.
                         continue;
                     }
@@ -151,22 +143,16 @@ impl Xor8 {
                     sets1[h1 as usize].xor_mask ^= hash;
                     sets1[h1 as usize].count -= 1;
                     if sets1[h1 as usize].count == 1 {
-                        q1[q1_size].index = h1;
-                        q1[q1_size].hash = sets1[h1 as usize].xor_mask;
-                        q1_size += 1;
+                        q1.push(KeyIndex{index: h1, hash: sets1[h1 as usize].xor_mask})
                     }
                     sets2[h2 as usize].xor_mask ^= hash;
                     sets2[h2 as usize].count -= 1;
                     if sets2[h2 as usize].count == 1 {
-                        q2[q2_size].index = h2;
-                        q2[q2_size].hash = sets2[h2 as usize].xor_mask;
-                        q2_size += 1;
+                        q2.push(KeyIndex{index: h2, hash: sets2[h2 as usize].xor_mask})
                     }
                 }
-                while q1_size > 0 {
-                    q1_size -= 1;
-                    let (mut keyindexvar, index) = (q1[q1_size], q1[q1_size].index as usize);
-                    if sets1[index].count == 0 {
+                while let Some(mut keyindexvar) = q1.pop() {
+                    if sets1[keyindexvar.index as usize].count == 0 {
                         continue;
                     }
                     let hash = keyindexvar.hash;
@@ -178,22 +164,16 @@ impl Xor8 {
                     sets0[h0 as usize].xor_mask ^= hash;
                     sets0[h0 as usize].count -= 1;
                     if sets0[h0 as usize].count == 1 {
-                        q0[q0_size].index = h0;
-                        q0[q0_size].hash = sets0[h0 as usize].xor_mask;
-                        q0_size += 1;
+                        q0.push(KeyIndex{index: h0, hash: sets0[h0 as usize].xor_mask})
                     }
                     sets2[h2 as usize].xor_mask ^= hash;
                     sets2[h2 as usize].count -= 1;
                     if sets2[h2 as usize].count == 1 {
-                        q2[q2_size].index = h2;
-                        q2[q2_size].hash = sets2[h2 as usize].xor_mask;
-                        q2_size += 1;
+                        q2.push(KeyIndex{index: h2, hash: sets2[h2 as usize].xor_mask})
                     }
                 }
-                while q2_size > 0 {
-                    q2_size -= 1;
-                    let (mut keyindexvar, index) = (q2[q2_size], q2[q2_size].index as usize);
-                    if sets2[index].count == 0 {
+                while let Some(mut keyindexvar) = q2.pop() {
+                    if sets2[keyindexvar.index as usize].count == 0 {
                         continue;
                     }
                     let hash = keyindexvar.hash;
@@ -205,16 +185,12 @@ impl Xor8 {
                     sets0[h0 as usize].xor_mask ^= hash;
                     sets0[h0 as usize].count -= 1;
                     if sets0[h0 as usize].count == 1 {
-                        q0[q0_size].index = h0;
-                        q0[q0_size].hash = sets0[h0 as usize].xor_mask;
-                        q0_size += 1;
+                        q0.push(KeyIndex{index: h0, hash: sets0[h0 as usize].xor_mask})
                     }
                     sets1[h1 as usize].xor_mask ^= hash;
                     sets1[h1 as usize].count -= 1;
                     if sets1[h1 as usize].count == 1 {
-                        q1[q1_size].index = h1;
-                        q1[q1_size].hash = sets1[h1 as usize].xor_mask;
-                        q1_size += 1;
+                        q1.push(KeyIndex{index: h1, hash: sets1[h1 as usize].xor_mask})
                     }
                 }
             }
