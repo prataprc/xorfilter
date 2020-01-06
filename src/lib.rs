@@ -244,16 +244,12 @@ impl Xor8 {
     }
 
     fn geth0h1h2(&self, k: u64) -> Hashes {
-        let mut answer: Hashes = Default::default();
-        answer.h = mixsplit(k, self.seed);
-        let r0 = answer.h as u32;
-        let r1 = answer.h.rotate_left(21) as u32;
-        let r2 = answer.h.rotate_left(42) as u32;
-
-        answer.h0 = reduce(r0, self.block_length);
-        answer.h1 = reduce(r1, self.block_length);
-        answer.h2 = reduce(r2, self.block_length);
-        return answer;
+        let h = mixsplit(k, self.seed);
+        Hashes { h,
+            h0: reduce(h as u32, self.block_length),
+            h1: reduce(h.rotate_left(21) as u32, self.block_length),
+            h2: reduce(h.rotate_left(42) as u32, self.block_length)
+        }
     }
 
     fn geth0(&self, hash: u64) -> u32 {
