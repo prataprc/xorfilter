@@ -30,10 +30,6 @@ fn mixsplit(key: u64, seed: u64) -> u64 {
     murmur64(key.wrapping_add(seed))
 }
 
-fn rotl64(n: u64, c: i64) -> u64 {
-    (n << (c & 63)) | (n >> ((-c) & 63))
-}
-
 fn reduce(hash: u32, n: u32) -> u32 {
     // http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
     ((hash as u64) * (n as u64) >> 32) as u32
@@ -266,8 +262,8 @@ impl Xor8 {
         let hash = mixsplit(key, self.seed);
         let f = fingerprint(hash) as u8;
         let r0 = hash as u32;
-        let r1 = rotl64(hash, 21) as u32;
-        let r2 = rotl64(hash, 42) as u32;
+        let r1 = hash.rotate_left(21) as u32;
+        let r2 = hash.rotate_left(42) as u32;
         let h0 = reduce(r0, self.block_length) as usize;
         let h1 = (reduce(r1, self.block_length) + self.block_length) as usize;
         let h2 = (reduce(r2, self.block_length) + 2 * self.block_length) as usize;
@@ -278,8 +274,8 @@ impl Xor8 {
         let mut answer: Hashes = Default::default();
         answer.h = mixsplit(k, self.seed);
         let r0 = answer.h as u32;
-        let r1 = rotl64(answer.h, 21) as u32;
-        let r2 = rotl64(answer.h, 42) as u32;
+        let r1 = answer.h.rotate_left(21) as u32;
+        let r2 = answer.h.rotate_left(42) as u32;
 
         answer.h0 = reduce(r0, self.block_length);
         answer.h1 = reduce(r1, self.block_length);
@@ -293,12 +289,12 @@ impl Xor8 {
     }
 
     fn geth1(&self, hash: u64) -> u32 {
-        let r1 = rotl64(hash, 21) as u32;
+        let r1 = hash.rotate_left(21) as u32;
         reduce(r1, self.block_length)
     }
 
     fn geth2(&self, hash: u64) -> u32 {
-        let r2 = rotl64(hash, 42) as u32;
+        let r2 = hash.rotate_left(42) as u32;
         reduce(r2, self.block_length)
     }
 }
