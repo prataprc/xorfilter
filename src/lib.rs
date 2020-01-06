@@ -140,15 +140,22 @@ impl Xor8 {
                     let h2 = filter.geth2(hash);
                     stack.push(keyindexvar);
 
-                    sets1[h1 as usize].xor_mask ^= hash;
-                    sets1[h1 as usize].count -= 1;
-                    if sets1[h1 as usize].count == 1 {
-                        q1.push(KeyIndex{index: h1, hash: sets1[h1 as usize].xor_mask})
+                    let mut s = unsafe {
+                        sets1.get_unchecked_mut(h1 as usize)
+                    };
+                    s.xor_mask ^= hash;
+                    s.count -= 1;
+                    if s.count == 1 {
+                        q1.push(KeyIndex{index: h1, hash: s.xor_mask})
                     }
-                    sets2[h2 as usize].xor_mask ^= hash;
-                    sets2[h2 as usize].count -= 1;
-                    if sets2[h2 as usize].count == 1 {
-                        q2.push(KeyIndex{index: h2, hash: sets2[h2 as usize].xor_mask})
+
+                    let mut s = unsafe {
+                        sets2.get_unchecked_mut(h2 as usize)
+                    };
+                    s.xor_mask ^= hash;
+                    s.count -= 1;
+                    if s.count == 1 {
+                        q2.push(KeyIndex{index: h2, hash: s.xor_mask})
                     }
                 }
                 while let Some(mut keyindexvar) = q1.pop() {
@@ -161,15 +168,22 @@ impl Xor8 {
                     keyindexvar.index += filter.block_length;
                     stack.push(keyindexvar);
 
-                    sets0[h0 as usize].xor_mask ^= hash;
-                    sets0[h0 as usize].count -= 1;
-                    if sets0[h0 as usize].count == 1 {
-                        q0.push(KeyIndex{index: h0, hash: sets0[h0 as usize].xor_mask})
+                    let mut s = unsafe {
+                        sets0.get_unchecked_mut(h0 as usize)
+                    };
+                    s.xor_mask ^= hash;
+                    s.count -= 1;
+                    if s.count == 1 {
+                        q0.push(KeyIndex{index: h0, hash: s.xor_mask})
                     }
-                    sets2[h2 as usize].xor_mask ^= hash;
-                    sets2[h2 as usize].count -= 1;
-                    if sets2[h2 as usize].count == 1 {
-                        q2.push(KeyIndex{index: h2, hash: sets2[h2 as usize].xor_mask})
+
+                    let mut s = unsafe {
+                        sets2.get_unchecked_mut(h2 as usize)
+                    };
+                    s.xor_mask ^= hash;
+                    s.count -= 1;
+                    if s.count == 1 {
+                        q2.push(KeyIndex{index: h2, hash: s.xor_mask})
                     }
                 }
                 while let Some(mut keyindexvar) = q2.pop() {
@@ -182,15 +196,21 @@ impl Xor8 {
                     keyindexvar.index += 2 * filter.block_length;
                     stack.push(keyindexvar);
 
-                    sets0[h0 as usize].xor_mask ^= hash;
-                    sets0[h0 as usize].count -= 1;
-                    if sets0[h0 as usize].count == 1 {
-                        q0.push(KeyIndex{index: h0, hash: sets0[h0 as usize].xor_mask})
+                    let mut s = unsafe {
+                        sets0.get_unchecked_mut(h0 as usize)
+                    };
+                    s.xor_mask ^= hash;
+                    s.count -= 1;
+                    if s.count == 1 {
+                        q0.push(KeyIndex{index: h0, hash: s.xor_mask})
                     }
-                    sets1[h1 as usize].xor_mask ^= hash;
-                    sets1[h1 as usize].count -= 1;
-                    if sets1[h1 as usize].count == 1 {
-                        q1.push(KeyIndex{index: h1, hash: sets1[h1 as usize].xor_mask})
+                    let mut s = unsafe {
+                        sets1.get_unchecked_mut(h1 as usize)
+                    };
+                    s.xor_mask ^= hash;
+                    s.count -= 1;
+                    if s.count == 1 {
+                        q1.push(KeyIndex{index: h1, hash: s.xor_mask})
                     }
                 }
             }
