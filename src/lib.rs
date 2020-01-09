@@ -73,6 +73,7 @@ pub struct Xor8 {
 
 impl Xor8 {
     /// Alias for new.
+    #[deprecated = "use the new() method"]
     pub fn populate(keys: &Vec<u64>) -> Self {
         Self::new(keys)
     }
