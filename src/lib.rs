@@ -72,7 +72,12 @@ pub struct Xor8 {
 }
 
 impl Xor8 {
-    /// Populate fills the filter with provided keys.
+    /// Alias for new.
+    pub fn populate(keys: &Vec<u64>) -> Self {
+        Self::new(keys)
+    }
+
+    /// New fills the filter with provided keys.
     ///
     /// The caller is responsible to ensure that there are no duplicate keys.
     pub fn new(keys: &Vec<u64>) -> Self {
@@ -112,25 +117,34 @@ impl Xor8 {
 
             for i in 0..(filter.block_length as usize) {
                 if sets0[i].count == 1 {
-                    q0.push(KeyIndex{index: i as u32, hash: sets0[i].xor_mask});
+                    q0.push(KeyIndex {
+                        index: i as u32,
+                        hash: sets0[i].xor_mask,
+                    });
                 }
             }
 
             for i in 0..(filter.block_length as usize) {
                 if sets1[i].count == 1 {
-                    q1.push(KeyIndex{index: i as u32, hash: sets1[i].xor_mask});
+                    q1.push(KeyIndex {
+                        index: i as u32,
+                        hash: sets1[i].xor_mask,
+                    });
                 }
             }
             for i in 0..(filter.block_length as usize) {
                 if sets2[i].count == 1 {
-                    q2.push(KeyIndex{index: i as u32, hash: sets2[i].xor_mask});
+                    q2.push(KeyIndex {
+                        index: i as u32,
+                        hash: sets2[i].xor_mask,
+                    });
                 }
             }
 
             stack.clear();
 
             while !q0.is_empty() || !q1.is_empty() || !q2.is_empty() {
-                while let Some(keyindexvar) = q0.pop(){
+                while let Some(keyindexvar) = q0.pop() {
                     if sets0[keyindexvar.index as usize].count == 0 {
                         // not actually possible after the initial scan.
                         continue;
@@ -140,22 +154,24 @@ impl Xor8 {
                     let h2 = filter.geth2(hash);
                     stack.push(keyindexvar);
 
-                    let mut s = unsafe {
-                        sets1.get_unchecked_mut(h1 as usize)
-                    };
+                    let mut s = unsafe { sets1.get_unchecked_mut(h1 as usize) };
                     s.xor_mask ^= hash;
                     s.count -= 1;
                     if s.count == 1 {
-                        q1.push(KeyIndex{index: h1, hash: s.xor_mask})
+                        q1.push(KeyIndex {
+                            index: h1,
+                            hash: s.xor_mask,
+                        })
                     }
 
-                    let mut s = unsafe {
-                        sets2.get_unchecked_mut(h2 as usize)
-                    };
+                    let mut s = unsafe { sets2.get_unchecked_mut(h2 as usize) };
                     s.xor_mask ^= hash;
                     s.count -= 1;
                     if s.count == 1 {
-                        q2.push(KeyIndex{index: h2, hash: s.xor_mask})
+                        q2.push(KeyIndex {
+                            index: h2,
+                            hash: s.xor_mask,
+                        })
                     }
                 }
                 while let Some(mut keyindexvar) = q1.pop() {
@@ -168,22 +184,24 @@ impl Xor8 {
                     keyindexvar.index += filter.block_length;
                     stack.push(keyindexvar);
 
-                    let mut s = unsafe {
-                        sets0.get_unchecked_mut(h0 as usize)
-                    };
+                    let mut s = unsafe { sets0.get_unchecked_mut(h0 as usize) };
                     s.xor_mask ^= hash;
                     s.count -= 1;
                     if s.count == 1 {
-                        q0.push(KeyIndex{index: h0, hash: s.xor_mask})
+                        q0.push(KeyIndex {
+                            index: h0,
+                            hash: s.xor_mask,
+                        })
                     }
 
-                    let mut s = unsafe {
-                        sets2.get_unchecked_mut(h2 as usize)
-                    };
+                    let mut s = unsafe { sets2.get_unchecked_mut(h2 as usize) };
                     s.xor_mask ^= hash;
                     s.count -= 1;
                     if s.count == 1 {
-                        q2.push(KeyIndex{index: h2, hash: s.xor_mask})
+                        q2.push(KeyIndex {
+                            index: h2,
+                            hash: s.xor_mask,
+                        })
                     }
                 }
                 while let Some(mut keyindexvar) = q2.pop() {
@@ -196,21 +214,23 @@ impl Xor8 {
                     keyindexvar.index += 2 * filter.block_length;
                     stack.push(keyindexvar);
 
-                    let mut s = unsafe {
-                        sets0.get_unchecked_mut(h0 as usize)
-                    };
+                    let mut s = unsafe { sets0.get_unchecked_mut(h0 as usize) };
                     s.xor_mask ^= hash;
                     s.count -= 1;
                     if s.count == 1 {
-                        q0.push(KeyIndex{index: h0, hash: s.xor_mask})
+                        q0.push(KeyIndex {
+                            index: h0,
+                            hash: s.xor_mask,
+                        })
                     }
-                    let mut s = unsafe {
-                        sets1.get_unchecked_mut(h1 as usize)
-                    };
+                    let mut s = unsafe { sets1.get_unchecked_mut(h1 as usize) };
                     s.xor_mask ^= hash;
                     s.count -= 1;
                     if s.count == 1 {
-                        q1.push(KeyIndex{index: h1, hash: s.xor_mask})
+                        q1.push(KeyIndex {
+                            index: h1,
+                            hash: s.xor_mask,
+                        })
                     }
                 }
             }
@@ -265,10 +285,11 @@ impl Xor8 {
 
     fn geth0h1h2(&self, k: u64) -> Hashes {
         let h = mixsplit(k, self.seed);
-        Hashes { h,
+        Hashes {
+            h,
             h0: reduce(h as u32, self.block_length),
             h1: reduce(h.rotate_left(21) as u32, self.block_length),
-            h2: reduce(h.rotate_left(42) as u32, self.block_length)
+            h2: reduce(h.rotate_left(42) as u32, self.block_length),
         }
     }
 
