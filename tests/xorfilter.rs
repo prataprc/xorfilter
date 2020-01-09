@@ -15,7 +15,7 @@ fn generate_filter() -> Xor8 {
     for i in 0..keys.len() {
         keys[i] = rng.gen();
     }
-    *Xor8::populate(&keys)
+    Xor8::new(&keys)
 }
 
 struct TestFile(String);
