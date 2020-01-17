@@ -1,3 +1,5 @@
+![](https://github.com/bnclabs/xorfilter/workflows/simple-build-test/badge.svg)
+
 # Rust library implementing xor filters
 
 Implementation of [Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters](https://arxiv.org/abs/1912.08258)
