@@ -394,7 +394,7 @@ mod tests {
         println!("seed {}", seed);
         let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-        let testsize = 10000;
+        let testsize = 100000;
         let mut keys: Vec<u64> = Vec::with_capacity(testsize);
         keys.resize(testsize, Default::default());
         for i in 0..keys.len() {
@@ -406,7 +406,7 @@ mod tests {
             assert!(filter.contains(key), "key {} not present", key);
         }
 
-        let (falsesize, mut matches) = (1000000, 0_f64);
+        let (falsesize, mut matches) = (10000000, 0_f64);
         let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
         println!("bits per entry {} bits", bpv);
         assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
@@ -426,7 +426,7 @@ mod tests {
         let mut seed: u64 = random();
         println!("seed {}", seed);
 
-        let testsize = 10000;
+        let testsize = 100000;
         let mut keys: Vec<u64> = Vec::with_capacity(testsize);
         keys.resize(testsize, Default::default());
         for i in 0..keys.len() {
@@ -438,7 +438,7 @@ mod tests {
             assert!(filter.contains(key), "key {} not present", key);
         }
 
-        let (falsesize, mut matches) = (1000000, 0_f64);
+        let (falsesize, mut matches) = (10000000, 0_f64);
         let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
         println!("bits per entry {} bits", bpv);
         assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
