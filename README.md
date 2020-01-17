@@ -1,4 +1,4 @@
-![](https://github.com/uijin/xorfilter/workflows/simple-build-test/badge.svg)
+![](https://github.com/bnclabs/xorfilter/workflows/simple-build-test/badge.svg)
 
 # Rust library implementing xor filters
 
