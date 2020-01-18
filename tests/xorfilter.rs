@@ -47,3 +47,29 @@ fn test_same_filter_encode_decode() {
         "Random generated filters should not be the same"
     );
 }
+
+#[test]
+fn test_string_keys() {
+    // Rust tips: https://ashleygwilliams.github.io/gotober-2018/#103
+    let rust_tips = vec![
+        "don't rewrite your software in rust",
+        "show up with code",
+        "don't sell",
+        "sell sell sell",
+        "the hard part of programming is not programming",
+        "the hard part of programming is programming",
+        "be prepared for change",
+        "be prepared for things to stay the same",
+        "have a problem to solve",
+        "learning curves are a blessing in disguise",];
+    let xor8 = Xor8::new_hashable(&rust_tips);
+
+    // Test all keys(rust_tips)
+    for tip in rust_tips {
+        assert!(xor8.contains_hashable(tip));
+    }
+    // Remove last one character
+    assert!(!xor8.contains_hashable("show up with cod"));
+    // String not in keys(rust_tips)
+    assert!(!xor8.contains_hashable("No magic, just code"));
+}
