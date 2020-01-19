@@ -4,7 +4,9 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
+use std::collections::hash_map::DefaultHasher;
 use std::fs::File;
+use std::hash::{Hash, Hasher};
 use std::io;
 use std::io::{Error, ErrorKind, Read, Write};
 
@@ -380,6 +382,33 @@ impl Xor8 {
                 "Read data size mismatch",
             ))
         }
+    }
+}
+
+impl Xor8 {
+    /// Deal with hashable types
+    /// Types implement trait `Hash` could generate an u64 hash value
+
+    /// New fills the filter with provided keys.
+    /// Use &[T] instead of &Vec<T>, see https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
+    pub fn new_hashable<T: Hash>(keys: &[T]) -> Self {
+        let keys_hash: Vec<u64> = keys
+            .iter()
+            .map(|k| {
+                let mut hasher = DefaultHasher::new();
+                k.hash(&mut hasher);
+                hasher.finish()
+            })
+            .collect();
+
+        Self::new(&keys_hash)
+    }
+
+    /// Contains tell you whether the key is likely part of the set.
+    pub fn contains_hashable<T: Hash>(&self, key: T) -> bool {
+        let mut hasher = DefaultHasher::new();
+        key.hash(&mut hasher);
+        self.contains(hasher.finish())
     }
 }
 
