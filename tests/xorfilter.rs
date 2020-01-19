@@ -1,10 +1,11 @@
 use std::fs;
 
 use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
+use std::collections::hash_map::RandomState;
 use xorfilter::Xor8;
 
 /// Generate a filter with random keys
-fn generate_filter() -> Xor8 {
+fn generate_filter() -> Xor8<RandomState> {
     let seed: u128 = random();
     println!("seed {}", seed);
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
@@ -15,7 +16,10 @@ fn generate_filter() -> Xor8 {
     for i in 0..keys.len() {
         keys[i] = rng.gen();
     }
-    Xor8::new(&keys)
+    let mut filter = Xor8::<RandomState>::new();
+    filter.populate(&keys);
+    filter.build();
+    filter
 }
 
 struct TestFile(String);
@@ -36,14 +40,14 @@ fn test_same_filter_encode_decode() {
         .expect(&format!("Write to {} failed", file_path.0));
     let filter_read =
         Xor8::read_file(&file_path.0).expect(&format!("Read from {} failed", file_path.0));
-    assert_eq!(
-        filter_read, filter,
+    assert!(
+        filter_read == filter,
         "Filter unequals after encode and decode"
     );
 
     let filter_second = generate_filter();
-    assert_ne!(
-        filter_read, filter_second,
+    assert!(
+        filter_read != filter_second,
         "Random generated filters should not be the same"
     );
 }
@@ -61,15 +65,19 @@ fn test_string_keys() {
         "be prepared for change",
         "be prepared for things to stay the same",
         "have a problem to solve",
-        "learning curves are a blessing in disguise",];
-    let xor8 = Xor8::new_hashable(&rust_tips);
+        "learning curves are a blessing in disguise",
+    ];
+    let hash_builder = RandomState::new();
+    let mut filter = Xor8::new_hasher(hash_builder);
+    filter.populate(&rust_tips);
+    filter.build();
 
     // Test all keys(rust_tips)
     for tip in rust_tips {
-        assert!(xor8.contains_hashable(tip));
+        assert!(filter.contains(tip));
     }
     // Remove last one character
-    assert!(!xor8.contains_hashable("show up with cod"));
+    assert!(!filter.contains("show up with cod"));
     // String not in keys(rust_tips)
-    assert!(!xor8.contains_hashable("No magic, just code"));
+    assert!(!filter.contains("No magic, just code"));
 }

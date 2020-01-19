@@ -4,9 +4,9 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
-use std::collections::hash_map::DefaultHasher;
+use std::collections::hash_map::RandomState;
 use std::fs::File;
-use std::hash::{Hash, Hasher};
+use std::hash::{BuildHasher, Hash, Hasher};
 use std::io;
 use std::io::{Error, ErrorKind, Read, Write};
 
@@ -66,36 +66,100 @@ struct KeyIndex {
 ///
 /// This implementation has a false positive rate of about 0.3%
 /// and a memory usage of less than 9 bits per entry for sizeable sets.
-#[derive(PartialEq, Debug)]
-pub struct Xor8 {
+pub struct Xor8<B = RandomState>
+where
+    B: BuildHasher,
+{
+    keys: Option<Vec<u64>>,
+    hash_builder: B,
     seed: u64,
     block_length: u32,
     finger_prints: Vec<u8>,
 }
 
-impl Xor8 {
-    /// Alias for new.
-    #[deprecated = "use the new() method"]
-    pub fn populate(keys: &Vec<u64>) -> Self {
-        Self::new(keys)
+impl<B> PartialEq for Xor8<B>
+where
+    B: BuildHasher,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.seed == other.seed
+            && self.block_length == other.block_length
+            && self.finger_prints == other.finger_prints
+    }
+}
+
+impl<B> Xor8<B>
+where
+    B: BuildHasher,
+{
+    /// New Xor8 instance initialized with `DefaulHasher`.
+    pub fn new() -> Xor8<RandomState> {
+        Xor8 {
+            keys: Some(Default::default()),
+            hash_builder: RandomState::new(),
+            seed: Default::default(),
+            block_length: Default::default(),
+            finger_prints: Default::default(),
+        }
     }
 
-    /// New fills the filter with provided keys.
-    ///
-    /// The caller is responsible to ensure that there are no duplicate keys.
-    pub fn new(keys: &Vec<u64>) -> Self {
+    /// New Xor8 instance initialized with supplied `hasher`.
+    pub fn new_hasher(hash_builder: B) -> Self {
+        Xor8 {
+            keys: Some(Default::default()),
+            hash_builder,
+            seed: Default::default(),
+            block_length: Default::default(),
+            finger_prints: Default::default(),
+        }
+    }
+
+    /// Insert 64-bit digest of a single key. Digest for the key shall
+    /// be generated using the default-hasher or via hasher supplied via
+    /// [new_hasher] method.
+    pub fn insert<T: Hash>(&mut self, key: &T) {
+        let mut hasher = self.hash_builder.build_hasher();
+        key.hash(&mut hasher);
+        self.keys.as_mut().unwrap().push(hasher.finish());
+    }
+
+    /// Populate 64-bit digests for collection of keys. Digest for the key
+    /// shall be generated using the default-hasher or via hasher supplied
+    /// via [new_hasher] method.
+    pub fn populate<T: Hash>(&mut self, keys: &[T]) {
+        keys.iter().for_each(|key| {
+            let mut hasher = self.hash_builder.build_hasher();
+            key.hash(&mut hasher);
+            self.keys.as_mut().unwrap().push(hasher.finish());
+        })
+    }
+
+    /// Populate pre-compute 64-bit digests for keys.
+    pub fn populate_keys(&mut self, keys: &[u64]) {
+        self.keys.as_mut().unwrap().extend_from_slice(keys)
+    }
+
+    /// Build bitmap for keys that are insert using [insert] or [populate]
+    /// method.
+    pub fn build(&mut self) {
+        let keys = self.keys.take().unwrap();
+        self.build_keys(&keys);
+    }
+
+    /// Build a bitmap for pre-computed 64-bit digests for keys. If any
+    /// keys where inserted using [insert], [populate], [populate_keys]
+    /// method shall be ignored.
+    pub fn build_keys(&mut self, keys: &[u64]) {
         let (size, mut rngcounter) = (keys.len(), 1_u64);
         let capacity = {
             let capacity = 32 + ((1.23 * (size as f64)).ceil() as u32);
             capacity / 3 * 3 // round it down to a multiple of 3
         };
-        let mut filter: Xor8 = Xor8 {
-            seed: splitmix64(&mut rngcounter),
-            block_length: capacity / 3,
-            finger_prints: vec![Default::default(); capacity as usize],
-        };
+        self.seed = splitmix64(&mut rngcounter);
+        self.block_length = capacity / 3;
+        self.finger_prints = vec![Default::default(); capacity as usize];
 
-        let block_length = filter.block_length as usize;
+        let block_length = self.block_length as usize;
         let mut q0: Vec<KeyIndex> = Vec::with_capacity(block_length);
         let mut q1: Vec<KeyIndex> = Vec::with_capacity(block_length);
         let mut q2: Vec<KeyIndex> = Vec::with_capacity(block_length);
@@ -103,9 +167,10 @@ impl Xor8 {
         let mut sets0: Vec<XorSet> = vec![Default::default(); block_length];
         let mut sets1: Vec<XorSet> = vec![Default::default(); block_length];
         let mut sets2: Vec<XorSet> = vec![Default::default(); block_length];
+
         loop {
-            for key in keys {
-                let hs = filter.geth0h1h2(*key);
+            for key in keys.iter() {
+                let hs = self.geth0h1h2(*key);
                 sets0[hs.h0 as usize].xor_mask ^= hs.h;
                 sets0[hs.h0 as usize].count += 1;
                 sets1[hs.h1 as usize].xor_mask ^= hs.h;
@@ -118,7 +183,7 @@ impl Xor8 {
             q1.clear();
             q2.clear();
 
-            for i in 0..(filter.block_length as usize) {
+            for i in 0..(self.block_length as usize) {
                 if sets0[i].count == 1 {
                     q0.push(KeyIndex {
                         index: i as u32,
@@ -127,7 +192,7 @@ impl Xor8 {
                 }
             }
 
-            for i in 0..(filter.block_length as usize) {
+            for i in 0..(self.block_length as usize) {
                 if sets1[i].count == 1 {
                     q1.push(KeyIndex {
                         index: i as u32,
@@ -135,7 +200,7 @@ impl Xor8 {
                     });
                 }
             }
-            for i in 0..(filter.block_length as usize) {
+            for i in 0..(self.block_length as usize) {
                 if sets2[i].count == 1 {
                     q2.push(KeyIndex {
                         index: i as u32,
@@ -153,8 +218,8 @@ impl Xor8 {
                         continue;
                     }
                     let hash = keyindexvar.hash;
-                    let h1 = filter.geth1(hash);
-                    let h2 = filter.geth2(hash);
+                    let h1 = self.geth1(hash);
+                    let h2 = self.geth2(hash);
                     stack.push(keyindexvar);
 
                     let mut s = unsafe { sets1.get_unchecked_mut(h1 as usize) };
@@ -182,9 +247,9 @@ impl Xor8 {
                         continue;
                     }
                     let hash = keyindexvar.hash;
-                    let h0 = filter.geth0(hash);
-                    let h2 = filter.geth2(hash);
-                    keyindexvar.index += filter.block_length;
+                    let h0 = self.geth0(hash);
+                    let h2 = self.geth2(hash);
+                    keyindexvar.index += self.block_length;
                     stack.push(keyindexvar);
 
                     let mut s = unsafe { sets0.get_unchecked_mut(h0 as usize) };
@@ -212,9 +277,9 @@ impl Xor8 {
                         continue;
                     }
                     let hash = keyindexvar.hash;
-                    let h0 = filter.geth0(hash);
-                    let h1 = filter.geth1(hash);
-                    keyindexvar.index += 2 * filter.block_length;
+                    let h0 = self.geth0(hash);
+                    let h1 = self.geth1(hash);
+                    keyindexvar.index += 2 * self.block_length;
                     stack.push(keyindexvar);
 
                     let mut s = unsafe { sets0.get_unchecked_mut(h0 as usize) };
@@ -251,30 +316,36 @@ impl Xor8 {
             for i in 0..sets2.len() {
                 sets2[i] = Default::default();
             }
-            filter.seed = splitmix64(&mut rngcounter)
+            self.seed = splitmix64(&mut rngcounter)
         }
 
         while let Some(ki) = stack.pop() {
             let mut val = fingerprint(ki.hash) as u8;
-            if ki.index < filter.block_length {
-                val ^= filter.finger_prints[(filter.geth1(ki.hash) + filter.block_length) as usize]
-                    ^ filter.finger_prints
-                        [(filter.geth2(ki.hash) + 2 * filter.block_length) as usize]
-            } else if ki.index < 2 * filter.block_length {
-                val ^= filter.finger_prints[filter.geth0(ki.hash) as usize]
-                    ^ filter.finger_prints
-                        [(filter.geth2(ki.hash) + 2 * filter.block_length) as usize]
+            if ki.index < self.block_length {
+                val ^= self.finger_prints[(self.geth1(ki.hash) + self.block_length) as usize]
+                    ^ self.finger_prints[(self.geth2(ki.hash) + 2 * self.block_length) as usize]
+            } else if ki.index < 2 * self.block_length {
+                val ^= self.finger_prints[self.geth0(ki.hash) as usize]
+                    ^ self.finger_prints[(self.geth2(ki.hash) + 2 * self.block_length) as usize]
             } else {
-                val ^= filter.finger_prints[filter.geth0(ki.hash) as usize]
-                    ^ filter.finger_prints[(filter.geth1(ki.hash) + filter.block_length) as usize]
+                val ^= self.finger_prints[self.geth0(ki.hash) as usize]
+                    ^ self.finger_prints[(self.geth1(ki.hash) + self.block_length) as usize]
             }
-            filter.finger_prints[ki.index as usize] = val;
+            self.finger_prints[ki.index as usize] = val;
         }
-        filter
     }
 
     /// Contains tell you whether the key is likely part of the set.
-    pub fn contains(&self, key: u64) -> bool {
+    pub fn contains<T: Hash>(&self, key: T) -> bool {
+        let key = {
+            let mut hasher = self.hash_builder.build_hasher();
+            key.hash(&mut hasher);
+            hasher.finish()
+        };
+        self.contains_key(key)
+    }
+
+    pub fn contains_key(&self, key: u64) -> bool {
         let hash = mixsplit(key, self.seed);
         let f = fingerprint(hash) as u8;
         let r0 = hash as u32;
@@ -372,6 +443,8 @@ impl Xor8 {
 
         if n_read == n_fp {
             Ok(Xor8 {
+                keys: Default::default(),
+                hash_builder: RandomState::new(),
                 seed: u64::from_be_bytes(buf_seed),
                 block_length: u32::from_be_bytes(buf_block_length),
                 finger_prints,
@@ -382,33 +455,6 @@ impl Xor8 {
                 "Read data size mismatch",
             ))
         }
-    }
-}
-
-impl Xor8 {
-    /// Deal with hashable types
-    /// Types implement trait `Hash` could generate an u64 hash value
-
-    /// New fills the filter with provided keys.
-    /// Use &[T] instead of &Vec<T>, see https://rust-lang.github.io/rust-clippy/master/index.html#ptr_arg
-    pub fn new_hashable<T: Hash>(keys: &[T]) -> Self {
-        let keys_hash: Vec<u64> = keys
-            .iter()
-            .map(|k| {
-                let mut hasher = DefaultHasher::new();
-                k.hash(&mut hasher);
-                hasher.finish()
-            })
-            .collect();
-
-        Self::new(&keys_hash)
-    }
-
-    /// Contains tell you whether the key is likely part of the set.
-    pub fn contains_hashable<T: Hash>(&self, key: T) -> bool {
-        let mut hasher = DefaultHasher::new();
-        key.hash(&mut hasher);
-        self.contains(hasher.finish())
     }
 }
 
@@ -430,7 +476,13 @@ mod tests {
             keys[i] = rng.gen();
         }
 
-        let filter = Xor8::new(&keys);
+        let filter = {
+            let mut filter = Xor8::<RandomState>::new();
+            filter.populate(&keys);
+            filter.build();
+            filter
+        };
+
         for key in keys.into_iter() {
             assert!(filter.contains(key), "key {} not present", key);
         }
@@ -441,7 +493,7 @@ mod tests {
         assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
 
         for _ in 0..falsesize {
-            if filter.contains(rng.gen()) {
+            if filter.contains(rng.gen::<u64>()) {
                 matches += 1_f64;
             }
         }
@@ -462,7 +514,13 @@ mod tests {
             keys[i] = splitmix64(&mut seed);
         }
 
-        let filter = Xor8::new(&keys);
+        let filter = {
+            let mut filter = Xor8::<RandomState>::new();
+            keys.iter().for_each(|key| filter.insert(key));
+            filter.build();
+            filter
+        };
+
         for key in keys.into_iter() {
             assert!(filter.contains(key), "key {} not present", key);
         }
