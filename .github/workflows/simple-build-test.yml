@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    name: xorfilter-stable
+    name: xorfilter
     runs-on: ubuntu-latest
 
     steps:
@@ -17,16 +17,7 @@ jobs:
       run: cargo test --verbose
     - name: Run release tests
       run: cargo test --verbose --release
-
-jobs:
-  build:
-    name: xorfilter-nightly
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        toolchain: nightly
     - name: Run dev benchmarks
-      run: cargo bench --verbose
+      run: cargo +nightly bench --verbose
     - name: Run release benchmarks
-      run: cargo bench --verbose --release
+      run: cargo +nightly bench --verbose --release
