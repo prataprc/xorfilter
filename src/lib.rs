@@ -66,20 +66,20 @@ struct KeyIndex {
 ///
 /// This implementation has a false positive rate of about 0.3%
 /// and a memory usage of less than 9 bits per entry for sizeable sets.
-pub struct Xor8<B = RandomState>
+pub struct Xor8<H = RandomState>
 where
-    B: BuildHasher,
+    H: BuildHasher,
 {
     keys: Option<Vec<u64>>,
-    hash_builder: B,
+    hash_builder: H,
     seed: u64,
     block_length: u32,
     finger_prints: Vec<u8>,
 }
 
-impl<B> PartialEq for Xor8<B>
+impl<H> PartialEq for Xor8<H>
 where
-    B: BuildHasher,
+    H: BuildHasher,
 {
     fn eq(&self, other: &Self) -> bool {
         self.seed == other.seed
@@ -88,9 +88,9 @@ where
     }
 }
 
-impl<B> Xor8<B>
+impl<H> Xor8<H>
 where
-    B: BuildHasher,
+    H: BuildHasher,
 {
     /// New Xor8 instance initialized with `DefaulHasher`.
     pub fn new() -> Xor8<RandomState> {
@@ -104,7 +104,7 @@ where
     }
 
     /// New Xor8 instance initialized with supplied `hasher`.
-    pub fn new_hasher(hash_builder: B) -> Self {
+    pub fn with_hasher(hash_builder: H) -> Self {
         Xor8 {
             keys: Some(Default::default()),
             hash_builder,

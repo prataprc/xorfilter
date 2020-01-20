@@ -68,7 +68,7 @@ fn test_string_keys() {
         "learning curves are a blessing in disguise",
     ];
     let hash_builder = RandomState::new();
-    let mut filter = Xor8::new_hasher(hash_builder);
+    let mut filter = Xor8::with_hasher(hash_builder);
     filter.populate(&rust_tips);
     filter.build();
 
