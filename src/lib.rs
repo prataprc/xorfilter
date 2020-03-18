@@ -12,19 +12,19 @@ use std::io::{Error, ErrorKind, Read, Write};
 
 fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
-    h = h.wrapping_mul(0xff51afd7ed558ccd);
+    h = h.wrapping_mul(0xff51_afd7_ed55_8ccd);
     h ^= h >> 33;
-    h = h.wrapping_mul(0xc4ceb9fe1a85ec53);
+    h = h.wrapping_mul(0xc4ce_b9fe_1a85_ec53);
     h ^= h >> 33;
     h
 }
 
 // returns random number, modifies the seed
 fn splitmix64(seed: &mut u64) -> u64 {
-    *seed = (*seed).wrapping_add(0x9E3779B97F4A7C15);
+    *seed = (*seed).wrapping_add(0x9E37_79B9_7F4A_7C15);
     let mut z = *seed;
-    z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
-    z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB);
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
     z ^ (z >> 31)
 }
 
@@ -34,7 +34,7 @@ fn mixsplit(key: u64, seed: u64) -> u64 {
 
 fn reduce(hash: u32, n: u32) -> u32 {
     // http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
-    ((hash as u64) * (n as u64) >> 32) as u32
+    (((hash as u64) * (n as u64)) >> 32) as u32
 }
 
 fn fingerprint(hash: u64) -> u64 {
@@ -88,12 +88,9 @@ where
     }
 }
 
-impl<H> Xor8<H>
-where
-    H: BuildHasher,
-{
+impl Default for Xor8<RandomState> {
     /// New Xor8 instance initialized with `DefaulHasher`.
-    pub fn new() -> Xor8<RandomState> {
+    fn default() -> Self {
         Xor8 {
             keys: Some(Default::default()),
             hash_builder: RandomState::new(),
@@ -102,7 +99,19 @@ where
             finger_prints: Default::default(),
         }
     }
+}
 
+impl Xor8<RandomState> {
+    /// New Xor8 instance initialized with `DefaulHasher`.
+    pub fn new() -> Self {
+        Default::default()
+    }
+}
+
+impl<H> Xor8<H>
+where
+    H: BuildHasher,
+{
     /// New Xor8 instance initialized with supplied `hasher`.
     pub fn with_hasher(hash_builder: H) -> Self {
         Xor8 {
@@ -183,28 +192,30 @@ where
             q1.clear();
             q2.clear();
 
-            for i in 0..(self.block_length as usize) {
-                if sets0[i].count == 1 {
+            let iter = sets0.iter().enumerate().take(self.block_length as usize);
+            for (i, item) in iter {
+                if item.count == 1 {
                     q0.push(KeyIndex {
                         index: i as u32,
-                        hash: sets0[i].xor_mask,
+                        hash: item.xor_mask,
                     });
                 }
             }
-
-            for i in 0..(self.block_length as usize) {
-                if sets1[i].count == 1 {
+            let iter = sets1.iter().enumerate().take(self.block_length as usize);
+            for (i, item) in iter {
+                if item.count == 1 {
                     q1.push(KeyIndex {
                         index: i as u32,
-                        hash: sets1[i].xor_mask,
+                        hash: item.xor_mask,
                     });
                 }
             }
-            for i in 0..(self.block_length as usize) {
-                if sets2[i].count == 1 {
+            let iter = sets2.iter().enumerate().take(self.block_length as usize);
+            for (i, item) in iter {
+                if item.count == 1 {
                     q2.push(KeyIndex {
                         index: i as u32,
-                        hash: sets2[i].xor_mask,
+                        hash: item.xor_mask,
                     });
                 }
             }
@@ -307,14 +318,14 @@ where
                 break;
             }
 
-            for i in 0..sets0.len() {
-                sets0[i] = Default::default();
+            for item in sets0.iter_mut() {
+                *item = Default::default();
             }
-            for i in 0..sets1.len() {
-                sets1[i] = Default::default();
+            for item in sets1.iter_mut() {
+                *item = Default::default();
             }
-            for i in 0..sets2.len() {
-                sets2[i] = Default::default();
+            for item in sets2.iter_mut() {
+                *item = Default::default();
             }
             self.seed = splitmix64(&mut rngcounter)
         }
@@ -469,11 +480,11 @@ mod tests {
         println!("seed {}", seed);
         let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-        let testsize = 100000;
+        let testsize = 100_000;
         let mut keys: Vec<u64> = Vec::with_capacity(testsize);
         keys.resize(testsize, Default::default());
-        for i in 0..keys.len() {
-            keys[i] = rng.gen();
+        for key in keys.iter_mut() {
+            *key = rng.gen();
         }
 
         let filter = {
@@ -487,7 +498,7 @@ mod tests {
             assert!(filter.contains(key), "key {} not present", key);
         }
 
-        let (falsesize, mut matches) = (10000000, 0_f64);
+        let (falsesize, mut matches) = (10_000_000, 0_f64);
         let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
         println!("bits per entry {} bits", bpv);
         assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
@@ -507,11 +518,11 @@ mod tests {
         let mut seed: u64 = random();
         println!("seed {}", seed);
 
-        let testsize = 100000;
+        let testsize = 100_000;
         let mut keys: Vec<u64> = Vec::with_capacity(testsize);
         keys.resize(testsize, Default::default());
-        for i in 0..keys.len() {
-            keys[i] = splitmix64(&mut seed);
+        for key in keys.iter_mut() {
+            *key = splitmix64(&mut seed);
         }
 
         let filter = {
@@ -525,7 +536,7 @@ mod tests {
             assert!(filter.contains(key), "key {} not present", key);
         }
 
-        let (falsesize, mut matches) = (10000000, 0_f64);
+        let (falsesize, mut matches) = (10_000_000, 0_f64);
         let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
         println!("bits per entry {} bits", bpv);
         assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);

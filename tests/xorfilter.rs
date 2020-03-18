@@ -13,8 +13,8 @@ fn generate_filter() -> Xor8<RandomState> {
     let testsize = 10000;
     let mut keys: Vec<u64> = Vec::with_capacity(testsize);
     keys.resize(testsize, Default::default());
-    for i in 0..keys.len() {
-        keys[i] = rng.gen();
+    for key in keys.iter_mut() {
+        *key = rng.gen();
     }
     let mut filter = Xor8::<RandomState>::new();
     filter.populate(&keys);
@@ -37,9 +37,9 @@ fn test_same_filter_encode_decode() {
 
     filter
         .write_file(&file_path.0)
-        .expect(&format!("Write to {} failed", file_path.0));
-    let filter_read =
-        Xor8::read_file(&file_path.0).expect(&format!("Read from {} failed", file_path.0));
+        .unwrap_or_else(|_| panic!("Write to {} failed", file_path.0));
+    let filter_read = Xor8::read_file(&file_path.0)
+        .unwrap_or_else(|_| panic!("Read from {} failed", file_path.0));
     assert!(
         filter_read == filter,
         "Filter unequals after encode and decode"
