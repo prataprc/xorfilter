@@ -31,8 +31,8 @@ Release Checklist
   * cargo +nightly test; cargo +stable test
   * cargo +nightly bench;
   * cargo fix --edition --all-targets
-* Create a git-tag for the new version.
 * Cargo publish the new version.
+* Create a git-tag for the new version.
 * Badges
   * Build passing, Travis continuous integration.
   * Code coverage, codecov and coveralls.
