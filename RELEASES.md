@@ -36,14 +36,14 @@ Release Checklist
 * Badges
   * Build passing, Travis continuous integration.
   * Code coverage, codecov and coveralls.
-  * Crates badge
-  * Downloads badge
-  * License badge
+  * Crates badge.
+  * Downloads badge.
+  * License badge.
   * Rust version badge.
   * Maintenance-related badges based on isitmaintained.com
-  * Documentation
-  * Gitpitch
-* Targets
+  * Documentation.
+  * Gitpitch.
+* Targets.
   * RHEL
   * SUSE
   * Debian
