@@ -6,34 +6,15 @@ Code Review checklist
 
 * [ ] Check and confirm dead-code.
 * [ ] Check and confirm ignored test cases.
-* [ ] Check for un-necessary trait constraints like Debug and Display.
-* [ ] Review and check for un-necessary copy, and allocations.
-* [ ] Review resize calls on `Vec`.
-* [ ] Review (as ...) type casting, to panic on data loss.
-* [ ] Reduce trait constraints for Type parameters on public APIs.
-* [ ] Public APIs can be as generic as possible. Check whether there
-      is a scope for `AsRef` or `Borrow` constraints.
-* [ ] Review/Document error variants, capture useful information in error msg.
-* [ ] Check for dangling links in rustdoc.
-* [ ] 80-column width.
-* [ ] Copyright and License notice.
-* [ ] Make sure that generated artifact is debuggable. Like,
-  * [ ] RUSTLFAGS=-g
-* [ ] Verify panic!() macro, try to replace them with Err(Error).
-* [ ] Verify unreachable!() macro, try to replace them with Err(Error).
+* [ ] Replace panic!(), assert!(), unreachable!(), unimplemented!(),
+      macros with Err(Error).
 * [ ] Avoid println!() macro in production code.
-* [ ] Review TODO comments in code.
 * [ ] Validate the usage of:
     * [ ] unwrap() calls.
     * [ ] ok() calls on Result/Option types.
     * [ ] unsafe { .. } blocks.
-    * [ ] panic!(), unimplemented!(), unreachable!(), assert!() macros.
-* [ ] Trim trait constraits for exported types, exported functions and
-  type/methods/functions defined in core.rs
-
-
-* Avoid panic!() in inner-level functions. If at all it is used, use
-them at the API level.
+* [ ] Trim trait constraits for exported types, exported functions
+  and methods.
 
 Release Checklist
 =================
