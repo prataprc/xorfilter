@@ -3,6 +3,11 @@ name = "xorfilter"
 version = "0.1.0"
 authors = ["prataprc <prataprc@gmail.com>"]
 edition = "2018"
+description = "Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters"
+license = "Apache-2.0"
+documentation = "https://docs.rs/xorfilter"
+homepage = "https://github.com/bnclabs/xorfilter"
+repository = "https://github.com/bnclabs/xorfilter"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
