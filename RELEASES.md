@@ -1,5 +1,15 @@
+0.2.0
+=====
+
+* `write_file()` and `read_file()` methods on Xor8 type will take
+  `&ffi::OsStr` instead of `&str`. This more consistent with rust-idiom.
+* cleanup test-cases.
+* cleanup Makefile.
+
 0.1.0
 =====
+
+* First release
 
 Code Review checklist
 =====================

@@ -1,6 +1,6 @@
 [package]
 name = "xorfilter-rs"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["prataprc <prataprc@gmail.com>"]
 edition = "2018"
 description = "Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters"
