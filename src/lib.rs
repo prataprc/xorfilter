@@ -4,11 +4,12 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
-use std::collections::hash_map::RandomState;
-use std::fs::File;
-use std::hash::{BuildHasher, Hash, Hasher};
-use std::io;
-use std::io::{Error, ErrorKind, Read, Write};
+use std::{
+    collections::hash_map::RandomState,
+    ffi, fs,
+    hash::{BuildHasher, Hash, Hasher},
+    io::{self, Error, ErrorKind, Read, Write},
+};
 
 fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
@@ -403,10 +404,10 @@ impl Xor8 {
 
     /// Write to file in binary format
     /// TODO Add chechsum of finger_prints into file headers
-    pub fn write_file(&self, path: &str) -> io::Result<usize> {
+    pub fn write_file(&self, path: &ffi::OsStr) -> io::Result<usize> {
         let n_fp = self.finger_prints.len() as u32; // u32 should be enough (4GB finger_prints)
 
-        let mut f = File::create(path)?;
+        let mut f = fs::File::create(path)?;
         let mut n_write = 0;
         n_write += f.write(&Xor8::SIGNATURE_V1)?; // 4 bytes
         n_write += f.write(&self.seed.to_be_bytes())?; // 8 bytes
@@ -426,13 +427,13 @@ impl Xor8 {
     }
 
     /// Read from file in binary format
-    pub fn read_file(path: &str) -> io::Result<Self> {
+    pub fn read_file(path: &ffi::OsStr) -> io::Result<Self> {
         let mut buf_signature = [0_u8; 4];
         let mut buf_seed = [0_u8; 8];
         let mut buf_block_length = [0_u8; 4];
         let mut buf_n_fp = [0_u8; 4];
 
-        let mut f = File::open(path)?;
+        let mut f = fs::File::open(path)?;
         f.read_exact(&mut buf_signature)?;
         if buf_signature
             .iter()

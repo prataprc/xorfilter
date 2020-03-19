@@ -1,5 +1,3 @@
-use std::fs;
-
 use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
 use std::collections::hash_map::RandomState;
 use xorfilter::Xor8;
@@ -22,24 +20,20 @@ fn generate_filter() -> Xor8<RandomState> {
     filter
 }
 
-struct TestFile(String);
-
-impl Drop for TestFile {
-    fn drop(&mut self) {
-        fs::remove_file(&self.0).ok();
-    }
-}
-
 #[test]
 fn test_same_filter_encode_decode() {
-    let file_path = TestFile("test_encode.bin".to_string());
+    let file_path = {
+        let mut fpath = std::env::temp_dir();
+        fpath.push("xorfilter-test-same-filter-encode-decode");
+        fpath.into_os_string()
+    };
     let filter = generate_filter();
 
     filter
-        .write_file(&file_path.0)
-        .unwrap_or_else(|_| panic!("Write to {} failed", file_path.0));
-    let filter_read = Xor8::read_file(&file_path.0)
-        .unwrap_or_else(|_| panic!("Read from {} failed", file_path.0));
+        .write_file(&file_path)
+        .unwrap_or_else(|err| panic!("Write to {:?} failed {}", file_path, err));
+    let filter_read = Xor8::read_file(&file_path)
+        .unwrap_or_else(|err| panic!("Read from {:?} failed {}", file_path, err));
     assert!(
         filter_read == filter,
         "Filter unequals after encode and decode"
