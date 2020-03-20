@@ -13,7 +13,7 @@ Add the following under project's `Cargo.toml`:
 
 ```toml
 [dependencies]
-xorfilter-rs = 0.2.0
+xorfilter-rs = "0.2.0"
 ```
 
 or
