@@ -7,9 +7,25 @@ in [rust-lang](https://www.rust-lang.org/), Journal of Experimental Algorithmics
 
 This package is a port from its [golang implementation](https://github.com/FastFilter/xorfilter).
 
-### Example
+### How to use _xorfilter_ in my rust project ?
+
+Add the following under project's `Cargo.toml`:
+
+```toml
+[dependencies]
+xorfilter-rs = 0.2.0
+```
+
+or
+
+```toml
+[dependencies]
+xorfilter-rs = { git = "https://github.com/bnclabs/xorfilter" }
+```
 
 ```rust
+use xorfilter::Xor8;
+
 let mut keys: Vec<u64> = vec![];
 for _ in 0..num_keys {
     keys.push(rng.gen());
