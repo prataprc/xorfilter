@@ -7,6 +7,24 @@ in [rust-lang](https://www.rust-lang.org/), Journal of Experimental Algorithmics
 
 This package is a port from its [golang implementation](https://github.com/FastFilter/xorfilter).
 
+### Example
+
+```rust
+let mut keys: Vec<u64> = vec![];
+for _ in 0..num_keys {
+    keys.push(rng.gen());
+}
+
+let mut filter = Xor8::new(); // new filter.
+filter.populate_keys(&keys); // populate keys.
+filter.build(); // build bitmap.
+
+for key in 0..lookup {
+    // there can be false positives, but no false negatives.
+    filter.contains_key(key);
+}
+```
+
 ### Open issues
 
 * [ ] Serialize / Deserialize Xor8 type.
