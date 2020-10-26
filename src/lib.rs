@@ -411,68 +411,18 @@ impl Xor8 {
     /// Write to file in binary format
     /// TODO Add chechsum of finger_prints into file headers
     pub fn write_file(&self, path: &ffi::OsStr) -> io::Result<usize> {
-        let n_fp = self.finger_prints.len() as u32; // u32 should be enough (4GB finger_prints)
-
         let mut f = fs::File::create(path)?;
-        let mut n_write = 0;
-        n_write += f.write(&Xor8::SIGNATURE_V1)?; // 4 bytes
-        n_write += f.write(&self.seed.to_be_bytes())?; // 8 bytes
-        n_write += f.write(&self.block_length.to_be_bytes())?; // 4 bytes
-        n_write += f.write(&n_fp.to_be_bytes())?; // 4 bytes
-        n_write += f.write(&self.finger_prints)?;
-
-        let n_expect = 4 + 8 + 4 + 4 + self.finger_prints.len();
-        if n_write == n_expect {
-            Ok(n_write)
-        } else {
-            Err(Error::new(
-                ErrorKind::InvalidData,
-                "Write data size mismatch",
-            ))
-        }
+        let buf = self.to_bytes();
+        f.write_all(&buf)?;
+        Ok(buf.len())
     }
 
     /// Read from file in binary format
     pub fn read_file(path: &ffi::OsStr) -> io::Result<Self> {
-        let mut buf_signature = [0_u8; 4];
-        let mut buf_seed = [0_u8; 8];
-        let mut buf_block_length = [0_u8; 4];
-        let mut buf_n_fp = [0_u8; 4];
-
         let mut f = fs::File::open(path)?;
-        f.read_exact(&mut buf_signature)?;
-        if buf_signature
-            .iter()
-            .zip(&Xor8::SIGNATURE_V1)
-            .any(|(a, b)| a != b)
-        {
-            return Err(Error::new(
-                ErrorKind::InvalidData,
-                "File signature incorrect",
-            ));
-        }
-
-        f.read_exact(&mut buf_seed)?;
-        f.read_exact(&mut buf_block_length)?;
-        f.read_exact(&mut buf_n_fp)?;
-        let n_fp = u32::from_be_bytes(buf_n_fp) as usize;
-        let mut finger_prints: Vec<u8> = Vec::with_capacity(n_fp);
-        let n_read = f.read_to_end(&mut finger_prints)?;
-
-        if n_read == n_fp {
-            Ok(Xor8 {
-                keys: Default::default(),
-                hash_builder: RandomState::new(),
-                seed: u64::from_be_bytes(buf_seed),
-                block_length: u32::from_be_bytes(buf_block_length),
-                finger_prints,
-            })
-        } else {
-            Err(Error::new(
-                ErrorKind::InvalidData,
-                "Read data size mismatch",
-            ))
-        }
+        let mut data = Vec::new();
+        f.read_to_end(&mut data)?;
+        Self::from_bytes(data)
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
