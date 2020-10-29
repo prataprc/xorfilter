@@ -428,14 +428,11 @@ impl Xor8 {
     pub fn to_bytes(&self) -> Vec<u8> {
         let capacity = Self::METADATA_LENGTH + self.finger_prints.len();
         let mut buf: Vec<u8> = Vec::with_capacity(capacity);
-        unsafe {
-            buf.set_len(capacity);
-        }
-        buf[..4].copy_from_slice(&Xor8::SIGNATURE_V1);
-        buf[4..12].copy_from_slice(&self.seed.to_be_bytes());
-        buf[12..16].copy_from_slice(&self.block_length.to_be_bytes());
-        buf[16..20].copy_from_slice(&(self.finger_prints.len() as u32).to_be_bytes());
-        buf[20..].copy_from_slice(&self.finger_prints);
+        buf.extend_from_slice(&Xor8::SIGNATURE_V1);
+        buf.extend_from_slice(&self.seed.to_be_bytes());
+        buf.extend_from_slice(&self.block_length.to_be_bytes());
+        buf.extend_from_slice(&(self.finger_prints.len() as u32).to_be_bytes());
+        buf.extend_from_slice(&self.finger_prints);
         buf
     }
 
