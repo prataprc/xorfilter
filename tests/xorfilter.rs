@@ -47,6 +47,25 @@ fn test_same_filter_encode_decode() {
 }
 
 #[test]
+fn test_same_filter_bytes_encoding() {
+    let filter = generate_filter();
+
+    let buf = filter.to_bytes();
+    let filter_read =
+        Xor8::from_bytes(buf).unwrap_or_else(|err| panic!("Read from bytes failed {}", err));
+    assert!(
+        filter_read == filter,
+        "Filter unequals after encode and decode"
+    );
+
+    let filter_second = generate_filter();
+    assert!(
+        filter_read != filter_second,
+        "Random generated filters should not be the same"
+    );
+}
+
+#[test]
 fn test_string_keys() {
     // Rust tips: https://ashleygwilliams.github.io/gotober-2018/#103
     let rust_tips = vec![
