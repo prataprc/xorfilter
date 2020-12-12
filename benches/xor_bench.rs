@@ -1,14 +1,12 @@
-#![feature(test)]
-extern crate test;
+use criterion::{criterion_group, criterion_main, Criterion};
 
 use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
-use test::Bencher;
 use xorfilter::Xor8;
 
 use std::collections::hash_map::RandomState;
 
-#[bench]
-fn bench_populate_keys_100000(b: &mut Bencher) {
+
+fn bench_populate_keys_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -19,15 +17,14 @@ fn bench_populate_keys_100000(b: &mut Bencher) {
         *key = rng.gen();
     }
 
-    b.iter(|| {
+    c.bench_function("populate_keys_100000",|b| b.iter(|| {
         let mut filter = Xor8::<RandomState>::new();
         filter.populate_keys(&keys);
         filter.build();
-    })
+    }));
 }
 
-#[bench]
-fn bench_build_keys_100000(b: &mut Bencher) {
+fn bench_build_keys_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -38,14 +35,13 @@ fn bench_build_keys_100000(b: &mut Bencher) {
         *key = rng.gen();
     }
 
-    b.iter(|| {
+    c.bench_function("bench_build_keys_100000",|b| b.iter(|| {
         let mut filter = Xor8::<RandomState>::new();
         filter.build_keys(&keys);
-    })
+    }));
 }
 
-#[bench]
-fn bench_populate_100000(b: &mut Bencher) {
+fn bench_populate_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -56,15 +52,14 @@ fn bench_populate_100000(b: &mut Bencher) {
         *key = rng.gen();
     }
 
-    b.iter(|| {
+    c.bench_function("bench_populate_100000",|b| b.iter(|| {
         let mut filter = Xor8::<RandomState>::new();
         filter.populate(&keys);
         filter.build();
-    })
+    }));
 }
 
-#[bench]
-fn bench_insert_100000(b: &mut Bencher) {
+fn bench_insert_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -75,15 +70,14 @@ fn bench_insert_100000(b: &mut Bencher) {
         *key = rng.gen();
     }
 
-    b.iter(|| {
+    c.bench_function("bench_insert_100000",|b| b.iter(|| {
         let mut filter = Xor8::<RandomState>::new();
         keys.iter().for_each(|key| filter.insert(key));
         filter.build();
-    })
+    }));
 }
 
-#[bench]
-fn bench_contains_100000(b: &mut Bencher) {
+fn bench_contains_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -102,14 +96,13 @@ fn bench_contains_100000(b: &mut Bencher) {
     };
 
     let mut n = 0;
-    b.iter(|| {
+    c.bench_function("bench_contains_100000",|b| b.iter(|| {
         filter.contains(keys[n % keys.len()]);
         n += 1;
-    });
+    }));
 }
 
-#[bench]
-fn bench_contains_key_100000(b: &mut Bencher) {
+fn bench_contains_key_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -128,8 +121,22 @@ fn bench_contains_key_100000(b: &mut Bencher) {
     };
 
     let mut n = 0;
-    b.iter(|| {
+    c.bench_function("bench_contains_key_100000",|b| b.iter(|| {
         filter.contains_key(keys[n % keys.len()]);
         n += 1;
-    });
+    }));
 }
+
+criterion_group!(
+    benches, 
+    bench_populate_keys_100000,
+    bench_build_keys_100000,
+    bench_populate_100000,
+    bench_insert_100000,
+    bench_contains_100000,
+    bench_contains_key_100000
+);
+
+criterion_main!(benches);
+
+

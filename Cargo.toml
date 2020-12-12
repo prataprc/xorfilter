@@ -18,3 +18,8 @@ name = "xorfilter"
 
 [dev-dependencies]
 rand = "0.6.4"
+criterion = "0.3"
+
+[[bench]]
+name = "xor_bench"
+harness = false
