@@ -441,7 +441,7 @@ impl Xor8 {
         if Self::METADATA_LENGTH > buf.len() {
             return Err(Error::new(ErrorKind::InvalidData, "invalid byte slice"));
         }
-        if &buf[..4] != &Xor8::SIGNATURE_V1 {
+        if buf[..4] != Xor8::SIGNATURE_V1 {
             return Err(Error::new(
                 ErrorKind::InvalidData,
                 "File signature incorrect",
