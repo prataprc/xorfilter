@@ -88,24 +88,6 @@ jobs:
     - run: ${{ env.CARGO }} doc --verbose
     - run: ${{ env.CARGO }} test --verbose
     - if: matrix.build == 'nightly'
-      run: ${{ env.CARGO }} build --manifest-path aho-corasick-debug/Cargo.toml
+      run: ${{ env.CARGO }} build 
     - if: matrix.build == 'nightly'
-      run: ${{ env.CARGO }} bench --verbose --manifest-path bench/Cargo.toml -- --test
-
-  rustfmt:
-    name: rustfmt
-    runs-on: ubuntu-18.04
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        profile: minimal
-        components: rustfmt
-    - name: Check formatting
-      run: |
-        cargo fmt --all -- --check
+      run: ${{ env.CARGO }} bench --verbose -- --test
