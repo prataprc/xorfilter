@@ -2,7 +2,7 @@
 name = "xorfilter-rs"
 version = "0.2.0"
 authors = ["prataprc <prataprc@gmail.com>"]
-edition = "2018"
+# edition = "2018"
 description = "Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters"
 license = "Apache-2.0"
 documentation = "https://docs.rs/xorfilter-rs"
