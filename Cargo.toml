@@ -1,3 +1,4 @@
+cargo-features = ["edition"]
 [package]
 name = "xorfilter-rs"
 version = "0.2.0"
