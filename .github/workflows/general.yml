@@ -63,7 +63,7 @@ jobs:
           command: test
           args: --verbose --all
   bench:
-    name: Test
+    name: Bench
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
