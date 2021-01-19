@@ -4,6 +4,7 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
+use serde::{Deserialize, Serialize};
 use std::{
     collections::hash_map::RandomState,
     convert::TryInto,
@@ -68,6 +69,7 @@ struct KeyIndex {
 ///
 /// This implementation has a false positive rate of about 0.3%
 /// and a memory usage of less than 9 bits per entry for sizeable sets.
+#[derive(Serialize, Deserialize)]
 pub struct Xor8<H = RandomState>
 where
     H: BuildHasher,
