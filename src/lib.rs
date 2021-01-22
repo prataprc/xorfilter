@@ -90,15 +90,17 @@ where
     }
 }
 
-impl Default for Xor8<RandomState> {
-    /// New Xor8 instance initialized with `DefaulHasher`.
+impl<H> Default for Xor8<H>
+where
+    H: BuildHasher + Default,
+{
     fn default() -> Self {
         Xor8 {
-            keys: Some(Default::default()),
-            hash_builder: RandomState::new(),
-            seed: Default::default(),
-            block_length: Default::default(),
-            finger_prints: Default::default(),
+            keys: Some(Vec::default()),
+            hash_builder: H::default(),
+            seed: u64::default(),
+            block_length: u32::default(),
+            finger_prints: Vec::default(),
         }
     }
 }
@@ -127,7 +129,7 @@ where
 
     /// Insert 64-bit digest of a single key. Digest for the key shall
     /// be generated using the default-hasher or via hasher supplied via
-    /// [new_hasher] method.
+    /// [Xor8::with_hasher] method.
     pub fn insert<T: Hash>(&mut self, key: &T) {
         let mut hasher = self.hash_builder.build_hasher();
         key.hash(&mut hasher);
@@ -136,7 +138,7 @@ where
 
     /// Populate 64-bit digests for collection of keys. Digest for the key
     /// shall be generated using the default-hasher or via hasher supplied
-    /// via [new_hasher] method.
+    /// via [Xor8::with_hasher] method.
     pub fn populate<T: Hash>(&mut self, keys: &[T]) {
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
@@ -150,16 +152,16 @@ where
         self.keys.as_mut().unwrap().extend_from_slice(keys)
     }
 
-    /// Build bitmap for keys that are insert using [insert] or [populate]
-    /// method.
+    /// Build bitmap for keys that are insert using [Xor8::insert] or
+    /// [Xor8::populate] method.
     pub fn build(&mut self) {
         let keys = self.keys.take().unwrap();
         self.build_keys(&keys);
     }
 
     /// Build a bitmap for pre-computed 64-bit digests for keys. If any
-    /// keys where inserted using [insert], [populate], [populate_keys]
-    /// method shall be ignored.
+    /// keys where inserted using [Xor8::insert], [Xor8::populate],
+    /// [Xor8::populate_keys] method shall be ignored.
     pub fn build_keys(&mut self, keys: &[u64]) {
         let (size, mut rngcounter) = (keys.len(), 1_u64);
         let capacity = {
