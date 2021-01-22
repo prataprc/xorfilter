@@ -35,12 +35,7 @@ Release Checklist
   * __patch__: bug fixes.
 * Travis-CI integration.
 * Cargo checklist
-  * cargo +stable build; cargo +nightly build
-  * cargo +stable doc
-  * cargo +nightly clippy --all-targets --all-features
-  * cargo +nightly test; cargo +stable test
-  * cargo +nightly bench;
-  * cargo fix --edition --all-targets
+  * run check.sh script to pass test cases and sanity check.
 * Cargo publish the new version.
 * Create a git-tag for the new version.
 * Badges
