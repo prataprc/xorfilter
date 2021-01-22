@@ -12,6 +12,12 @@ use std::{
     io::{self, Error, ErrorKind, Read, Write},
 };
 
+use mkit::{
+    self,
+    cbor::{Cbor, FromCbor, IntoCbor},
+    Cborize,
+};
+
 fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
     h = h.wrapping_mul(0xff51_afd7_ed55_8ccd);
@@ -105,6 +111,24 @@ where
     }
 }
 
+impl<H> IntoCbor for Xor8<H>
+where
+    H: BuildHasher,
+{
+    fn into_cbor(self) -> mkit::Result<Cbor> {
+        CborXor8::from(self).into_cbor()
+    }
+}
+
+impl<H> FromCbor for Xor8<H>
+where
+    H: Default + BuildHasher,
+{
+    fn from_cbor(val: Cbor) -> mkit::Result<Self> {
+        Ok(CborXor8::from_cbor(val)?.into())
+    }
+}
+
 impl Xor8<RandomState> {
     /// New Xor8 instance initialized with `DefaulHasher`.
     pub fn new() -> Self {
@@ -130,7 +154,7 @@ where
     /// Insert 64-bit digest of a single key. Digest for the key shall
     /// be generated using the default-hasher or via hasher supplied via
     /// [Xor8::with_hasher] method.
-    pub fn insert<T: Hash>(&mut self, key: &T) {
+    pub fn insert<T: ?Sized + Hash>(&mut self, key: &T) {
         let mut hasher = self.hash_builder.build_hasher();
         key.hash(&mut hasher);
         self.keys.as_mut().unwrap().push(hasher.finish());
@@ -337,14 +361,17 @@ where
         while let Some(ki) = stack.pop() {
             let mut val = fingerprint(ki.hash) as u8;
             if ki.index < self.block_length {
-                val ^= self.finger_prints[(self.geth1(ki.hash) + self.block_length) as usize]
-                    ^ self.finger_prints[(self.geth2(ki.hash) + 2 * self.block_length) as usize]
+                let h1 = (self.geth1(ki.hash) + self.block_length) as usize;
+                let h2 = (self.geth2(ki.hash) + 2 * self.block_length) as usize;
+                val ^= self.finger_prints[h1] ^ self.finger_prints[h2];
             } else if ki.index < 2 * self.block_length {
-                val ^= self.finger_prints[self.geth0(ki.hash) as usize]
-                    ^ self.finger_prints[(self.geth2(ki.hash) + 2 * self.block_length) as usize]
+                let h0 = self.geth0(ki.hash) as usize;
+                let h2 = (self.geth2(ki.hash) + 2 * self.block_length) as usize;
+                val ^= self.finger_prints[h0] ^ self.finger_prints[h2];
             } else {
-                val ^= self.finger_prints[self.geth0(ki.hash) as usize]
-                    ^ self.finger_prints[(self.geth1(ki.hash) + self.block_length) as usize]
+                let h0 = self.geth0(ki.hash) as usize;
+                let h1 = (self.geth1(ki.hash) + self.block_length) as usize;
+                val ^= self.finger_prints[h0] ^ self.finger_prints[h1]
             }
             self.finger_prints[ki.index as usize] = val;
         }
@@ -398,7 +425,10 @@ where
     }
 }
 
-impl Xor8 {
+impl<H> Xor8<H>
+where
+    H: BuildHasher,
+{
     /// File signature write on first 4 bytes of file.
     /// ^ stands for xor
     /// TL stands for filter
@@ -407,7 +437,8 @@ impl Xor8 {
 
     /// METADATA_LENGTH is size that required to write size of all the
     /// metadata of the serialized filter.
-    // signature length + seed length + block  length + fingerprint length + fingerprint size
+    // signature length + seed length + block-length +
+    //      fingerprint length + fingerprint size
     const METADATA_LENGTH: usize = 4 + 8 + 4 + 4;
 
     /// Write to file in binary format
@@ -420,7 +451,10 @@ impl Xor8 {
     }
 
     /// Read from file in binary format
-    pub fn read_file(path: &ffi::OsStr) -> io::Result<Self> {
+    pub fn read_file(path: &ffi::OsStr) -> io::Result<Self>
+    where
+        H: Default,
+    {
         let mut f = fs::File::open(path)?;
         let mut data = Vec::new();
         f.read_to_end(&mut data)?;
@@ -430,7 +464,7 @@ impl Xor8 {
     pub fn to_bytes(&self) -> Vec<u8> {
         let capacity = Self::METADATA_LENGTH + self.finger_prints.len();
         let mut buf: Vec<u8> = Vec::with_capacity(capacity);
-        buf.extend_from_slice(&Xor8::SIGNATURE_V1);
+        buf.extend_from_slice(&Xor8::<H>::SIGNATURE_V1);
         buf.extend_from_slice(&self.seed.to_be_bytes());
         buf.extend_from_slice(&self.block_length.to_be_bytes());
         buf.extend_from_slice(&(self.finger_prints.len() as u32).to_be_bytes());
@@ -438,28 +472,72 @@ impl Xor8 {
         buf
     }
 
-    pub fn from_bytes(buf: Vec<u8>) -> io::Result<Self> {
+    pub fn from_bytes(buf: Vec<u8>) -> io::Result<Self>
+    where
+        H: Default,
+    {
         // validate the buf first.
         if Self::METADATA_LENGTH > buf.len() {
             return Err(Error::new(ErrorKind::InvalidData, "invalid byte slice"));
         }
-        if buf[..4] != Xor8::SIGNATURE_V1 {
+        if buf[..4] != Xor8::<H>::SIGNATURE_V1 {
             return Err(Error::new(
                 ErrorKind::InvalidData,
                 "File signature incorrect",
             ));
         }
-        let fingerprint_length = u32::from_be_bytes(buf[16..20].try_into().unwrap()) as usize;
-        if buf[20..].len() < fingerprint_length {
+        let fp_len = u32::from_be_bytes(buf[16..20].try_into().unwrap()) as usize;
+        if buf[20..].len() < fp_len {
             return Err(Error::new(ErrorKind::InvalidData, "invalid byte slice"));
         }
         Ok(Xor8 {
             keys: Default::default(),
-            hash_builder: RandomState::new(),
+            hash_builder: H::default(),
             seed: u64::from_be_bytes(buf[4..12].try_into().unwrap()),
             block_length: u32::from_be_bytes(buf[12..16].try_into().unwrap()),
             finger_prints: buf[20..].to_vec(),
         })
+    }
+}
+
+// Intermediate type to serialize and de-serialized Xor8 into bytes using
+// `mkit` macros.
+#[derive(Cborize)]
+struct CborXor8 {
+    seed: u64,
+    block_length: u32,
+    finger_prints: Vec<u8>,
+}
+
+impl CborXor8 {
+    const ID: &'static str = "xor8/0.0.1";
+}
+
+impl<H> From<Xor8<H>> for CborXor8
+where
+    H: BuildHasher,
+{
+    fn from(val: Xor8<H>) -> Self {
+        CborXor8 {
+            seed: val.seed,
+            block_length: val.block_length,
+            finger_prints: val.finger_prints,
+        }
+    }
+}
+
+impl<H> From<CborXor8> for Xor8<H>
+where
+    H: Default + BuildHasher,
+{
+    fn from(val: CborXor8) -> Self {
+        Xor8 {
+            keys: None,
+            hash_builder: H::default(),
+            seed: val.seed,
+            block_length: val.block_length,
+            finger_prints: val.finger_prints,
+        }
     }
 }
 
