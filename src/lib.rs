@@ -15,6 +15,7 @@ use std::{
 use mkit::{
     self,
     cbor::{Cbor, FromCbor, IntoCbor},
+    db::Bloom,
     Cborize,
 };
 
@@ -538,6 +539,60 @@ where
             block_length: val.block_length,
             finger_prints: val.finger_prints,
         }
+    }
+}
+
+impl<H> Bloom for Xor8<H>
+where
+    H: Default + BuildHasher,
+{
+    type Err = Error;
+
+    fn add_key<Q: ?Sized + Hash>(&mut self, key: &Q) {
+        self.insert(key)
+    }
+
+    fn add_digest32(&mut self, digest: u32) {
+        self.populate_keys(&[u64::from(digest)])
+    }
+
+    fn contains<Q: ?Sized + Hash>(&self, element: &Q) -> bool {
+        self.contains(element)
+    }
+
+    fn to_bytes(&self) -> Result<Vec<u8>, Self::Err> {
+        let val = Xor8 {
+            keys: None,
+            hash_builder: H::default(),
+            seed: self.seed,
+            block_length: self.block_length,
+            finger_prints: self.finger_prints.clone(),
+        };
+
+        let mut buf: Vec<u8> = vec![];
+
+        match val.into_cbor() {
+            Ok(val) => match val.encode(&mut buf) {
+                Ok(_) => Ok(buf),
+                Err(err) => Err(Error::new(ErrorKind::InvalidData, err)),
+            },
+            Err(err) => Err(Error::new(ErrorKind::InvalidData, err)),
+        }
+    }
+
+    fn from_bytes(mut buf: &[u8]) -> Result<(Self, usize), Self::Err> {
+        let (val, n) = match Cbor::decode(&mut buf) {
+            Ok(val) => val,
+            Err(err) => Err(Error::new(ErrorKind::InvalidData, err))?,
+        };
+        match Xor8::<H>::from_cbor(val) {
+            Ok(val) => Ok((val, n)),
+            Err(err) => Err(Error::new(ErrorKind::InvalidData, err)),
+        }
+    }
+
+    fn or(&self, _other: &Self) -> Result<Self, Self::Err> {
+        unimplemented!()
     }
 }
 
