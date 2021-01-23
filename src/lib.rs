@@ -4,11 +4,13 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
+#[allow(unused_imports)]
+use std::collections::hash_map::RandomState;
 use std::{
-    collections::hash_map::{DefaultHasher, RandomState},
+    collections::hash_map::DefaultHasher,
     convert::TryInto,
     ffi, fs,
-    hash::{BuildHasher, BuildHasherDefault, Hash, Hasher},
+    hash::{self, BuildHasher, Hash, Hasher},
     io::{self, Error, ErrorKind, Read, Write},
 };
 
@@ -70,6 +72,41 @@ struct KeyIndex {
     index: u32,
 }
 
+/// Wrapper type for [std::hash::BuildHasherDefault].
+pub struct BuildHasherDefault {
+    hasher: hash::BuildHasherDefault<DefaultHasher>,
+}
+
+impl From<BuildHasherDefault> for Vec<u8> {
+    fn from(_: BuildHasherDefault) -> Vec<u8> {
+        vec![]
+    }
+}
+
+impl From<Vec<u8>> for BuildHasherDefault {
+    fn from(_: Vec<u8>) -> BuildHasherDefault {
+        BuildHasherDefault {
+            hasher: hash::BuildHasherDefault::<DefaultHasher>::default(),
+        }
+    }
+}
+
+impl BuildHasher for BuildHasherDefault {
+    type Hasher = DefaultHasher;
+
+    fn build_hasher(&self) -> Self::Hasher {
+        self.hasher.build_hasher()
+    }
+}
+
+impl Default for BuildHasherDefault {
+    fn default() -> Self {
+        BuildHasherDefault {
+            hasher: hash::BuildHasherDefault::<DefaultHasher>::default(),
+        }
+    }
+}
+
 /// Type Xor8 is probabilistic data-structure to test membership of an
 /// element in a set.
 ///
@@ -80,7 +117,7 @@ struct KeyIndex {
 /// When not supplied, `BuildHasherDefault` is used as the default
 /// hash-builder. When applications want to serialize and de-serialize
 /// Xor8, avoid using `RandomState`.
-pub struct Xor8<H = BuildHasherDefault<DefaultHasher>>
+pub struct Xor8<H = BuildHasherDefault>
 where
     H: BuildHasher,
 {
@@ -119,7 +156,7 @@ where
 
 impl<H> IntoCbor for Xor8<H>
 where
-    H: BuildHasher,
+    H: BuildHasher + Into<Vec<u8>>,
 {
     fn into_cbor(self) -> mkit::Result<Cbor> {
         CborXor8::from(self).into_cbor()
@@ -128,7 +165,7 @@ where
 
 impl<H> FromCbor for Xor8<H>
 where
-    H: Default + BuildHasher,
+    H: Default + BuildHasher + From<Vec<u8>>,
 {
     fn from_cbor(val: Cbor) -> mkit::Result<Self> {
         Ok(CborXor8::from_cbor(val)?.into())
@@ -139,7 +176,7 @@ impl<H> Xor8<H>
 where
     H: Default + BuildHasher,
 {
-    /// New Xor8 instance initialized with `DefaulHasher`.
+    /// New Xor8 instance initialized with `DefaultHasher`.
     pub fn new() -> Self {
         Default::default()
     }
@@ -390,7 +427,7 @@ where
     }
 
     /// Contains tell you whether the key is likely part of the set.
-    pub fn contains<T: Hash>(&self, key: T) -> bool {
+    pub fn contains<T: ?Sized + Hash>(&self, key: &T) -> bool {
         let hashed_key = {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
@@ -512,50 +549,9 @@ where
     }
 }
 
-// Intermediate type to serialize and de-serialized Xor8 into bytes using
-// `mkit` macros.
-#[derive(Cborize)]
-struct CborXor8 {
-    seed: u64,
-    block_length: u32,
-    finger_prints: Vec<u8>,
-}
-
-impl CborXor8 {
-    const ID: &'static str = "xor8/0.0.1";
-}
-
-impl<H> From<Xor8<H>> for CborXor8
-where
-    H: BuildHasher,
-{
-    fn from(val: Xor8<H>) -> Self {
-        CborXor8 {
-            seed: val.seed,
-            block_length: val.block_length,
-            finger_prints: val.finger_prints,
-        }
-    }
-}
-
-impl<H> From<CborXor8> for Xor8<H>
-where
-    H: Default + BuildHasher,
-{
-    fn from(val: CborXor8) -> Self {
-        Xor8 {
-            keys: None,
-            hash_builder: H::default(),
-            seed: val.seed,
-            block_length: val.block_length,
-            finger_prints: val.finger_prints,
-        }
-    }
-}
-
 impl<H> Bloom for Xor8<H>
 where
-    H: Default + BuildHasher,
+    H: Default + BuildHasher + From<Vec<u8>> + Into<Vec<u8>>,
 {
     type Err = Error;
 
@@ -612,6 +608,49 @@ where
     }
 }
 
+// Intermediate type to serialize and de-serialized Xor8 into bytes using
+// `mkit` macros.
+#[derive(Cborize)]
+struct CborXor8 {
+    hash_builder: Vec<u8>,
+    seed: u64,
+    block_length: u32,
+    finger_prints: Vec<u8>,
+}
+
+impl CborXor8 {
+    const ID: &'static str = "xor8/0.0.1";
+}
+
+impl<H> From<Xor8<H>> for CborXor8
+where
+    H: BuildHasher + Into<Vec<u8>>,
+{
+    fn from(val: Xor8<H>) -> Self {
+        CborXor8 {
+            hash_builder: val.hash_builder.into(),
+            seed: val.seed,
+            block_length: val.block_length,
+            finger_prints: val.finger_prints,
+        }
+    }
+}
+
+impl<H> From<CborXor8> for Xor8<H>
+where
+    H: Default + BuildHasher + From<Vec<u8>>,
+{
+    fn from(val: CborXor8) -> Self {
+        Xor8 {
+            keys: None,
+            hash_builder: val.hash_builder.into(),
+            seed: val.seed,
+            block_length: val.block_length,
+            finger_prints: val.finger_prints,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -620,7 +659,7 @@ mod tests {
     #[test]
     fn test_basic1() {
         let seed: u128 = random();
-        println!("seed {}", seed);
+        println!("test_basic1 seed {}", seed);
         let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
         let testsize = 1_000_000;
@@ -637,29 +676,29 @@ mod tests {
             filter
         };
 
-        for key in keys.into_iter() {
+        for key in keys.iter() {
             assert!(filter.contains(key), "key {} not present", key);
         }
 
         let (falsesize, mut matches) = (10_000_000, 0_f64);
         let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
-        println!("bits per entry {} bits", bpv);
+        println!("test_basic1 bits per entry {} bits", bpv);
         assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
 
         for _ in 0..falsesize {
-            if filter.contains(rng.gen::<u64>()) {
+            if filter.contains(&rng.gen::<u64>()) {
                 matches += 1_f64;
             }
         }
         let fpp = matches * 100.0 / (falsesize as f64);
-        println!("false positive rate {}%", fpp);
+        println!("test_basic1 false positive rate {}%", fpp);
         assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
     }
 
     #[test]
     fn test_basic2() {
         let seed: u128 = random();
-        println!("seed {}", seed);
+        println!("test_basic2 seed {}", seed);
         let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
         let testsize = 1_000_000;
@@ -682,23 +721,23 @@ mod tests {
 
         let (falsesize, mut matches) = (10_000_000, 0_f64);
         let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
-        println!("bits per entry {} bits", bpv);
+        println!("test_basic2 bits per entry {} bits", bpv);
         assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
 
         for _ in 0..falsesize {
-            if filter.contains(rng.gen::<u64>()) {
+            if filter.contains(&rng.gen::<u64>()) {
                 matches += 1_f64;
             }
         }
         let fpp = matches * 100.0 / (falsesize as f64);
-        println!("false positive rate {}%", fpp);
+        println!("test_basic2 false positive rate {}%", fpp);
         assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
     }
 
     #[test]
     fn test_basic3() {
         let mut seed: u64 = random();
-        println!("seed {}", seed);
+        println!("test_basic3 seed {}", seed);
 
         let testsize = 100_000;
         let mut keys: Vec<u64> = Vec::with_capacity(testsize);
@@ -714,23 +753,169 @@ mod tests {
             filter
         };
 
-        for key in keys.into_iter() {
+        for key in keys.iter() {
             assert!(filter.contains(key), "key {} not present", key);
         }
 
         let (falsesize, mut matches) = (10_000_000, 0_f64);
         let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
-        println!("bits per entry {} bits", bpv);
+        println!("test_basic3 bits per entry {} bits", bpv);
         assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
 
         for _ in 0..falsesize {
             let v = splitmix64(&mut seed);
-            if filter.contains(v) {
+            if filter.contains(&v) {
                 matches += 1_f64;
             }
         }
         let fpp = matches * 100.0 / (falsesize as f64);
-        println!("false positive rate {}%", fpp);
+        println!("test_basic3 false positive rate {}%", fpp);
         assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
+    }
+
+    #[test]
+    fn test_basic4() {
+        let seed: u128 = random();
+        println!("test_basic4 seed {}", seed);
+        let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+
+        let testsize = 1_000_000;
+        let mut keys: Vec<u64> = Vec::with_capacity(testsize);
+        keys.resize(testsize, Default::default());
+        for key in keys.iter_mut() {
+            *key = rng.gen();
+        }
+
+        let filter = {
+            let mut filter = Xor8::<BuildHasherDefault>::new();
+            filter.populate(&keys);
+            filter.build();
+            filter
+        };
+
+        for key in keys.iter() {
+            assert!(filter.contains(key), "key {} not present", key);
+        }
+
+        let (falsesize, mut matches) = (10_000_000, 0_f64);
+        let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
+        println!("test_basic4 bits per entry {} bits", bpv);
+        assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
+
+        for _ in 0..falsesize {
+            if filter.contains(&rng.gen::<u64>()) {
+                matches += 1_f64;
+            }
+        }
+        let fpp = matches * 100.0 / (falsesize as f64);
+        println!("test_basic4 false positive rate {}%", fpp);
+        assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
+    }
+
+    #[test]
+    fn test_basic5() {
+        let seed: u128 = random();
+        println!("test_basic5 seed {}", seed);
+        let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+
+        let testsize = 1_000_000;
+        let mut keys: Vec<u64> = Vec::with_capacity(testsize);
+        keys.resize(testsize, Default::default());
+        for key in keys.iter_mut() {
+            *key = rng.gen();
+        }
+
+        let filter = {
+            let mut filter = Xor8::<BuildHasherDefault>::new();
+            filter.populate_keys(&keys);
+            filter.build();
+            filter
+        };
+
+        for key in keys.into_iter() {
+            assert!(filter.contains_key(key), "key {} not present", key);
+        }
+
+        let (falsesize, mut matches) = (10_000_000, 0_f64);
+        let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
+        println!("test_basic5 bits per entry {} bits", bpv);
+        assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
+
+        for _ in 0..falsesize {
+            if filter.contains(&rng.gen::<u64>()) {
+                matches += 1_f64;
+            }
+        }
+        let fpp = matches * 100.0 / (falsesize as f64);
+        println!("test_basic5 false positive rate {}%", fpp);
+        assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
+    }
+
+    #[test]
+    fn test_basic6() {
+        let mut seed: u64 = random();
+        println!("test_basic6 seed {}", seed);
+
+        let testsize = 100_000;
+        let mut keys: Vec<u64> = Vec::with_capacity(testsize);
+        keys.resize(testsize, Default::default());
+        for key in keys.iter_mut() {
+            *key = splitmix64(&mut seed);
+        }
+
+        let filter = {
+            let mut filter = Xor8::<BuildHasherDefault>::new();
+            keys.iter().for_each(|key| filter.insert(key));
+            filter.build();
+            filter
+        };
+
+        for key in keys.iter() {
+            assert!(filter.contains(key), "key {} not present", key);
+        }
+
+        let (falsesize, mut matches) = (10_000_000, 0_f64);
+        let bpv = (filter.finger_prints.len() as f64) * 8.0 / (testsize as f64);
+        println!("test_basic6 bits per entry {} bits", bpv);
+        assert!(bpv < 10.0, "bpv({}) >= 10.0", bpv);
+
+        for _ in 0..falsesize {
+            let v = splitmix64(&mut seed);
+            if filter.contains(&v) {
+                matches += 1_f64;
+            }
+        }
+        let fpp = matches * 100.0 / (falsesize as f64);
+        println!("test_basic6 false positive rate {}%", fpp);
+        assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
+    }
+
+    #[test]
+    fn test_basic7() {
+        let seed: u128 = random();
+        println!("test_basic7 seed {}", seed);
+        let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+
+        let keys: Vec<u64> = (0..100_000).map(|_| rng.gen::<u64>()).collect();
+
+        let filter = {
+            let mut filter = Xor8::<BuildHasherDefault>::new();
+            filter.populate(&keys);
+            filter.build();
+            filter
+        };
+
+        for key in keys.iter() {
+            assert!(filter.contains(key), "key {} not present", key);
+        }
+
+        let filter = {
+            let bytes = <Xor8 as Bloom>::to_bytes(&filter).unwrap();
+            <Xor8 as Bloom>::from_bytes(&bytes).unwrap().0
+        };
+
+        for key in keys.iter() {
+            assert!(filter.contains(key), "key {} not present", key);
+        }
     }
 }
