@@ -5,10 +5,10 @@
 //! written in golang.
 
 use std::{
-    collections::hash_map::RandomState,
+    collections::hash_map::{DefaultHasher, RandomState},
     convert::TryInto,
     ffi, fs,
-    hash::{BuildHasher, Hash, Hasher},
+    hash::{BuildHasher, BuildHasherDefault, Hash, Hasher},
     io::{self, Error, ErrorKind, Read, Write},
 };
 
@@ -75,7 +75,12 @@ struct KeyIndex {
 ///
 /// This implementation has a false positive rate of about 0.3%
 /// and a memory usage of less than 9 bits per entry for sizeable sets.
-pub struct Xor8<H = RandomState>
+/// Xor8 is parametrized over type `H` which is expected to implement
+/// [BuildHasher] trait, like [RandomState] and [BuildHasherDefault].
+/// When not supplied, `BuildHasherDefault` is used as the default
+/// hash-builder. When applications want to serialize and de-serialize
+/// Xor8, avoid using `RandomState`.
+pub struct Xor8<H = BuildHasherDefault<DefaultHasher>>
 where
     H: BuildHasher,
 {
@@ -130,7 +135,10 @@ where
     }
 }
 
-impl Xor8<RandomState> {
+impl<H> Xor8<H>
+where
+    H: Default + BuildHasher,
+{
     /// New Xor8 instance initialized with `DefaulHasher`.
     pub fn new() -> Self {
         Default::default()
@@ -156,9 +164,12 @@ where
     /// be generated using the default-hasher or via hasher supplied via
     /// [Xor8::with_hasher] method.
     pub fn insert<T: ?Sized + Hash>(&mut self, key: &T) {
-        let mut hasher = self.hash_builder.build_hasher();
-        key.hash(&mut hasher);
-        self.keys.as_mut().unwrap().push(hasher.finish());
+        let hashed_key = {
+            let mut hasher = self.hash_builder.build_hasher();
+            key.hash(&mut hasher);
+            hasher.finish()
+        };
+        self.keys.as_mut().unwrap().push(hashed_key);
     }
 
     /// Populate 64-bit digests for collection of keys. Digest for the key
@@ -380,12 +391,12 @@ where
 
     /// Contains tell you whether the key is likely part of the set.
     pub fn contains<T: Hash>(&self, key: T) -> bool {
-        let key = {
+        let hashed_key = {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
             hasher.finish()
         };
-        self.contains_key(key)
+        self.contains_key(hashed_key)
     }
 
     pub fn contains_key(&self, key: u64) -> bool {
@@ -556,6 +567,11 @@ where
         self.populate_keys(&[u64::from(digest)])
     }
 
+    fn build(&mut self) {
+        let keys = self.keys.take().unwrap();
+        self.build_keys(&keys);
+    }
+
     fn contains<Q: ?Sized + Hash>(&self, element: &Q) -> bool {
         self.contains(element)
     }
@@ -583,7 +599,7 @@ where
     fn from_bytes(mut buf: &[u8]) -> Result<(Self, usize), Self::Err> {
         let (val, n) = match Cbor::decode(&mut buf) {
             Ok(val) => val,
-            Err(err) => Err(Error::new(ErrorKind::InvalidData, err))?,
+            Err(err) => return Err(Error::new(ErrorKind::InvalidData, err)),
         };
         match Xor8::<H>::from_cbor(val) {
             Ok(val) => Ok((val, n)),
