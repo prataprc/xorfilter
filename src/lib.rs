@@ -14,13 +14,6 @@ use std::{
     io::{self, Error, ErrorKind, Read, Write},
 };
 
-use mkit::{
-    self,
-    cbor::{Cbor, FromCbor, IntoCbor},
-    db::Bloom,
-    Cborize,
-};
-
 fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
     h = h.wrapping_mul(0xff51_afd7_ed55_8ccd);
@@ -73,6 +66,7 @@ struct KeyIndex {
 }
 
 /// Wrapper type for [std::hash::BuildHasherDefault].
+#[derive(Clone)]
 pub struct BuildHasherDefault {
     hasher: hash::BuildHasherDefault<DefaultHasher>,
 }
@@ -122,10 +116,10 @@ where
     H: BuildHasher,
 {
     keys: Option<Vec<u64>>,
-    hash_builder: H,
-    seed: u64,
-    block_length: u32,
-    finger_prints: Vec<u8>,
+    pub hash_builder: H,
+    pub seed: u64,
+    pub block_length: u32,
+    pub finger_prints: Vec<u8>,
 }
 
 impl<H> PartialEq for Xor8<H>
@@ -151,24 +145,6 @@ where
             block_length: u32::default(),
             finger_prints: Vec::default(),
         }
-    }
-}
-
-impl<H> IntoCbor for Xor8<H>
-where
-    H: BuildHasher + Into<Vec<u8>>,
-{
-    fn into_cbor(self) -> mkit::Result<Cbor> {
-        CborXor8::from(self).into_cbor()
-    }
-}
-
-impl<H> FromCbor for Xor8<H>
-where
-    H: Default + BuildHasher + From<Vec<u8>>,
-{
-    fn from_cbor(val: Cbor) -> mkit::Result<Self> {
-        Ok(CborXor8::from_cbor(val)?.into())
     }
 }
 
@@ -549,108 +525,6 @@ where
     }
 }
 
-impl<H> Bloom for Xor8<H>
-where
-    H: Default + BuildHasher + From<Vec<u8>> + Into<Vec<u8>>,
-{
-    type Err = Error;
-
-    fn add_key<Q: ?Sized + Hash>(&mut self, key: &Q) {
-        self.insert(key)
-    }
-
-    fn add_digest32(&mut self, digest: u32) {
-        self.populate_keys(&[u64::from(digest)])
-    }
-
-    fn build(&mut self) {
-        let keys = self.keys.take().unwrap();
-        self.build_keys(&keys);
-    }
-
-    fn contains<Q: ?Sized + Hash>(&self, element: &Q) -> bool {
-        self.contains(element)
-    }
-
-    fn to_bytes(&self) -> Result<Vec<u8>, Self::Err> {
-        let val = Xor8 {
-            keys: None,
-            hash_builder: H::default(),
-            seed: self.seed,
-            block_length: self.block_length,
-            finger_prints: self.finger_prints.clone(),
-        };
-
-        let mut buf: Vec<u8> = vec![];
-
-        match val.into_cbor() {
-            Ok(val) => match val.encode(&mut buf) {
-                Ok(_) => Ok(buf),
-                Err(err) => Err(Error::new(ErrorKind::InvalidData, err)),
-            },
-            Err(err) => Err(Error::new(ErrorKind::InvalidData, err)),
-        }
-    }
-
-    fn from_bytes(mut buf: &[u8]) -> Result<(Self, usize), Self::Err> {
-        let (val, n) = match Cbor::decode(&mut buf) {
-            Ok(val) => val,
-            Err(err) => return Err(Error::new(ErrorKind::InvalidData, err)),
-        };
-        match Xor8::<H>::from_cbor(val) {
-            Ok(val) => Ok((val, n)),
-            Err(err) => Err(Error::new(ErrorKind::InvalidData, err)),
-        }
-    }
-
-    fn or(&self, _other: &Self) -> Result<Self, Self::Err> {
-        unimplemented!()
-    }
-}
-
-// Intermediate type to serialize and de-serialized Xor8 into bytes using
-// `mkit` macros.
-#[derive(Cborize)]
-struct CborXor8 {
-    hash_builder: Vec<u8>,
-    seed: u64,
-    block_length: u32,
-    finger_prints: Vec<u8>,
-}
-
-impl CborXor8 {
-    const ID: &'static str = "xor8/0.0.1";
-}
-
-impl<H> From<Xor8<H>> for CborXor8
-where
-    H: BuildHasher + Into<Vec<u8>>,
-{
-    fn from(val: Xor8<H>) -> Self {
-        CborXor8 {
-            hash_builder: val.hash_builder.into(),
-            seed: val.seed,
-            block_length: val.block_length,
-            finger_prints: val.finger_prints,
-        }
-    }
-}
-
-impl<H> From<CborXor8> for Xor8<H>
-where
-    H: Default + BuildHasher + From<Vec<u8>>,
-{
-    fn from(val: CborXor8) -> Self {
-        Xor8 {
-            keys: None,
-            hash_builder: val.hash_builder.into(),
-            seed: val.seed,
-            block_length: val.block_length,
-            finger_prints: val.finger_prints,
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -888,34 +762,5 @@ mod tests {
         let fpp = matches * 100.0 / (falsesize as f64);
         println!("test_basic6 false positive rate {}%", fpp);
         assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
-    }
-
-    #[test]
-    fn test_basic7() {
-        let seed: u128 = random();
-        println!("test_basic7 seed {}", seed);
-        let mut rng = SmallRng::from_seed(seed.to_le_bytes());
-
-        let keys: Vec<u64> = (0..100_000).map(|_| rng.gen::<u64>()).collect();
-
-        let filter = {
-            let mut filter = Xor8::<BuildHasherDefault>::new();
-            filter.populate(&keys);
-            filter.build();
-            filter
-        };
-
-        for key in keys.iter() {
-            assert!(filter.contains(key), "key {} not present", key);
-        }
-
-        let filter = {
-            let bytes = <Xor8 as Bloom>::to_bytes(&filter).unwrap();
-            <Xor8 as Bloom>::from_bytes(&bytes).unwrap().0
-        };
-
-        for key in keys.iter() {
-            assert!(filter.contains(key), "key {} not present", key);
-        }
     }
 }

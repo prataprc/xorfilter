@@ -9,6 +9,6 @@ cargo +nightly doc
 cargo +nightly clippy --all-targets --all-features
 
 cargo +nightly test;
-# cargo +stable test
+cargo +stable test
 
 cargo +nightly bench;
