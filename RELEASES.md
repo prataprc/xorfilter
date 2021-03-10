@@ -1,3 +1,14 @@
+0.3.0
+=====
+
+* Xor8 to bytes and vice-versa conversion.
+* implement Default trait.
+* implement mkit's IntoCbor and FromCbor traits for Cbor serialization.
+* improve test cases.
+* use criterion for benchmark.
+* clippy fixes.
+* ci scripts.
+
 0.2.0
 =====
 
