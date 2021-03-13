@@ -1,16 +1,21 @@
 #! /usr/bin/env bash
 
-cargo +nightly build
-cargo +stable build
+export RUST_BACKTRACE=full
+export RUSTFLAGS=-g
+exec > check.out
+exec 2>&1
 
-cargo +nightly doc
-cargo +stable doc
+set -o xtrace
 
-cargo +nightly test;
-cargo +stable test
+exec_prg() {
 
-cargo +nightly bench;
-cargo +stable test
+    for i in {0..5};
+    do
+        cargo +nightly test --release -- --nocapture || exit $?;
+        cargo +nightly test -- --nocapture || exit $?;
+        cargo +stable test --release -- --nocapture || exit $?;
+        cargo +stable test -- --nocapture || exit $?;
+    done
+}
 
-cargo +nightly clippy --all-targets --all-features
-
+exec_prg
