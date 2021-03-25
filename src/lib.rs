@@ -106,11 +106,23 @@ impl Default for BuildHasherDefault {
 ///
 /// This implementation has a false positive rate of about 0.3%
 /// and a memory usage of less than 9 bits per entry for sizeable sets.
+///
 /// Xor8 is parametrized over type `H` which is expected to implement
 /// [BuildHasher] trait, like [RandomState] and [BuildHasherDefault].
 /// When not supplied, `BuildHasherDefault` is used as the default
-/// hash-builder. When applications want to serialize and de-serialize
-/// Xor8, avoid using `RandomState`.
+/// hash-builder.
+///
+/// If `RandomState` is used as BuildHasher, `std` has got this to say
+/// > A particular instance RandomState will create the same instances
+/// > of Hasher, but the hashers created by two different RandomState
+/// > instances are unlikely to produce the same result for the same values.
+///
+/// If `DefaultHasher` is used as BuildHasher, `std` has got this to say,
+/// > The internal algorithm is not specified, and so it and its hashes
+/// > should not be relied upon over releases.
+///
+/// The default type for parameter `H` might change when we get a reliable
+/// and commonly used BuildHasher type is available.
 pub struct Xor8<H = BuildHasherDefault>
 where
     H: BuildHasher,
