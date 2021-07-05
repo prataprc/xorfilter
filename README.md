@@ -1,6 +1,7 @@
 ![](https://github.com/bnclabs/xorfilter/workflows/simple-build-test/badge.svg)
 
-# Rust library implementing xor filters
+Rust library implementing xor filters
+-------------------------------------
 
 Implementation of [Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters](https://arxiv.org/abs/1912.08258)
 in [rust-lang](https://www.rust-lang.org/), Journal of Experimental Algorithmics (to appear).
@@ -41,12 +42,14 @@ for key in 0..lookup {
 }
 ```
 
-### Open issues
+Open issues
+-----------
 
 * [ ] Serialize / Deserialize Xor8 type.
 * [ ] Incrementally adding keys to a pre-built Xor8 instance.
 
-### Benchmarks
+Benchmarks
+----------
 
 Benchmark number for original golang implementation.
 
@@ -78,7 +81,24 @@ bits per entry 9.864 bits
 false positive rate 0.3866%
 ```
 
-### Resources
+Useful links
+------------
 
 * [Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters](https://arxiv.org/abs/1912.08258)
 * [Blog post by Daniel Lemire](https://lemire.me/blog/2019/12/19/xor-filters-faster-and-smaller-than-bloom-filters/)
+
+
+Contribution
+------------
+
+* Simple workflow. Fork - Modify - Pull request.
+* Before creating a PR,
+  * Run `make build` to confirm all versions of build is passing with
+    0 warnings and 0 errors.
+  * Run `check.sh` with 0 warnings, 0 errors and all testcases passing.
+  * Run `perf.sh` with 0 warnings, 0 errors and all testcases passing.
+  * [Install][spellcheck] and run `cargo spellcheck` to remove common spelling mistakes.
+* [Developer certificate of origin][dco] is preferred.
+
+[dco]: https://developercertificate.org/
+[spellcheck]: https://github.com/drahnr/cargo-spellcheck
