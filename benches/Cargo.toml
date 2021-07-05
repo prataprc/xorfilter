@@ -1,0 +1,23 @@
+[package]
+name = "xor-benches"
+version = "0.1.0"
+authors = ["Alex Mikhalev <alex@sci-blog.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+bench = false
+
+[[bench]]
+name = "filters"
+harness = false
+path = "src/filters.rs"
+
+[profile.bench]
+debug = true
+
+[dependencies]
+criterion = "0.3.3"
+xorfilter-rs = {version = "*",path = ".."}
+pdatastructs = "0.6.0"
