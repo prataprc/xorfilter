@@ -12,14 +12,17 @@ repository = "https://github.com/bnclabs/xorfilter"
 [lib]
 name = "xorfilter"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = ["benches"]
 
 [dependencies]
 
 [dev-dependencies]
-rand = "0.6.4"
-criterion = "0.3"
+rand = "0.8.4"
 
-[[bench]]
-name = "xor_bench"
-harness = false
+
+[profile.release]
+debug = true
+
+[profile.bench]
+debug = true
