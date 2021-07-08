@@ -3,3 +3,9 @@ target
 Cargo.lock
 .vimsession
 core
+test.out
+flamegraph.svg
+perf.out
+check.out
+perf.data
+perf.data.old

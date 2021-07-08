@@ -105,7 +105,7 @@ fn bench_contains_100000(c: &mut Criterion) {
     let mut n = 0;
     c.bench_function("bench_contains_100000", |b| {
         b.iter(|| {
-            filter.contains(keys[n % keys.len()]);
+            filter.contains(&keys[n % keys.len()]);
             n += 1;
         })
     });
