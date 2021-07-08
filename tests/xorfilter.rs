@@ -51,8 +51,8 @@ fn test_same_filter_bytes_encoding() {
     let filter = generate_filter();
 
     let buf = filter.to_bytes();
-    let filter_read =
-        Xor8::from_bytes(buf).unwrap_or_else(|err| panic!("Read from bytes failed {}", err));
+    let filter_read = Xor8::from_bytes(buf)
+        .unwrap_or_else(|err| panic!("Read from bytes failed {}", err));
     assert!(
         filter_read == filter,
         "Filter unequals after encode and decode"
