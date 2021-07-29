@@ -1,6 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
 use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
+
 use xorfilter::Xor8;
 
 use std::collections::hash_map::RandomState;

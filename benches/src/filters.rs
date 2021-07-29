@@ -1,6 +1,7 @@
 //Benchmark from https://github.com/crepererum/pdatastructs.rs
 
 use std::collections::HashSet;
+use std::collections::hash_map::RandomState;
 
 use criterion::{criterion_group, criterion_main, Bencher, Criterion, Fun, ParameterizedBenchmark};
 use pdatastructs::filters::bloomfilter::BloomFilter;
@@ -17,7 +18,7 @@ fn setup_bloomfilter() -> BloomFilter<u64> {
 }
 
 fn setup_xor8filter() -> Xor8Filter<RandomState> {
-    Xor8::<RandomState>::new()
+    Xor8Filter::<RandomState>::new()
 }
 
 fn setup_cuckoofilter() -> CuckooFilter<u64, ChaChaRng> {

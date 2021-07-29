@@ -18,6 +18,7 @@ path = "src/filters.rs"
 debug = true
 
 [dependencies]
-criterion = "0.3.3"
+criterion = "0.3.4"
 xorfilter-rs = {version = "*",path = ".."}
 pdatastructs = "0.6.0"
+iai = "0.1" 
