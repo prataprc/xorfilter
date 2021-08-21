@@ -480,18 +480,21 @@ where
 /// in github.
 impl<H> Xor8<H>
 where
-    H: BuildHasher,
+    H: Default + Clone + Into<Vec<u8>> + From<Vec<u8>> + BuildHasher,
 {
     /// File signature write on first 4 bytes of file.
     /// ^ stands for xor
     /// TL stands for filter
     /// 1 stands for version 1
+    /// 2 stands for version 2
     const SIGNATURE_V1: [u8; 4] = [b'^', b'T', b'L', 1];
+    const SIGNATURE_V2: [u8; 4] = [b'^', b'T', b'L', 2];
 
     /// METADATA_LENGTH is size that required to write size of all the
     /// metadata of the serialized filter.
-    // signature length + seed length + block-length + fingerprint length
-    const METADATA_LENGTH: usize = 4 + 8 + 4 + 4;
+    // signature length + seed length + block-length +
+    //      fingerprint length + hasher-builder length + fingerprint + hash-builder
+    const METADATA_LENGTH: usize = 4 + 8 + 4 + 4 + 4;
 
     /// Write to file in binary format
     /// TODO Add chechsum of finger_prints into file headers
@@ -516,15 +519,71 @@ where
     pub fn to_bytes(&self) -> Vec<u8> {
         let capacity = Self::METADATA_LENGTH + self.finger_prints.len();
         let mut buf: Vec<u8> = Vec::with_capacity(capacity);
-        buf.extend_from_slice(&Xor8::<H>::SIGNATURE_V1);
+        buf.extend_from_slice(&Xor8::<H>::SIGNATURE_V2);
         buf.extend_from_slice(&self.seed.to_be_bytes());
         buf.extend_from_slice(&self.block_length.to_be_bytes());
         buf.extend_from_slice(&(self.finger_prints.len() as u32).to_be_bytes());
+
+        let hb_binary: Vec<u8> = self.hash_builder.clone().into();
+        buf.extend_from_slice(&(hb_binary.len() as u32).to_be_bytes());
+
         buf.extend_from_slice(&self.finger_prints);
+        buf.extend_from_slice(&hb_binary);
         buf
     }
 
-    pub fn from_bytes(buf: Vec<u8>) -> io::Result<Self>
+    pub fn from_bytes(buf: Vec<u8>) -> io::Result<Self> {
+        let mut n = 0;
+
+        // validate the buf first.
+        if Self::METADATA_LENGTH > buf.len() {
+            return Err(Error::new(ErrorKind::InvalidData, "invalid byte slice"));
+        }
+
+        // check the signature
+        if buf[n..4] == Xor8::<H>::SIGNATURE_V1 {
+            return Self::from_bytes_v1(buf);
+        } else if buf[n..4] != Xor8::<H>::SIGNATURE_V2 {
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "File signature incorrect",
+            ));
+        }
+
+        n += 4;
+        // fetch the seed
+        let seed = u64::from_be_bytes(buf[n..n + 8].try_into().unwrap());
+        n += 8;
+        // fetch block_length
+        let block_length = u32::from_be_bytes(buf[n..n + 4].try_into().unwrap());
+        n += 4;
+        // fetch fingerprint length
+        let fp_len = u32::from_be_bytes(buf[n..n + 4].try_into().unwrap()) as usize;
+        n += 4;
+        // fetch hash-serizalized length
+        let hb_len = u32::from_be_bytes(buf[n..n + 4].try_into().unwrap()) as usize;
+        n += 4;
+
+        if buf[n..].len() < (fp_len + hb_len) {
+            return Err(Error::new(ErrorKind::InvalidData, "invalid byte slice"));
+        }
+
+        // fetch the finger print
+        let finger_prints = buf[n..n + fp_len].to_vec();
+        n += fp_len;
+        // fetch the hash_builder
+        let hash_builder: H = buf[n..n + hb_len].to_vec().into();
+
+        Ok(Xor8 {
+            keys: Default::default(),
+            hash_builder,
+            seed,
+            block_length,
+            finger_prints,
+        })
+    }
+
+    fn from_bytes_v1(buf: Vec<u8>) -> io::Result<Self>
     where
         H: Default,
     {
