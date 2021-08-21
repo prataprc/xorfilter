@@ -65,7 +65,8 @@ struct KeyIndex {
     index: u32,
 }
 
-/// Wrapper type for [std::hash::BuildHasherDefault].
+/// Wrapper type for [std::hash::BuildHasherDefault], that uses
+/// [std::collections::hash_map::DefaultHasher] as the hasher.
 #[derive(Clone)]
 pub struct BuildHasherDefault {
     hasher: hash::BuildHasherDefault<DefaultHasher>,
@@ -101,28 +102,26 @@ impl Default for BuildHasherDefault {
     }
 }
 
-/// Type Xor8 is probabilistic data-structure to test membership of an
-/// element in a set.
+/// Type Xor8 is probabilistic data-structure to test membership of an element in a set.
 ///
-/// This implementation has a false positive rate of about 0.3%
-/// and a memory usage of less than 9 bits per entry for sizeable sets.
+/// This implementation has a false positive rate of about 0.3% and a memory usage of
+/// less than 9 bits per entry for sizeable sets.
 ///
-/// Xor8 is parametrized over type `H` which is expected to implement
-/// [BuildHasher] trait, like [RandomState] and [BuildHasherDefault].
-/// When not supplied, `BuildHasherDefault` is used as the default
-/// hash-builder.
+/// Xor8 is parametrized over type `H` which is expected to implement [BuildHasher]
+/// trait, like types [RandomState] and [BuildHasherDefault]. When not supplied,
+/// [BuildHasherDefault] is used as the default hash-builder.
 ///
 /// If `RandomState` is used as BuildHasher, `std` has got this to say
 /// > A particular instance RandomState will create the same instances
 /// > of Hasher, but the hashers created by two different RandomState
 /// > instances are unlikely to produce the same result for the same values.
 ///
-/// If `DefaultHasher` is used as BuildHasher, `std` has got this to say,
-/// > The internal algorithm is not specified, and so it and its hashes
+/// If [DefaultHasher] is used as BuildHasher, `std` has got this to say,
+/// > The internal algorithm is not specified, and so its hashes
 /// > should not be relied upon over releases.
 ///
-/// The default type for parameter `H` might change when we get a reliable
-/// and commonly used BuildHasher type is available.
+/// The default type for parameter `H` might change when we get a reliable and commonly
+/// used BuildHasher type is available.
 pub struct Xor8<H = BuildHasherDefault>
 where
     H: BuildHasher,
@@ -164,16 +163,11 @@ impl<H> Xor8<H>
 where
     H: Default + BuildHasher,
 {
-    /// New Xor8 instance initialized with `DefaultHasher`.
+    /// New Xor8 instance initialized with [DefaultHasher].
     pub fn new() -> Self {
         Default::default()
     }
-}
 
-impl<H> Xor8<H>
-where
-    H: BuildHasher,
-{
     /// New Xor8 instance initialized with supplied `hasher`.
     pub fn with_hasher(hash_builder: H) -> Self {
         Xor8 {
@@ -184,10 +178,14 @@ where
             finger_prints: Default::default(),
         }
     }
+}
 
-    /// Insert 64-bit digest of a single key. Digest for the key shall
-    /// be generated using the default-hasher or via hasher supplied via
-    /// [Xor8::with_hasher] method.
+impl<H> Xor8<H>
+where
+    H: BuildHasher,
+{
+    /// Insert 64-bit digest of a single key. Digest for the key shall be generated
+    /// using the default-hasher or via hasher supplied via [Xor8::with_hasher] method.
     pub fn insert<T: ?Sized + Hash>(&mut self, key: &T) {
         let hashed_key = {
             let mut hasher = self.hash_builder.build_hasher();
@@ -197,8 +195,8 @@ where
         self.keys.as_mut().unwrap().push(hashed_key);
     }
 
-    /// Populate 64-bit digests for collection of keys. Digest for the key
-    /// shall be generated using the default-hasher or via hasher supplied
+    /// Populate with 64-bit digests for a collection of keys of type `T`. Digest for
+    /// the key shall be generated using the default-hasher or via hasher supplied
     /// via [Xor8::with_hasher] method.
     pub fn populate<T: Hash>(&mut self, keys: &[T]) {
         keys.iter().for_each(|key| {
@@ -208,21 +206,26 @@ where
         })
     }
 
-    /// Populate pre-compute 64-bit digests for keys.
+    /// Populate with pre-compute collection of 64-bit digests.
     pub fn populate_keys(&mut self, keys: &[u64]) {
         self.keys.as_mut().unwrap().extend_from_slice(keys)
     }
 
-    /// Build bitmap for keys that are insert using [Xor8::insert] or
-    /// [Xor8::populate] method.
+    /// Build bitmap for keys that where previously inserted using [Xor8::insert],
+    /// [Xor8::populate] and [Xor8::populate_keys] method.
     pub fn build(&mut self) {
         let keys = self.keys.take().unwrap();
         self.build_keys(&keys);
     }
+}
 
-    /// Build a bitmap for pre-computed 64-bit digests for keys. If any
-    /// keys where inserted using [Xor8::insert], [Xor8::populate],
-    /// [Xor8::populate_keys] method shall be ignored.
+impl<H> Xor8<H>
+where
+    H: BuildHasher,
+{
+    /// Build a bitmap for pre-computed 64-bit digests for keys. If keys where previously
+    /// inserted using [Xor8::insert] or [Xor8::populate] or [Xor8::populate_keys]
+    /// methods, they shall be ignored.
     pub fn build_keys(&mut self, keys: &[u64]) {
         let (size, mut rngcounter) = (keys.len(), 1_u64);
         let capacity = {
@@ -413,7 +416,12 @@ where
             self.finger_prints[ki.index as usize] = val;
         }
     }
+}
 
+impl<H> Xor8<H>
+where
+    H: BuildHasher,
+{
     /// Contains tell you whether the key is likely part of the set.
     pub fn contains<T: ?Sized + Hash>(&self, key: &T) -> bool {
         let hashed_key = {
@@ -435,7 +443,12 @@ where
         let h2 = (reduce(r2, self.block_length) + 2 * self.block_length) as usize;
         f == (self.finger_prints[h0] ^ self.finger_prints[h1] ^ self.finger_prints[h2])
     }
+}
 
+impl<H> Xor8<H>
+where
+    H: BuildHasher,
+{
     fn geth0h1h2(&self, k: u64) -> Hashes {
         let h = mixsplit(k, self.seed);
         Hashes {
@@ -462,6 +475,9 @@ where
     }
 }
 
+/// Implements serialization and de-serialization logic for Xor8. This is still work
+/// in progress, refer to issue: <https://github.com/bnclabs/xorfilter/issues/1>
+/// in github.
 impl<H> Xor8<H>
 where
     H: BuildHasher,
@@ -474,8 +490,7 @@ where
 
     /// METADATA_LENGTH is size that required to write size of all the
     /// metadata of the serialized filter.
-    // signature length + seed length + block-length +
-    //      fingerprint length + fingerprint size
+    // signature length + seed length + block-length + fingerprint length
     const METADATA_LENGTH: usize = 4 + 8 + 4 + 4;
 
     /// Write to file in binary format
