@@ -4,8 +4,10 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
+mod fuse8;
 mod hasher;
 mod xor8;
 
+pub use fuse8::Fuse8;
 pub use hasher::BuildHasherDefault;
 pub use xor8::Xor8;
