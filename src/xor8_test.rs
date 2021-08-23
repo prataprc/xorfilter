@@ -2,7 +2,7 @@ use super::*;
 use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
 
 #[test]
-fn test_basic1() {
+fn test_xor8_basic1() {
     let seed: u128 = random();
     println!("test_basic1 seed {}", seed);
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
@@ -41,7 +41,7 @@ fn test_basic1() {
 }
 
 #[test]
-fn test_basic2() {
+fn test_xor8_basic2() {
     let seed: u128 = random();
     println!("test_basic2 seed {}", seed);
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
@@ -80,7 +80,7 @@ fn test_basic2() {
 }
 
 #[test]
-fn test_basic3() {
+fn test_xor8_basic3() {
     let mut seed: u64 = random();
     println!("test_basic3 seed {}", seed);
 
@@ -119,7 +119,7 @@ fn test_basic3() {
 }
 
 #[test]
-fn test_basic4() {
+fn test_xor8_basic4() {
     let seed: u128 = random();
     println!("test_basic4 seed {}", seed);
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
@@ -158,7 +158,7 @@ fn test_basic4() {
 }
 
 #[test]
-fn test_basic5() {
+fn test_xor8_basic5() {
     let seed: u128 = random();
     println!("test_basic5 seed {}", seed);
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
@@ -197,7 +197,7 @@ fn test_basic5() {
 }
 
 #[test]
-fn test_basic6() {
+fn test_xor8_basic6() {
     let mut seed: u64 = random();
     println!("test_basic6 seed {}", seed);
 

@@ -32,3 +32,7 @@ criterion = "0.3"
 [[bench]]
 name = "xor_bench"
 harness = false
+
+[[bench]]
+name = "fuse8_bench"
+harness = false

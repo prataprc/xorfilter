@@ -5,7 +5,7 @@ use xorfilter::Xor8;
 
 use std::collections::hash_map::RandomState;
 
-fn bench_populate_keys_100000(c: &mut Criterion) {
+fn bench_xor8_populate_keys_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -25,7 +25,7 @@ fn bench_populate_keys_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_build_keys_100000(c: &mut Criterion) {
+fn bench_xor8_build_keys_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -44,7 +44,7 @@ fn bench_build_keys_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_populate_100000(c: &mut Criterion) {
+fn bench_xor8_populate_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -64,7 +64,7 @@ fn bench_populate_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_insert_100000(c: &mut Criterion) {
+fn bench_xor8_insert_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -84,7 +84,7 @@ fn bench_insert_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_contains_100000(c: &mut Criterion) {
+fn bench_xor8_contains_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -111,7 +111,7 @@ fn bench_contains_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_contains_key_100000(c: &mut Criterion) {
+fn bench_xor8_contains_key_100000(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
@@ -140,12 +140,12 @@ fn bench_contains_key_100000(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    bench_populate_keys_100000,
-    bench_build_keys_100000,
-    bench_populate_100000,
-    bench_insert_100000,
-    bench_contains_100000,
-    bench_contains_key_100000
+    bench_xor8_populate_keys_100000,
+    bench_xor8_build_keys_100000,
+    bench_xor8_populate_100000,
+    bench_xor8_insert_100000,
+    bench_xor8_contains_100000,
+    bench_xor8_contains_key_100000
 );
 
 criterion_main!(benches);

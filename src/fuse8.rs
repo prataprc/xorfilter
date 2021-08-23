@@ -25,16 +25,16 @@ macro_rules! alloc_locals {
 #[inline]
 fn binary_fuse_murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
-    h *= 0xff51afd7ed558ccd_u64;
+    h = h.wrapping_mul(0xff51afd7ed558ccd_u64);
     h ^= h >> 33;
-    h *= 0xc4ceb9fe1a85ec53_u64;
+    h = h.wrapping_mul(0xc4ceb9fe1a85ec53_u64);
     h ^= h >> 33;
     h
 }
 
 #[inline]
 fn binary_fuse_mix_split(key: u64, seed: u64) -> u64 {
-    binary_fuse_murmur64(key + seed)
+    binary_fuse_murmur64(key.wrapping_add(seed))
 }
 
 #[allow(dead_code)]
@@ -57,10 +57,10 @@ fn binary_fuse8_fingerprint(hash: u64) -> u64 {
 
 // returns random number, modifies the seed
 fn binary_fuse_rng_splitmix64(seed: &mut u64) -> u64 {
-    *seed += 0x9E3779B97F4A7C15_u64;
+    *seed = seed.wrapping_add(0x9E3779B97F4A7C15_u64);
     let mut z = *seed;
-    z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9_u64;
-    z = (z ^ (z >> 27)) * 0x94D049BB133111EB_u64;
+    z = (z ^ (z >> 30)).wrapping_add(0xBF58476D1CE4E5B9_u64);
+    z = (z ^ (z >> 27)).wrapping_add(0x94D049BB133111EB_u64);
     z ^ (z >> 31)
 }
 
@@ -213,7 +213,7 @@ impl Fuse8 {
     // keys. The inner loop will run up to XOR_MAX_ITERATIONS times (default on
     // 100), it should never fail, except if there are duplicated keys. If it fails,
     // a return value of false is provided.
-    pub fn populate(&mut self, keys: Vec<u64>) -> bool {
+    pub fn populate(&mut self, keys: &[u64]) -> bool {
         let mut rng_counter = 0x726b2b9d438b9d4d_u64;
         let capacity = self.finger_prints.len();
         let size = keys.len();
@@ -376,7 +376,7 @@ impl Fuse8 {
 
     // Report if the key is in the set, with false positive rate.
     #[inline]
-    pub fn contain(&self, key: u64) -> bool {
+    pub fn contains(&self, key: u64) -> bool {
         let hash = binary_fuse_mix_split(key, self.seed);
         let mut f = binary_fuse8_fingerprint(hash) as u8;
         let BinaryHashes { h0, h1, h2 } = Self::binary_fuse8_hash_batch(hash, self);
@@ -386,3 +386,7 @@ impl Fuse8 {
         f == 0
     }
 }
+
+#[cfg(test)]
+#[path = "fuse8_test.rs"]
+mod fuse8_test;
