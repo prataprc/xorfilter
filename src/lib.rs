@@ -9,5 +9,5 @@ mod hasher;
 mod xor8;
 
 pub use fuse8::Fuse8;
-pub use hasher::BuildHasherDefault;
+pub use hasher::{BuildHasherDefault, NoHash};
 pub use xor8::Xor8;
