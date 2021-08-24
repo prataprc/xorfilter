@@ -202,7 +202,7 @@ impl Fuse8 {
 
     #[inline]
     pub fn size_of(&self) -> usize {
-        std::mem::size_of::<Self>() + self.finger_prints.capacity()
+        std::mem::size_of::<Self>() + self.finger_prints.len()
     }
 
     // construct the filter, returns true on success, false on failure.
