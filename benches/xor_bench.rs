@@ -5,18 +5,24 @@ use xorfilter::Xor8;
 
 use std::collections::hash_map::RandomState;
 
-fn bench_xor8_populate_keys_100000(c: &mut Criterion) {
-    let seed: u128 = random();
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+const SIZE: usize = 10_000_000;
 
-    let testsize = 100_000;
-    let mut keys: Vec<u64> = Vec::with_capacity(testsize);
-    keys.resize(testsize, Default::default());
+fn generate_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
+    let mut keys: Vec<u64> = Vec::with_capacity(size);
+    keys.resize(size, Default::default());
     for key in keys.iter_mut() {
         *key = rng.gen();
     }
+    keys
+}
 
-    c.bench_function("populate_keys_100000", |b| {
+fn bench_xor8_populate_keys(c: &mut Criterion) {
+    let seed: u128 = random();
+    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+
+    let keys = generate_keys(&mut rng, SIZE);
+
+    c.bench_function("xor8_populate_keys", |b| {
         b.iter(|| {
             let mut filter = Xor8::<RandomState>::new();
             filter.populate_keys(&keys);
@@ -25,18 +31,13 @@ fn bench_xor8_populate_keys_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_xor8_build_keys_100000(c: &mut Criterion) {
+fn bench_xor8_build_keys(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let testsize = 100_000;
-    let mut keys: Vec<u64> = Vec::with_capacity(testsize);
-    keys.resize(testsize, Default::default());
-    for key in keys.iter_mut() {
-        *key = rng.gen();
-    }
+    let keys = generate_keys(&mut rng, SIZE);
 
-    c.bench_function("bench_build_keys_100000", |b| {
+    c.bench_function("xor8_build_keys", |b| {
         b.iter(|| {
             let mut filter = Xor8::<RandomState>::new();
             filter.build_keys(&keys);
@@ -44,18 +45,13 @@ fn bench_xor8_build_keys_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_xor8_populate_100000(c: &mut Criterion) {
+fn bench_xor8_populate(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let testsize = 100_000;
-    let mut keys: Vec<u64> = Vec::with_capacity(testsize);
-    keys.resize(testsize, Default::default());
-    for key in keys.iter_mut() {
-        *key = rng.gen();
-    }
+    let keys = generate_keys(&mut rng, SIZE);
 
-    c.bench_function("bench_populate_100000", |b| {
+    c.bench_function("xor8_populate", |b| {
         b.iter(|| {
             let mut filter = Xor8::<RandomState>::new();
             filter.populate(&keys);
@@ -64,18 +60,13 @@ fn bench_xor8_populate_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_xor8_insert_100000(c: &mut Criterion) {
+fn bench_xor8_insert(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let testsize = 100_000;
-    let mut keys: Vec<u64> = Vec::with_capacity(testsize);
-    keys.resize(testsize, Default::default());
-    for key in keys.iter_mut() {
-        *key = rng.gen();
-    }
+    let keys = generate_keys(&mut rng, SIZE);
 
-    c.bench_function("bench_insert_100000", |b| {
+    c.bench_function("xor8_insert", |b| {
         b.iter(|| {
             let mut filter = Xor8::<RandomState>::new();
             keys.iter().for_each(|key| filter.insert(key));
@@ -84,16 +75,11 @@ fn bench_xor8_insert_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_xor8_contains_100000(c: &mut Criterion) {
+fn bench_xor8_contains(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let testsize = 100_000;
-    let mut keys: Vec<u64> = Vec::with_capacity(testsize);
-    keys.resize(testsize, Default::default());
-    for key in keys.iter_mut() {
-        *key = rng.gen();
-    }
+    let keys = generate_keys(&mut rng, SIZE);
 
     let filter = {
         let mut filter = Xor8::<RandomState>::new();
@@ -103,7 +89,7 @@ fn bench_xor8_contains_100000(c: &mut Criterion) {
     };
 
     let mut n = 0;
-    c.bench_function("bench_contains_100000", |b| {
+    c.bench_function("xor8_contains", |b| {
         b.iter(|| {
             filter.contains(&keys[n % keys.len()]);
             n += 1;
@@ -111,16 +97,11 @@ fn bench_xor8_contains_100000(c: &mut Criterion) {
     });
 }
 
-fn bench_xor8_contains_key_100000(c: &mut Criterion) {
+fn bench_xor8_contains_key(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let testsize = 100_000;
-    let mut keys: Vec<u64> = Vec::with_capacity(testsize);
-    keys.resize(testsize, Default::default());
-    for key in keys.iter_mut() {
-        *key = rng.gen();
-    }
+    let keys = generate_keys(&mut rng, SIZE);
 
     let filter = {
         let mut filter = Xor8::<RandomState>::new();
@@ -130,7 +111,7 @@ fn bench_xor8_contains_key_100000(c: &mut Criterion) {
     };
 
     let mut n = 0;
-    c.bench_function("bench_contains_key_100000", |b| {
+    c.bench_function("xor8_contains_key", |b| {
         b.iter(|| {
             filter.contains_key(keys[n % keys.len()]);
             n += 1;
@@ -140,12 +121,12 @@ fn bench_xor8_contains_key_100000(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    bench_xor8_populate_keys_100000,
-    bench_xor8_build_keys_100000,
-    bench_xor8_populate_100000,
-    bench_xor8_insert_100000,
-    bench_xor8_contains_100000,
-    bench_xor8_contains_key_100000
+    bench_xor8_populate_keys,
+    bench_xor8_build_keys,
+    bench_xor8_populate,
+    bench_xor8_insert,
+    bench_xor8_contains,
+    bench_xor8_contains_key,
 );
 
 criterion_main!(benches);

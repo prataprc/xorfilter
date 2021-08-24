@@ -7,7 +7,7 @@ fn test_fuse8() {
     println!("test_fuse8 seed {}", seed);
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    for size in (1000_u32..1000000).map(|x| x * 10) {
+    for size in (10000000_u32..10000001).map(|x| x * 10) {
         let mut filter = Fuse8::new(size).unwrap();
         // we need some set of values
         let big_set: Vec<u64> = (0_u64..(size as u64)).collect();
