@@ -19,7 +19,7 @@ where
     println!("test_xor8_build<{}> seed {}", name, seed);
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let mut filter = Xor8::<RandomState>::new();
+    let mut filter = Xor8::<H>::new();
 
     // populate api
     let mut keys = generate_keys(&mut rng, 2_000_000);

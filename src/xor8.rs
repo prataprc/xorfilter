@@ -84,8 +84,8 @@ struct KeyIndex {
 /// > The internal algorithm is not specified, and so its hashes
 /// > should not be relied upon over releases.
 ///
-/// The default type for parameter `H` might change when we get a reliable and commonly
-/// used BuildHasher type is available.
+/// The default type for parameter `H` might change when a reliable and commonly used
+/// BuildHasher type is available.
 pub struct Xor8<H = BuildHasherDefault>
 where
     H: BuildHasher,
@@ -125,17 +125,20 @@ where
 
 impl<H> Xor8<H>
 where
-    H: Default + BuildHasher,
+    H: BuildHasher,
 {
     /// New Xor8 instance initialized with [DefaultHasher].
-    pub fn new() -> Self {
-        Default::default()
+    pub fn new() -> Self
+    where
+        H: Default,
+    {
+        Self::default()
     }
 
     /// New Xor8 instance initialized with supplied `hasher`.
     pub fn with_hasher(hash_builder: H) -> Self {
         Xor8 {
-            keys: Some(Default::default()),
+            keys: Some(Vec::default()),
             hash_builder,
             seed: Default::default(),
             block_length: Default::default(),
@@ -160,7 +163,7 @@ where
     }
 
     /// Populate with 64-bit digests for a collection of keys of type `T`. Digest for
-    /// the key shall be generated using the default-hasher or via hasher supplied
+    /// key shall be generated using the default-hasher or via hasher supplied
     /// via [Xor8::with_hasher] method.
     pub fn populate<T: Hash>(&mut self, keys: &[T]) {
         keys.iter().for_each(|key| {
@@ -171,22 +174,22 @@ where
     }
 
     /// Populate with pre-compute collection of 64-bit digests.
-    pub fn populate_keys(&mut self, keys: &[u64]) {
-        self.keys.as_mut().unwrap().extend_from_slice(keys)
+    pub fn populate_keys(&mut self, digests: &[u64]) {
+        self.keys.as_mut().unwrap().extend_from_slice(digests)
     }
 
     /// Build bitmap for keys that where previously inserted using [Xor8::insert],
     /// [Xor8::populate] and [Xor8::populate_keys] method.
     pub fn build(&mut self) {
-        let keys = self.keys.take().unwrap();
-        self.build_keys(&keys);
+        let keys = self.keys.take();
+        self.build_keys(&keys.unwrap());
     }
 
     /// Build a bitmap for pre-computed 64-bit digests for keys. If keys where previously
     /// inserted using [Xor8::insert] or [Xor8::populate] or [Xor8::populate_keys]
     /// methods, they shall be ignored.
-    pub fn build_keys(&mut self, keys: &[u64]) {
-        let (size, mut rngcounter) = (keys.len(), 1_u64);
+    pub fn build_keys(&mut self, digests: &[u64]) {
+        let (size, mut rngcounter) = (digests.len(), 1_u64);
         let capacity = {
             let capacity = 32 + ((1.23 * (size as f64)).ceil() as u32);
             capacity / 3 * 3 // round it down to a multiple of 3
@@ -205,7 +208,7 @@ where
         let mut sets2: Vec<XorSet> = vec![Default::default(); block_length];
 
         loop {
-            for key in keys.iter() {
+            for key in digests.iter() {
                 let hs = self.geth0h1h2(*key);
                 sets0[hs.h0 as usize].xor_mask ^= hs.h;
                 sets0[hs.h0 as usize].count += 1;
@@ -381,7 +384,8 @@ impl<H> Xor8<H>
 where
     H: BuildHasher,
 {
-    /// Contains tell you whether the key is likely part of the set.
+    /// Contains tell you whether the key is likely part of the set, with false
+    /// positive rate.
     pub fn contains<T: ?Sized + Hash>(&self, key: &T) -> bool {
         let hashed_key = {
             let mut hasher = self.hash_builder.build_hasher();
@@ -391,8 +395,10 @@ where
         self.contains_key(hashed_key)
     }
 
-    pub fn contains_key(&self, key: u64) -> bool {
-        let hash = mixsplit(key, self.seed);
+    /// Contains tell you whether the key, as pre-computed digest form, is likely
+    /// part of the set, with false positive rate.
+    pub fn contains_key(&self, digest: u64) -> bool {
+        let hash = mixsplit(digest, self.seed);
         let f = fingerprint(hash) as u8;
         let r0 = hash as u32;
         let r1 = hash.rotate_left(21) as u32;
@@ -539,7 +545,7 @@ where
         let hash_builder: H = buf[n..n + hb_len].to_vec().into();
 
         Ok(Xor8 {
-            keys: Default::default(),
+            keys: None,
             hash_builder,
             seed,
             block_length,
@@ -566,7 +572,7 @@ where
             return Err(Error::new(ErrorKind::InvalidData, "invalid byte slice"));
         }
         Ok(Xor8 {
-            keys: Default::default(),
+            keys: None,
             hash_builder: H::default(),
             seed: u64::from_be_bytes(buf[4..12].try_into().unwrap()),
             block_length: u32::from_be_bytes(buf[12..16].try_into().unwrap()),
