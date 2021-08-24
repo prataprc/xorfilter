@@ -47,39 +47,22 @@ Open issues
 
 * [ ] Serialize / Deserialize Xor8 type.
 * [ ] Incrementally adding keys to a pre-built Xor8 instance.
+* [ ] Gather benchmark results for other implementations - Go, C, C++, Erlang, Java, Python.
 
 Benchmarks
 ----------
 
-Benchmark number for original golang implementation.
+Following are the results for a set of 10-million `u64` keys:
 
-```text
-BenchmarkPopulate100000-32          2000            695796 ns/op
-BenchmarkContains100000-32      200000000                7.03 ns/op
-```
+|             |  build 10M keys |  membership |   FPP  |  Bits/Entry |
+|-------------|-----------------|-------------|--------|-------------|
+| Xor8-golang |      NA         |    NA       |   NA   |    NA       |
+| Xor8-rust   |   1.809 secs    | 61.716 ns   | 0.389  |  9.84 bits  |
+| Fuse8-rust  |   0.608 secs    |  4.657 ns   | 0.388  |  9.01 bits  |
 
-Benchmark number for this rust-lang implementation.
-
-```test
-test bench_populate_100000 ... bench:     274,349 ns/iter (+/- 18,650)
-test bench_contains_100000 ... bench:           7 ns/iter (+/- 0)
-```
-
-Measure of _false-positive-rate_ and _bits-per-entry_ in
-original golang implementation, using random set of keys.
-
-```text
-bits per entry  9.864
-false positive rate  0.3874
-```
-
-Measure of _false-positive-rate_ and _bits-per-entry_ in
-this rust-lang implementation, using random set of keys.
-
-```text
-bits per entry 9.864 bits
-false positive rate 0.3866%
-```
+* **Build time** is measured in `Seconds`, for 10 million entries.
+* **Membership** is measured in `Nanosec`, for single lookup in a set of 10 million entries.
+* **FPP** = False Positive Probability measured in percentage
 
 Useful links
 ------------
