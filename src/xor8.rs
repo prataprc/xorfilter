@@ -181,12 +181,7 @@ where
         let keys = self.keys.take().unwrap();
         self.build_keys(&keys);
     }
-}
 
-impl<H> Xor8<H>
-where
-    H: BuildHasher,
-{
     /// Build a bitmap for pre-computed 64-bit digests for keys. If keys where previously
     /// inserted using [Xor8::insert] or [Xor8::populate] or [Xor8::populate_keys]
     /// methods, they shall be ignored.
@@ -406,6 +401,11 @@ where
         let h1 = (reduce(r1, self.block_length) + self.block_length) as usize;
         let h2 = (reduce(r2, self.block_length) + 2 * self.block_length) as usize;
         f == (self.finger_prints[h0] ^ self.finger_prints[h1] ^ self.finger_prints[h2])
+    }
+
+    #[allow(dead_code)]
+    fn get_hasher(&self) -> H::Hasher {
+        self.hash_builder.build_hasher()
     }
 }
 
