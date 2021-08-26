@@ -198,30 +198,32 @@ where
     pub fn with_hasher(size: u32, hash_builder: H) -> Fuse8<H> {
         use std::cmp;
 
-        if size <= 1 {
-            panic!("size {} must be atleast 2", size);
-        }
-
         let arity = 3_u32;
-        let segment_length =
-            cmp::min(binary_fuse_calculate_segment_length(arity, size), 262144);
 
-        let segment_length_mask = segment_length - 1;
-        let array_length = {
-            let size_factor = binary_fuse_calculate_size_factor(arity, size);
-            let cap = ((size as f64) * size_factor).round() as u32;
-            let n = (cap + segment_length - 1) / segment_length - (arity - 1);
-            (n + arity - 1) * segment_length
+        let segment_length = match size {
+            0 => 4,
+            size => cmp::min(binary_fuse_calculate_segment_length(arity, size), 262144),
         };
 
-        let segment_count = (array_length + segment_length - 1) / segment_length;
-        let segment_count = if segment_count <= (arity - 1) {
+        let segment_length_mask = segment_length - 1;
+        let mut array_length = {
+            let size_factor = binary_fuse_calculate_size_factor(arity, size);
+            let cap = match size {
+                0 | 1 => 0,
+                size => ((size as f64) * size_factor).round() as u32,
+            };
+            let n = ((cap + segment_length - 1) / segment_length).wrapping_sub(arity - 1);
+            (n.wrapping_add(arity) - 1) * segment_length
+        };
+
+        let mut segment_count = (array_length + segment_length - 1) / segment_length;
+        segment_count = if segment_count <= (arity - 1) {
             1
         } else {
             segment_count - (arity - 1)
         };
 
-        let array_length = (segment_count + arity - 1) * segment_length;
+        array_length = (segment_count + arity - 1) * segment_length;
         let segment_count_length = segment_count * segment_length;
         let finger_prints = {
             let mut fp = Vec::with_capacity(array_length as usize);
@@ -302,12 +304,6 @@ where
         let capacity = self.finger_prints.len();
         let size = digests.len();
 
-        if size == 0 {
-            panic!("empty set of keys");
-        } else if size == 1 {
-            panic!("size {} must be atleast 2", size);
-        }
-
         self.seed = binary_fuse_rng_splitmix64(&mut rng_counter);
         let (mut reverse_order, mut reverse_h, mut alone, mut t2count, mut t2hash) =
             alloc_locals!(size, capacity);
@@ -325,9 +321,13 @@ where
         let mut h012 = [0_u32; 5];
 
         reverse_order[size] = 1;
-        let mut iter_n = 0;
-        while iter_n <= XOR_MAX_ITERATIONS {
-            for i in (0_u32..).take_while(|i| i < &block) {
+        let mut iter = 0..=XOR_MAX_ITERATIONS;
+        loop {
+            if let None = iter.next() {
+                panic!("Too many iterations. Are all your keys unique?");
+            }
+
+            for i in 0_u32..block {
                 // important : i * size would overflow as a 32-bit number in some
                 // cases.
                 start_pos[i as usize] =
@@ -343,23 +343,24 @@ where
                     segment_index &= mask_block;
                 }
                 reverse_order[start_pos[segment_index as usize] as usize] = hash;
+                // TODO: can this value become greater than (size+1) ?
                 start_pos[segment_index as usize] += 1;
             }
 
             let mut error: isize = 0;
             for i in 0_usize..size {
                 let hash: u64 = reverse_order[i];
-                let h0: usize = self.binary_fuse8_hash(0, hash) as usize;
-                let h1: usize = self.binary_fuse8_hash(1, hash) as usize;
-                let h2: usize = self.binary_fuse8_hash(2, hash) as usize;
 
+                let h0: usize = self.binary_fuse8_hash(0, hash) as usize;
                 t2count[h0] = t2count[h0].wrapping_add(4);
                 t2hash[h0] ^= hash;
 
+                let h1: usize = self.binary_fuse8_hash(1, hash) as usize;
                 t2count[h1] = t2count[h1].wrapping_add(4);
                 t2count[h1] ^= 1;
                 t2hash[h1] ^= hash;
 
+                let h2: usize = self.binary_fuse8_hash(2, hash) as usize;
                 t2count[h2] = t2count[h2].wrapping_add(4);
                 t2hash[h2] ^= hash;
                 t2count[h2] ^= 2;
@@ -434,12 +435,6 @@ where
             t2hash.fill(0);
 
             self.seed = binary_fuse_rng_splitmix64(&mut rng_counter);
-
-            iter_n += 1;
-        }
-
-        if iter_n > XOR_MAX_ITERATIONS {
-            panic!("Too many iterations. Are all your keys unique?");
         }
 
         for i in (0_usize..size).rev() {
