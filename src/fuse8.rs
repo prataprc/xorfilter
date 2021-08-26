@@ -1,3 +1,5 @@
+#[allow(unused_imports)]
+use std::collections::hash_map::{DefaultHasher, RandomState};
 use std::hash::{BuildHasher, Hash, Hasher};
 
 use crate::BuildHasherDefault;
@@ -56,15 +58,15 @@ fn binary_fuse_reduce(hash: u32, n: u32) -> u32 {
 
 #[inline]
 fn binary_fuse8_fingerprint(hash: u64) -> u64 {
-    return hash ^ (hash >> 32);
+    hash ^ (hash >> 32)
 }
 
 // returns random number, modifies the seed
 fn binary_fuse_rng_splitmix64(seed: &mut u64) -> u64 {
     *seed = seed.wrapping_add(0x9E3779B97F4A7C15_u64);
     let mut z = *seed;
-    z = (z ^ (z >> 30)).wrapping_add(0xBF58476D1CE4E5B9_u64);
-    z = (z ^ (z >> 27)).wrapping_add(0x94D049BB133111EB_u64);
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9_u64);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB_u64);
     z ^ (z >> 31)
 }
 
@@ -320,7 +322,7 @@ where
 
         let mut h012 = [0_u32; 5];
 
-        reverse_order[size] = 1;
+        reverse_order[size] = 1; // sentinel
         let mut iter = 0..=XOR_MAX_ITERATIONS;
         loop {
             if let None = iter.next() {
@@ -431,6 +433,7 @@ where
             }
 
             reverse_order.fill(0);
+            reverse_order[size] = 1; // sentinel
             t2count.fill(0);
             t2hash.fill(0);
 
