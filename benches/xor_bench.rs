@@ -7,12 +7,23 @@ use std::collections::hash_map::RandomState;
 
 const SIZE: usize = 10_000_000;
 
-fn generate_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
+fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
     let mut keys: Vec<u64> = Vec::with_capacity(size);
     keys.resize(size, Default::default());
+
     for key in keys.iter_mut() {
         *key = rng.gen();
     }
+    keys.sort();
+    keys.dedup();
+
+    for _i in 0..(size - keys.len()) {
+        let key = rng.gen::<u64>();
+        if !keys.contains(&key) {
+            keys.push(key)
+        }
+    }
+
     keys
 }
 
@@ -20,7 +31,7 @@ fn bench_xor8_populate_keys(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let keys = generate_keys(&mut rng, SIZE);
+    let keys = generate_unique_keys(&mut rng, SIZE);
 
     c.bench_function("xor8_populate_keys", |b| {
         b.iter(|| {
@@ -35,7 +46,7 @@ fn bench_xor8_build_keys(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let keys = generate_keys(&mut rng, SIZE);
+    let keys = generate_unique_keys(&mut rng, SIZE);
 
     c.bench_function("xor8_build_keys", |b| {
         b.iter(|| {
@@ -49,7 +60,7 @@ fn bench_xor8_populate(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let keys = generate_keys(&mut rng, SIZE);
+    let keys = generate_unique_keys(&mut rng, SIZE);
 
     c.bench_function("xor8_populate", |b| {
         b.iter(|| {
@@ -64,7 +75,7 @@ fn bench_xor8_insert(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let keys = generate_keys(&mut rng, SIZE);
+    let keys = generate_unique_keys(&mut rng, SIZE);
 
     c.bench_function("xor8_insert", |b| {
         b.iter(|| {
@@ -79,7 +90,7 @@ fn bench_xor8_contains(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let keys = generate_keys(&mut rng, SIZE);
+    let keys = generate_unique_keys(&mut rng, SIZE);
 
     let filter = {
         let mut filter = Xor8::<RandomState>::new();
@@ -101,7 +112,7 @@ fn bench_xor8_contains_key(c: &mut Criterion) {
     let seed: u128 = random();
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
-    let keys = generate_keys(&mut rng, SIZE);
+    let keys = generate_unique_keys(&mut rng, SIZE);
 
     let filter = {
         let mut filter = Xor8::<RandomState>::new();
