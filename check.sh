@@ -7,6 +7,7 @@ exec 2>&1
 
 set -o xtrace
 
+date
 exec_prg() {
 
     for i in {0..5};

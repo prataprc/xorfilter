@@ -54,11 +54,11 @@ Benchmarks
 
 Following are the results for a set of 10-million `u64` keys:
 
-|             |  build 10M keys |  membership |   FPP  |  Bits/Entry |
-|-------------|-----------------|-------------|--------|-------------|
-| Xor8-golang |      NA         |    NA       |   NA   |    NA       |
-| Xor8-rust   |   1.809 secs    | 61.716 ns   | 0.389  |  9.84 bits  |
-| Fuse8-rust  |   0.608 secs    |  4.657 ns   | 0.388  |  9.01 bits  |
+|             |  build 10M keys |  membership |   FPP   |  Bits/Entry |
+|-------------|-----------------|-------------|---------|-------------|
+| Xor8-golang |      NA         |    NA       |   NA    |    NA       |
+| Xor8-rust   |   1.809 secs    | 61.716 ns   | 0.389 % |  9.84 bits  |
+| Fuse8-rust  |   0.608 secs    |  4.657 ns   | 0.388 % |  9.01 bits  |
 
 * **Build time** is measured in `Seconds`, for 10 million entries.
 * **Membership** is measured in `Nanosec`, for single lookup in a set of 10 million entries.
