@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-exec > perf.out
+exec > $1
 exec 2>&1
 
 set -o xtrace

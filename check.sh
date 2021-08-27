@@ -2,7 +2,8 @@
 
 export RUST_BACKTRACE=full
 export RUSTFLAGS=-g
-exec > check.out
+
+exec > $1
 exec 2>&1
 
 set -o xtrace
