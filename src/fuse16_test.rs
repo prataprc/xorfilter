@@ -70,7 +70,7 @@ where
 
     // print some statistics
     let (falsesize, mut matches) = (10_000_000, 0_f64);
-    let bpv = (filter.finger_prints.len() as f64) * 8.0 / (keys.len() as f64);
+    let bpv = ((filter.finger_prints.len() * 2) as f64) * 8.0 / (keys.len() as f64);
     println!("test_fuse16_build<{}> bits per entry {} bits", name, bpv);
     if size > 1000 {
         assert!(bpv < 12.0, "bpv({}) >= 12.0", bpv);
@@ -120,13 +120,13 @@ where
 
     // print some statistics
     let (falsesize, mut matches) = (10_000_000, 0_f64);
-    let bpv = (filter.finger_prints.len() as f64) * 8.0 / (keys.len() as f64);
+    let bpv = ((filter.finger_prints.len() * 2) as f64) * 8.0 / (keys.len() as f64);
     println!(
         "test_fuse16_build_keys<{}> bits per entry {} bits",
         name, bpv
     );
     if size > 1000 {
-        assert!(bpv < 12.0, "bpv({}) >= 12.0", bpv);
+        assert!(bpv < 20.0, "bpv({}) >= 12.0", bpv);
     }
 
     for _ in 0..falsesize {

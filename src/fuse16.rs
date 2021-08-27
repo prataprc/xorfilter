@@ -173,7 +173,7 @@ where
     /// Return the size of index.
     #[inline]
     pub fn size_of(&self) -> usize {
-        std::mem::size_of::<Self>() + self.finger_prints.len()
+        std::mem::size_of::<Self>() + (self.finger_prints.len() * 2)
     }
 
     /// Insert 64-bit digest of a single key. Digest for the key shall be generated
