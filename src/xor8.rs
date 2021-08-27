@@ -153,7 +153,7 @@ where
 {
     /// Insert 64-bit digest of a single key. Digest for the key shall be generated
     /// using the default-hasher or via hasher supplied via [Xor8::with_hasher] method.
-    pub fn insert<T: ?Sized + Hash>(&mut self, key: &T) {
+    pub fn insert<K: ?Sized + Hash>(&mut self, key: &K) {
         let hashed_key = {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
@@ -162,10 +162,10 @@ where
         self.keys.as_mut().unwrap().push(hashed_key);
     }
 
-    /// Populate with 64-bit digests for a collection of keys of type `T`. Digest for
+    /// Populate with 64-bit digests for a collection of keys of type `K`. Digest for
     /// key shall be generated using the default-hasher or via hasher supplied
     /// via [Xor8::with_hasher] method.
-    pub fn populate<T: Hash>(&mut self, keys: &[T]) {
+    pub fn populate<K: Hash>(&mut self, keys: &[K]) {
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
@@ -386,7 +386,7 @@ where
 {
     /// Contains tell you whether the key is likely part of the set, with false
     /// positive rate.
-    pub fn contains<T: ?Sized + Hash>(&self, key: &T) -> bool {
+    pub fn contains<K: ?Sized + Hash>(&self, key: &K) -> bool {
         let hashed_key = {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
@@ -448,6 +448,8 @@ where
 /// Implements serialization and de-serialization logic for Xor8. This is still work
 /// in progress, refer to issue: <https://github.com/bnclabs/xorfilter/issues/1>
 /// in github.
+///
+/// TODO: https://github.com/bnclabs/xorfilter/issues/1
 impl<H> Xor8<H>
 where
     H: Default + Clone + Into<Vec<u8>> + From<Vec<u8>> + BuildHasher,

@@ -258,7 +258,7 @@ where
 
     /// Insert 64-bit digest of a single key. Digest for the key shall be generated
     /// using the default-hasher or via hasher supplied via [Fuse8::with_hasher] method.
-    pub fn insert<T: ?Sized + Hash>(&mut self, key: &T) {
+    pub fn insert<K: ?Sized + Hash>(&mut self, key: &K) {
         let digest = {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
@@ -267,10 +267,10 @@ where
         self.keys.as_mut().unwrap().push(digest);
     }
 
-    /// Populate with 64-bit digests for a collection of keys of type `T`. Digest for
+    /// Populate with 64-bit digests for a collection of keys of type `K`. Digest for
     /// key shall be generated using the default-hasher or via hasher supplied
     /// via [Fuse8::with_hasher] method.
-    pub fn populate<T: Hash>(&mut self, keys: &[T]) {
+    pub fn populate<K: Hash>(&mut self, keys: &[K]) {
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
@@ -345,7 +345,6 @@ where
                     segment_index &= mask_block;
                 }
                 reverse_order[start_pos[segment_index as usize] as usize] = hash;
-                // TODO: can this value become greater than (size+1) ?
                 start_pos[segment_index as usize] += 1;
             }
 
@@ -463,7 +462,7 @@ where
 {
     /// Contains tell you whether the key is likely part of the set, with false
     /// positive rate.
-    pub fn contains<T: ?Sized + Hash>(&self, key: &T) -> bool {
+    pub fn contains<K: ?Sized + Hash>(&self, key: &K) -> bool {
         let digest = {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
