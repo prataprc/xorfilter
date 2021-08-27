@@ -7,6 +7,7 @@
 #[allow(unused_imports)]
 use std::collections::hash_map::{DefaultHasher, RandomState};
 use std::{
+    collections::BTreeMap,
     convert::TryInto,
     ffi, fs,
     hash::{BuildHasher, Hash, Hasher},
@@ -90,7 +91,7 @@ pub struct Xor8<H = BuildHasherDefault>
 where
     H: BuildHasher,
 {
-    keys: Option<Vec<u64>>,
+    keys: Option<BTreeMap<u64, ()>>,
     pub hash_builder: H,
     pub seed: u64,
     pub block_length: u32,
@@ -114,7 +115,7 @@ where
 {
     fn default() -> Self {
         Xor8 {
-            keys: Some(Vec::default()),
+            keys: Some(BTreeMap::new()),
             hash_builder: H::default(),
             seed: u64::default(),
             block_length: u32::default(),
@@ -138,7 +139,7 @@ where
     /// New Xor8 instance initialized with supplied `hasher`.
     pub fn with_hasher(hash_builder: H) -> Self {
         Xor8 {
-            keys: Some(Vec::default()),
+            keys: Some(BTreeMap::new()),
             hash_builder,
             seed: Default::default(),
             block_length: Default::default(),
@@ -159,7 +160,7 @@ where
             key.hash(&mut hasher);
             hasher.finish()
         };
-        self.keys.as_mut().unwrap().push(hashed_key);
+        self.keys.as_mut().unwrap().insert(hashed_key, ());
     }
 
     /// Populate with 64-bit digests for a collection of keys of type `K`. Digest for
@@ -169,25 +170,35 @@ where
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
-            self.keys.as_mut().unwrap().push(hasher.finish());
+            self.keys.as_mut().unwrap().insert(hasher.finish(), ());
         })
     }
 
     /// Populate with pre-compute collection of 64-bit digests.
     pub fn populate_keys(&mut self, digests: &[u64]) {
-        self.keys.as_mut().unwrap().extend_from_slice(digests)
+        for digest in digests.iter() {
+            self.keys.as_mut().unwrap().insert(*digest, ());
+        }
     }
 
     /// Build bitmap for keys that where previously inserted using [Xor8::insert],
     /// [Xor8::populate] and [Xor8::populate_keys] method.
     pub fn build(&mut self) {
-        let keys = self.keys.take();
-        self.build_keys(&keys.unwrap());
+        match self.keys.take() {
+            Some(keys) => {
+                let digests = keys.iter().map(|(k, _)| *k).collect::<Vec<u64>>();
+                self.build_keys(&digests);
+            }
+            None => (),
+        }
     }
 
-    /// Build a bitmap for pre-computed 64-bit digests for keys. If keys where previously
-    /// inserted using [Xor8::insert] or [Xor8::populate] or [Xor8::populate_keys]
-    /// methods, they shall be ignored.
+    /// Build a bitmap for pre-computed 64-bit digests for keys. If keys where
+    /// previously inserted using [Xor8::insert] or [Xor8::populate] or
+    /// [Xor8::populate_keys] methods, they shall be ignored.
+    ///
+    /// It is upto the caller to ensure that digests are unique, that there no
+    /// duplicates.
     pub fn build_keys(&mut self, digests: &[u64]) {
         let (size, mut rngcounter) = (digests.len(), 1_u64);
         let capacity = {

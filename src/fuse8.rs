@@ -1,6 +1,9 @@
 #[allow(unused_imports)]
 use std::collections::hash_map::{DefaultHasher, RandomState};
-use std::hash::{BuildHasher, Hash, Hasher};
+use std::{
+    collections::BTreeMap,
+    hash::{BuildHasher, Hash, Hasher},
+};
 
 use crate::BuildHasherDefault;
 
@@ -137,7 +140,7 @@ pub struct Fuse8<H = BuildHasherDefault>
 where
     H: BuildHasher,
 {
-    keys: Option<Vec<u64>>,
+    keys: Option<BTreeMap<u64, ()>>,
     pub hash_builder: H,
     pub seed: u64,
     pub segment_length: u32,
@@ -234,7 +237,7 @@ where
         };
 
         Fuse8 {
-            keys: Some(Vec::default()),
+            keys: Some(BTreeMap::new()),
             hash_builder,
             seed: u64::default(),
             segment_length,
@@ -264,7 +267,7 @@ where
             key.hash(&mut hasher);
             hasher.finish()
         };
-        self.keys.as_mut().unwrap().push(digest);
+        self.keys.as_mut().unwrap().insert(digest, ());
     }
 
     /// Populate with 64-bit digests for a collection of keys of type `K`. Digest for
@@ -274,13 +277,15 @@ where
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
-            self.keys.as_mut().unwrap().push(hasher.finish());
+            self.keys.as_mut().unwrap().insert(hasher.finish(), ());
         })
     }
 
     /// Populate with pre-compute collection of 64-bit digests.
     pub fn populate_keys(&mut self, digests: &[u64]) {
-        self.keys.as_mut().unwrap().extend_from_slice(digests)
+        for digest in digests.iter() {
+            self.keys.as_mut().unwrap().insert(*digest, ());
+        }
     }
 
     // construct the filter, returns true on success, false on failure.
@@ -294,13 +299,21 @@ where
     /// Build bitmap for keys that where previously inserted using [Fuse8::insert],
     /// [Fuse8::populate] and [Fuse8::populate_keys] method.
     pub fn build(&mut self) {
-        let keys = self.keys.take();
-        self.build_keys(&keys.unwrap());
+        match self.keys.take() {
+            Some(keys) => {
+                let digests = keys.iter().map(|(k, _)| *k).collect::<Vec<u64>>();
+                self.build_keys(&digests);
+            }
+            None => (),
+        }
     }
 
-    /// Build a bitmap for pre-computed 64-bit digests for keys. If keys where previously
-    /// inserted using [Fuse8::insert] or [Fuse8::populate] or [Fuse8::populate_keys]
-    /// methods, they shall be ignored.
+    /// Build a bitmap for pre-computed 64-bit digests for keys. If keys where
+    /// previously inserted using [Fuse8::insert] or [Fuse8::populate] or
+    /// [Fuse8::populate_keys] methods, they shall be ignored.
+    ///
+    /// It is upto the caller to ensure that digests are unique, that there no
+    /// duplicates.
     pub fn build_keys(&mut self, digests: &[u64]) {
         let mut rng_counter = 0x726b2b9d438b9d4d_u64;
         let capacity = self.finger_prints.len();
