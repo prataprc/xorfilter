@@ -36,3 +36,7 @@ harness = false
 [[bench]]
 name = "fuse8_bench"
 harness = false
+
+[[bench]]
+name = "fuse16_bench"
+harness = false

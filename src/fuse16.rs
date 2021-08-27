@@ -5,7 +5,14 @@ use std::{
     hash::{BuildHasher, Hash, Hasher},
 };
 
-use crate::BuildHasherDefault;
+use crate::{
+    fuse8::{
+        binary_fuse_calculate_segment_length, binary_fuse_calculate_size_factor,
+        binary_fuse_mix_split, binary_fuse_mod3, binary_fuse_mulhi, binary_fuse_murmur64,
+        binary_fuse_rng_splitmix64, BinaryHashes,
+    },
+    BuildHasherDefault,
+};
 
 // probabillity of success should always be > 0.5 so 100 iterations is highly unlikely.
 const XOR_MAX_ITERATIONS: usize = 100;
@@ -32,96 +39,13 @@ macro_rules! alloc_locals {
 }
 
 #[inline]
-pub(crate) fn binary_fuse_murmur64(mut h: u64) -> u64 {
-    h ^= h >> 33;
-    h = h.wrapping_mul(0xff51afd7ed558ccd_u64);
-    h ^= h >> 33;
-    h = h.wrapping_mul(0xc4ceb9fe1a85ec53_u64);
-    h ^= h >> 33;
-    h
-}
-
-#[inline]
-pub(crate) fn binary_fuse_mix_split(key: u64, seed: u64) -> u64 {
-    binary_fuse_murmur64(key.wrapping_add(seed))
-}
-
-#[allow(dead_code)]
-#[inline]
-fn binary_fuse_rotl64(n: u64, c: u32) -> u64 {
-    n.rotate_left(c)
-}
-
-#[allow(dead_code)]
-#[inline]
-fn binary_fuse_reduce(hash: u32, n: u32) -> u32 {
-    // http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
-    (((hash as u64) * (n as u64)) >> 32) as u32
-}
-
-#[inline]
-fn binary_fuse8_fingerprint(hash: u64) -> u64 {
+pub fn binary_fuse16_fingerprint(hash: u64) -> u64 {
     hash ^ (hash >> 32)
 }
 
-// returns random number, modifies the seed
-pub(crate) fn binary_fuse_rng_splitmix64(seed: &mut u64) -> u64 {
-    *seed = seed.wrapping_add(0x9E3779B97F4A7C15_u64);
-    let mut z = *seed;
-    z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9_u64);
-    z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB_u64);
-    z ^ (z >> 31)
-}
-
-#[inline]
-pub(crate) fn binary_fuse_mulhi(a: u64, b: u64) -> u64 {
-    (((a as u128) * (b as u128)) >> 64) as u64
-}
-
-#[inline]
-pub(crate) fn binary_fuse_calculate_segment_length(arity: u32, size: u32) -> u32 {
-    let ln_size = (size as f64).ln();
-
-    // These parameters are very sensitive. Replacing 'floor' by 'round' can
-    // substantially affect the construction time.
-    match arity {
-        3 => 1_u32 << ((ln_size / 3.33_f64.ln() + 2.25).floor() as u32),
-        4 => 1_u32 << ((ln_size / 2.91_f64.ln() - 0.50).floor() as u32),
-        _ => 65536,
-    }
-}
-
-#[inline]
-fn binary_fuse8_max(a: f64, b: f64) -> f64 {
-    if a < b {
-        b
-    } else {
-        a
-    }
-}
-
-#[inline]
-pub(crate) fn binary_fuse_calculate_size_factor(arity: u32, size: u32) -> f64 {
-    let ln_size = (size as f64).ln();
-    match arity {
-        3 => binary_fuse8_max(1.125, 0.875 + 0.250 * 1000000.0_f64.ln() / ln_size),
-        4 => binary_fuse8_max(1.075, 0.770 + 0.305 * 0600000.0_f64.ln() / ln_size),
-        _ => 2.0,
-    }
-}
-
-#[inline]
-pub(crate) fn binary_fuse_mod3(x: u8) -> u8 {
-    if x > 2 {
-        x - 3
-    } else {
-        x
-    }
-}
-
-/// Type Fuse8 is probabilistic data-structure to test membership of an element in a set.
+/// Type Fuse16 is probabilistic data-structure to test membership of an element in a set.
 ///
-/// Fuse8 is parametrized over type `H` which is expected to implement [BuildHasher]
+/// Fuse16 is parametrized over type `H` which is expected to implement [BuildHasher]
 /// trait, like types [RandomState] and [BuildHasherDefault]. When not supplied,
 /// [BuildHasherDefault] is used as the default hash-builder.
 ///
@@ -136,7 +60,7 @@ pub(crate) fn binary_fuse_mod3(x: u8) -> u8 {
 ///
 /// The default type for parameter `H` might change when a reliable and commonly used
 /// BuildHasher type available.
-pub struct Fuse8<H = BuildHasherDefault>
+pub struct Fuse16<H = BuildHasherDefault>
 where
     H: BuildHasher,
 {
@@ -147,22 +71,15 @@ where
     pub segment_length_mask: u32,
     pub segment_count: u32,
     pub segment_count_length: u32,
-    pub finger_prints: Vec<u8>,
+    pub finger_prints: Vec<u16>,
 }
 
-#[derive(Default)]
-pub(crate) struct BinaryHashes {
-    pub(crate) h0: u32,
-    pub(crate) h1: u32,
-    pub(crate) h2: u32,
-}
-
-impl<H> Fuse8<H>
+impl<H> Fuse16<H>
 where
     H: BuildHasher,
 {
     #[inline]
-    fn binary_fuse8_hash_batch(&self, hash: u64) -> BinaryHashes {
+    fn binary_fuse16_hash_batch(&self, hash: u64) -> BinaryHashes {
         let mut ans = BinaryHashes::default();
 
         ans.h0 = binary_fuse_mulhi(hash, self.segment_count_length.into()) as u32;
@@ -174,7 +91,7 @@ where
     }
 
     #[inline]
-    fn binary_fuse8_hash(&self, index: u32, hash: u64) -> u32 {
+    fn binary_fuse16_hash(&self, index: u32, hash: u64) -> u32 {
         let mut h = binary_fuse_mulhi(hash, self.segment_count_length.into());
         h += (index * self.segment_length) as u64;
         // keep the lower 36 bits
@@ -186,21 +103,21 @@ where
     }
 }
 
-impl<H> Fuse8<H>
+impl<H> Fuse16<H>
 where
     H: BuildHasher,
 {
-    /// New Fuse8 instance that can index size number of keys. Internal data-structures
+    /// New Fuse16 instance that can index size number of keys. Internal data-structures
     /// are pre-allocated for `size`.  `size` should be at least 2.
-    pub fn new(size: u32) -> Fuse8<H>
+    pub fn new(size: u32) -> Fuse16<H>
     where
         H: Default,
     {
         Self::with_hasher(size, H::default())
     }
 
-    /// New Fuse8 instance initialized with supplied hasher.
-    pub fn with_hasher(size: u32, hash_builder: H) -> Fuse8<H> {
+    /// New Fuse16 instance initialized with supplied hasher.
+    pub fn with_hasher(size: u32, hash_builder: H) -> Fuse16<H> {
         use std::cmp;
 
         let arity = 3_u32;
@@ -236,7 +153,7 @@ where
             fp
         };
 
-        Fuse8 {
+        Fuse16 {
             keys: Some(BTreeMap::new()),
             hash_builder,
             seed: u64::default(),
@@ -249,7 +166,7 @@ where
     }
 }
 
-impl<H> Fuse8<H>
+impl<H> Fuse16<H>
 where
     H: BuildHasher,
 {
@@ -260,7 +177,7 @@ where
     }
 
     /// Insert 64-bit digest of a single key. Digest for the key shall be generated
-    /// using the default-hasher or via hasher supplied via [Fuse8::with_hasher] method.
+    /// using the default-hasher or via hasher supplied via [Fuse16::with_hasher] method.
     pub fn insert<K: ?Sized + Hash>(&mut self, key: &K) {
         let digest = {
             let mut hasher = self.hash_builder.build_hasher();
@@ -272,7 +189,7 @@ where
 
     /// Populate with 64-bit digests for a collection of keys of type `K`. Digest for
     /// key shall be generated using the default-hasher or via hasher supplied
-    /// via [Fuse8::with_hasher] method.
+    /// via [Fuse16::with_hasher] method.
     pub fn populate<K: Hash>(&mut self, keys: &[K]) {
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
@@ -287,17 +204,16 @@ where
             self.keys.as_mut().unwrap().insert(*digest, ());
         }
     }
-
     // construct the filter, returns true on success, false on failure.
     // most likely, a failure is due to too high a memory usage
     // size is the number of keys
-    // The caller is responsable for calling binary_fuse8_allocate(size,filter)
+    // The caller is responsable for calling binary_fuse16_allocate(size,filter)
     // before. The caller is responsible to ensure that there are no duplicated
     // keys. The inner loop will run up to XOR_MAX_ITERATIONS times (default on
     // 100), it should never fail, except if there are duplicated keys. If it fails,
     // a return value of false is provided.
-    /// Build bitmap for keys that where previously inserted using [Fuse8::insert],
-    /// [Fuse8::populate] and [Fuse8::populate_keys] method.
+    /// Build bitmap for keys that where previously inserted using [Fuse16::insert],
+    /// [Fuse16::populate] and [Fuse16::populate_keys] method.
     pub fn build(&mut self) {
         match self.keys.take() {
             Some(keys) => {
@@ -309,8 +225,8 @@ where
     }
 
     /// Build a bitmap for pre-computed 64-bit digests for keys. If keys where
-    /// previously inserted using [Fuse8::insert] or [Fuse8::populate] or
-    /// [Fuse8::populate_keys] methods, they shall be ignored.
+    /// previously inserted using [Fuse16::insert] or [Fuse16::populate] or
+    /// [Fuse16::populate_keys] methods, they shall be ignored.
     ///
     /// It is upto the caller to ensure that digests are unique, that there no
     /// duplicates.
@@ -327,7 +243,6 @@ where
         while (1_u32 << block_bits) < self.segment_count {
             block_bits += 1;
         }
-
         let block = 1_u32 << block_bits;
 
         let mut start_pos: Vec<u32> = Vec::with_capacity(1 << block_bits);
@@ -365,16 +280,16 @@ where
             for i in 0_usize..size {
                 let hash: u64 = reverse_order[i];
 
-                let h0: usize = self.binary_fuse8_hash(0, hash) as usize;
+                let h0: usize = self.binary_fuse16_hash(0, hash) as usize;
                 t2count[h0] = t2count[h0].wrapping_add(4);
                 t2hash[h0] ^= hash;
 
-                let h1: usize = self.binary_fuse8_hash(1, hash) as usize;
+                let h1: usize = self.binary_fuse16_hash(1, hash) as usize;
                 t2count[h1] = t2count[h1].wrapping_add(4);
                 t2count[h1] ^= 1;
                 t2hash[h1] ^= hash;
 
-                let h2: usize = self.binary_fuse8_hash(2, hash) as usize;
+                let h2: usize = self.binary_fuse16_hash(2, hash) as usize;
                 t2count[h2] = t2count[h2].wrapping_add(4);
                 t2hash[h2] ^= hash;
                 t2count[h2] ^= 2;
@@ -404,10 +319,10 @@ where
                 if (t2count[index] >> 2) == 1 {
                     let hash: u64 = t2hash[index];
 
-                    //h012[0] = self.binary_fuse8_hash(0, hash);
-                    h012[1] = self.binary_fuse8_hash(1, hash);
-                    h012[2] = self.binary_fuse8_hash(2, hash);
-                    h012[3] = self.binary_fuse8_hash(0, hash); // == h012[0];
+                    //h012[0] = binary_fuse16_hash(0, hash, self);
+                    h012[1] = self.binary_fuse16_hash(1, hash);
+                    h012[2] = self.binary_fuse16_hash(2, hash);
+                    h012[3] = self.binary_fuse16_hash(0, hash); // == h012[0];
                     h012[4] = h012[1];
 
                     let found: u8 = t2count[index] & 3;
@@ -455,13 +370,14 @@ where
         for i in (0_usize..size).rev() {
             // the hash of the key we insert next
             let hash: u64 = reverse_order[i];
-            let xor2: u8 = binary_fuse8_fingerprint(hash) as u8;
+            let xor2: u16 = binary_fuse16_fingerprint(hash) as u16;
             let found: usize = reverse_h[i] as usize;
-            h012[0] = self.binary_fuse8_hash(0, hash);
-            h012[1] = self.binary_fuse8_hash(1, hash);
-            h012[2] = self.binary_fuse8_hash(2, hash);
+            h012[0] = self.binary_fuse16_hash(0, hash);
+            h012[1] = self.binary_fuse16_hash(1, hash);
+            h012[2] = self.binary_fuse16_hash(2, hash);
             h012[3] = h012[0];
             h012[4] = h012[1];
+
             self.finger_prints[h012[found] as usize] = xor2
                 ^ self.finger_prints[h012[found + 1] as usize]
                 ^ self.finger_prints[h012[found + 2] as usize];
@@ -469,7 +385,7 @@ where
     }
 }
 
-impl<H> Fuse8<H>
+impl<H> Fuse16<H>
 where
     H: BuildHasher,
 {
@@ -488,8 +404,8 @@ where
     /// part of the set, with false positive rate.
     pub fn contains_key(&self, digest: u64) -> bool {
         let hash = binary_fuse_mix_split(digest, self.seed);
-        let mut f = binary_fuse8_fingerprint(hash) as u8;
-        let BinaryHashes { h0, h1, h2 } = self.binary_fuse8_hash_batch(hash);
+        let mut f = binary_fuse16_fingerprint(hash) as u16;
+        let BinaryHashes { h0, h1, h2 } = self.binary_fuse16_hash_batch(hash);
         f ^= self.finger_prints[h0 as usize]
             ^ self.finger_prints[h1 as usize]
             ^ self.finger_prints[h2 as usize];
@@ -503,5 +419,5 @@ where
 }
 
 #[cfg(test)]
-#[path = "fuse8_test.rs"]
-mod fuse8_test;
+#[path = "fuse16_test.rs"]
+mod fuse16_test;
