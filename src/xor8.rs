@@ -460,7 +460,7 @@ where
 /// in progress, refer to issue: <https://github.com/bnclabs/xorfilter/issues/1>
 /// in github.
 ///
-/// TODO: https://github.com/bnclabs/xorfilter/issues/1
+/// TODO: <https://github.com/bnclabs/xorfilter/issues/1>
 impl<H> Xor8<H>
 where
     H: Default + Clone + Into<Vec<u8>> + From<Vec<u8>> + BuildHasher,
