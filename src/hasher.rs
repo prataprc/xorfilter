@@ -40,9 +40,10 @@ impl Default for BuildHasherDefault {
     }
 }
 
-/// NoHash type skips hashing altogether, when a filter is constructed using
-/// NoHash as the type parameter then it is upto application to generate the 64-bit
-/// hash digest outside this library.
+/// NoHash type skips hashing altogether.
+///
+/// When a filter is constructed using NoHash as the type parameter then it is upto
+/// application to generate the 64-bit hash digest outside this library.
 #[derive(Clone)]
 pub struct NoHash;
 

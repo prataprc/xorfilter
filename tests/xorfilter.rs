@@ -16,11 +16,8 @@ fn test_same_filter_encode_decode() {
     };
     let filter = generate_filter(seed);
 
-    filter
-        .write_file(&file_path)
-        .unwrap_or_else(|err| panic!("Write to {:?} failed {}", file_path, err));
-    let filter_read = Xor8::read_file(&file_path)
-        .unwrap_or_else(|err| panic!("Read from {:?} failed {}", file_path, err));
+    filter.write_file(&file_path).expect("fail write_file");
+    let filter_read = Xor8::read_file(&file_path).expect("fail read_file");
     assert!(
         filter_read == filter,
         "Filter unequals after encode and decode"
@@ -57,7 +54,7 @@ fn test_same_filter_bytes_encoding_tl1() {
     // save_file(file_path.clone(), &keys);
 
     let filter = Xor8::<BuildHasherDefault>::read_file(&file_path)
-        .unwrap_or_else(|e| panic!("Read from bytes failed {}", e));
+        .expect("Read from bytes failed");
 
     for key in keys.iter() {
         assert!(filter.contains(key))
@@ -76,8 +73,7 @@ fn test_same_filter_bytes_encoding_tl2() {
     let filter = generate_filter(seed);
 
     let buf = filter.to_bytes();
-    let filter_read =
-        Xor8::from_bytes(buf).unwrap_or_else(|e| panic!("Read from bytes failed {}", e));
+    let filter_read = Xor8::from_bytes(buf).expect("Read from bytes failed");
     assert!(
         filter_read == filter,
         "Filter unequals after encode and decode"
@@ -108,7 +104,7 @@ fn test_string_keys() {
     let hash_builder = BuildHasherDefault::default();
     let mut filter = Xor8::with_hasher(hash_builder);
     filter.populate(&rust_tips);
-    filter.build();
+    filter.build().expect("build failed");
 
     // Test all keys(rust_tips)
     for tip in rust_tips {
@@ -126,14 +122,14 @@ fn generate_filter(seed: u128) -> Xor8<BuildHasherDefault> {
 
     let testsize = 10000;
     let mut keys: Vec<u64> = Vec::with_capacity(testsize);
-    keys.resize(testsize, Default::default());
+    keys.resize(testsize, u64::default());
     for key in keys.iter_mut() {
         *key = rng.gen();
     }
 
     let mut filter = Xor8::<BuildHasherDefault>::new();
     filter.populate(&keys);
-    filter.build();
+    filter.build().expect("build failed");
     filter
 }
 
@@ -142,7 +138,7 @@ fn generate_filter(seed: u128) -> Xor8<BuildHasherDefault> {
 fn save_file(file_path: ffi::OsString, keys: &[u32]) {
     let mut filter = Xor8::<BuildHasherDefault>::new();
     filter.populate(&keys);
-    filter.build();
+    filter.build().expect("build failed");
     filter
         .write_file(&file_path)
         .expect("error saving tl1 to file");

@@ -14,7 +14,7 @@ fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
     for key in keys.iter_mut() {
         *key = rng.gen();
     }
-    keys.sort();
+    keys.sort_unstable();
     keys.dedup();
 
     for _i in 0..(size - keys.len()) {
@@ -38,7 +38,7 @@ fn bench_fuse16_populate_keys(c: &mut Criterion) {
         b.iter(|| {
             let mut filter = Fuse16::<RandomState>::new(keys.len() as u32);
             filter.populate_keys(&keys);
-            filter.build();
+            filter.build().expect("failed build");
         })
     });
 }
@@ -53,7 +53,7 @@ fn bench_fuse16_build_keys(c: &mut Criterion) {
     c.bench_function("fuse16_build_keys", |b| {
         b.iter(|| {
             let mut filter = Fuse16::<RandomState>::new(keys.len() as u32);
-            filter.build_keys(&keys);
+            filter.build_keys(&keys).expect("failed build");
         })
     });
 }
@@ -69,7 +69,7 @@ fn bench_fuse16_populate(c: &mut Criterion) {
         b.iter(|| {
             let mut filter = Fuse16::<RandomState>::new(keys.len() as u32);
             filter.populate(&keys);
-            filter.build();
+            filter.build().expect("failed build");
         })
     });
 }
@@ -85,7 +85,7 @@ fn bench_fuse16_insert(c: &mut Criterion) {
         b.iter(|| {
             let mut filter = Fuse16::<RandomState>::new(keys.len() as u32);
             keys.iter().for_each(|key| filter.insert(key));
-            filter.build();
+            filter.build().expect("failed build");
         })
     });
 }
@@ -100,7 +100,7 @@ fn bench_fuse16_contains(c: &mut Criterion) {
     let filter = {
         let mut filter = Fuse16::<RandomState>::new(keys.len() as u32);
         filter.populate(&keys);
-        filter.build();
+        filter.build().expect("failed build");
         filter
     };
 
@@ -123,7 +123,7 @@ fn bench_fuse16_contains_key(c: &mut Criterion) {
     let filter = {
         let mut filter = Fuse16::<RandomState>::new(keys.len() as u32);
         filter.populate(&keys);
-        filter.build();
+        filter.build().expect("failed build");
         filter
     };
 
@@ -147,4 +147,3 @@ criterion_group!(
 );
 
 criterion_main!(benches);
-

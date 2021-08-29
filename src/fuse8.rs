@@ -5,31 +5,10 @@ use std::{
     hash::{BuildHasher, Hash, Hasher},
 };
 
-use crate::BuildHasherDefault;
+use crate::{BuildHasherDefault, Error, Result};
 
 // probabillity of success should always be > 0.5 so 100 iterations is highly unlikely.
 const XOR_MAX_ITERATIONS: usize = 100;
-
-macro_rules! alloc_locals {
-    ($size:ident, $cap:ident) => {{
-        let mut reverse_order: Vec<u64> = Vec::with_capacity($size + 1);
-        reverse_order.resize($size + 1, u64::default());
-
-        let mut reverse_h: Vec<u8> = Vec::with_capacity($size);
-        reverse_h.resize($size, 0);
-
-        let mut alone: Vec<u32> = Vec::with_capacity($cap);
-        alone.resize($cap, 0);
-
-        let mut t2count: Vec<u8> = Vec::with_capacity($cap);
-        t2count.resize($cap, 0);
-
-        let mut t2hash: Vec<u64> = Vec::with_capacity($cap);
-        t2hash.resize($cap, 0);
-
-        (reverse_order, reverse_h, alone, t2count, t2hash)
-    }};
-}
 
 #[inline]
 pub(crate) fn binary_fuse_murmur64(mut h: u64) -> u64 {
@@ -126,13 +105,13 @@ pub(crate) fn binary_fuse_mod3(x: u8) -> u8 {
 /// [BuildHasherDefault] is used as the default hash-builder.
 ///
 /// If `RandomState` is used as BuildHasher, `std` has got this to say
-/// > A particular instance RandomState will create the same instances
+/// > _A particular instance RandomState will create the same instances
 /// > of Hasher, but the hashers created by two different RandomState
-/// > instances are unlikely to produce the same result for the same values.
+/// > instances are unlikely to produce the same result for the same values._
 ///
 /// If [DefaultHasher] is used as BuildHasher, `std` has got this to say,
-/// > The internal algorithm is not specified, and so its hashes
-/// > should not be relied upon over releases.
+/// > _The internal algorithm is not specified, and so its hashes
+/// > should not be relied upon over releases._
 ///
 /// The default type for parameter `H` might change when a reliable and commonly used
 /// BuildHasher type available.
@@ -230,11 +209,6 @@ where
 
         array_length = (segment_count + arity - 1) * segment_length;
         let segment_count_length = segment_count * segment_length;
-        let finger_prints = {
-            let mut fp = Vec::with_capacity(array_length as usize);
-            fp.resize(array_length as usize, 0);
-            fp
-        };
 
         Fuse8 {
             keys: Some(BTreeMap::new()),
@@ -244,7 +218,7 @@ where
             segment_length_mask,
             segment_count,
             segment_count_length,
-            finger_prints,
+            finger_prints: vec![0; array_length as usize],
         }
     }
 }
@@ -298,13 +272,13 @@ where
     // a return value of false is provided.
     /// Build bitmap for keys that where previously inserted using [Fuse8::insert],
     /// [Fuse8::populate] and [Fuse8::populate_keys] method.
-    pub fn build(&mut self) {
+    pub fn build(&mut self) -> Result<()> {
         match self.keys.take() {
             Some(keys) => {
                 let digests = keys.iter().map(|(k, _)| *k).collect::<Vec<u64>>();
-                self.build_keys(&digests);
+                self.build_keys(&digests)
             }
-            None => (),
+            None => Ok(()),
         }
     }
 
@@ -314,14 +288,18 @@ where
     ///
     /// It is upto the caller to ensure that digests are unique, that there no
     /// duplicates.
-    pub fn build_keys(&mut self, digests: &[u64]) {
+    pub fn build_keys(&mut self, digests: &[u64]) -> Result<()> {
         let mut rng_counter = 0x726b2b9d438b9d4d_u64;
         let capacity = self.finger_prints.len();
         let size = digests.len();
 
         self.seed = binary_fuse_rng_splitmix64(&mut rng_counter);
-        let (mut reverse_order, mut reverse_h, mut alone, mut t2count, mut t2hash) =
-            alloc_locals!(size, capacity);
+
+        let mut reverse_order: Vec<u64> = vec![0; size + 1];
+        let mut reverse_h: Vec<u8> = vec![0; size];
+        let mut alone: Vec<u32> = vec![0; capacity as usize];
+        let mut t2count: Vec<u8> = vec![0; capacity as usize];
+        let mut t2hash: Vec<u64> = vec![0; capacity as usize];
 
         let mut block_bits: u32 = 1;
         while (1_u32 << block_bits) < self.segment_count {
@@ -330,16 +308,15 @@ where
 
         let block = 1_u32 << block_bits;
 
-        let mut start_pos: Vec<u32> = Vec::with_capacity(1 << block_bits);
-        start_pos.resize(1 << block_bits, 0);
+        let mut start_pos: Vec<u32> = vec![0; 1 << block_bits];
 
         let mut h012 = [0_u32; 5];
 
         reverse_order[size] = 1; // sentinel
         let mut iter = 0..=XOR_MAX_ITERATIONS;
         loop {
-            if let None = iter.next() {
-                panic!("Too many iterations. Are all your keys unique?");
+            if iter.next().is_none() {
+                err_at!(Fatal, msg: "Too many iterations. Are all your keys unique?")?;
             }
 
             for i in 0_u32..block {
@@ -350,8 +327,8 @@ where
             }
 
             let mask_block = (block - 1) as u64;
-            for i in 0_usize..size {
-                let hash: u64 = binary_fuse_murmur64(digests[i].wrapping_add(self.seed));
+            for (_, digest) in digests.iter().enumerate().take(size) {
+                let hash: u64 = binary_fuse_murmur64(digest.wrapping_add(self.seed));
                 let mut segment_index: u64 = hash >> (64 - block_bits);
                 while reverse_order[start_pos[segment_index as usize] as usize] != 0 {
                     segment_index += 1;
@@ -362,8 +339,8 @@ where
             }
 
             let mut error: isize = 0;
-            for i in 0_usize..size {
-                let hash: u64 = reverse_order[i];
+            for (_, rev_order) in reverse_order.iter().enumerate().take(size) {
+                let hash: u64 = *rev_order;
 
                 let h0: usize = self.binary_fuse8_hash(0, hash) as usize;
                 t2count[h0] = t2count[h0].wrapping_add(4);
@@ -391,9 +368,9 @@ where
             let mut q_size = 0_usize; // End of key addition
 
             // Add sets with one key to the queue.
-            for i in 0_usize..capacity {
+            for (i, x) in t2count.iter().enumerate().take(capacity) {
                 alone[q_size] = i as u32;
-                q_size += if (t2count[i] >> 2) == 1 { 1 } else { 0 };
+                q_size += if (x >> 2) == 1 { 1 } else { 0 };
             }
 
             let mut stack_size = 0_usize;
@@ -466,6 +443,8 @@ where
                 ^ self.finger_prints[h012[found + 1] as usize]
                 ^ self.finger_prints[h012[found + 2] as usize];
         }
+
+        Ok(())
     }
 }
 

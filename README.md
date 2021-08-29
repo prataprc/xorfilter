@@ -1,4 +1,5 @@
 ![](https://github.com/bnclabs/xorfilter/workflows/simple-build-test/badge.svg)
+[![Rustdoc](https://img.shields.io/badge/rustdoc-hosted-blue.svg)](https://docs.rs/xorfilter-rs)
 
 Rust library implementing xor filters
 -------------------------------------
@@ -81,8 +82,8 @@ Contribution
 * Before creating a PR,
   * Run `make build` to confirm all versions of build is passing with
     0 warnings and 0 errors.
-  * Run `check.sh` with 0 warnings, 0 errors and all testcases passing.
-  * Run `perf.sh` with 0 warnings, 0 errors and all testcases passing.
+  * Run `check.sh` with 0 warnings, 0 errors and all test-cases passing.
+  * Run `perf.sh` with 0 warnings, 0 errors and all test-cases passing.
   * [Install][spellcheck] and run `cargo spellcheck` to remove common spelling mistakes.
 * [Developer certificate of origin][dco] is preferred.
 

@@ -3,12 +3,12 @@ use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
 
 fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
     let mut keys: Vec<u64> = Vec::with_capacity(size);
-    keys.resize(size, Default::default());
+    keys.resize(size, u64::default());
 
     for key in keys.iter_mut() {
         *key = rng.gen();
     }
-    keys.sort();
+    keys.sort_unstable();
     keys.dedup();
 
     for _i in 0..(size - keys.len()) {
@@ -52,7 +52,7 @@ where
     // insert api
     keys3.iter().for_each(|key| filter.insert(key));
 
-    filter.build();
+    filter.build().expect("failed build");
 
     // contains api
     for key in keys.iter() {
@@ -106,7 +106,7 @@ where
             hasher.finish()
         })
         .collect();
-    filter.build_keys(&digests);
+    filter.build_keys(&digests).expect("failed build_keys");
 
     // contains api
     for key in keys.iter() {
@@ -144,7 +144,7 @@ fn test_xor8() {
     let mut seed: u128 = random();
     println!("test_xor8 seed:{}", seed);
 
-    for size in [0, 1, 2, 10, 1000, 10000, 100000, 1000000, 10000000].iter() {
+    for size in [0, 1, 2, 10, 1000, 10_000, 100_000, 1_000_000, 10_000_000].iter() {
         seed = seed.wrapping_add(*size as u128);
         test_xor8_build::<RandomState>("RandomState", seed, *size);
         test_xor8_build::<BuildHasherDefault>("BuildHasherDefault", seed, *size);
@@ -159,7 +159,7 @@ fn test_xor8_billion() {
     let seed: u128 = random();
     println!("test_xor8_billion seed:{}", seed);
 
-    let size = 1000_000_000;
+    let size = 1_000_000_000;
     test_xor8_build::<RandomState>("RandomState", seed, size);
     test_xor8_build::<BuildHasherDefault>("BuildHasherDefault", seed, size);
     test_xor8_build_keys::<RandomState>("RandomState", seed, size);

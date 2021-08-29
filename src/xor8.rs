@@ -11,10 +11,10 @@ use std::{
     convert::TryInto,
     ffi, fs,
     hash::{BuildHasher, Hash, Hasher},
-    io::{self, Error, ErrorKind, Read, Write},
+    io::{self, ErrorKind, Read, Write},
 };
 
-use crate::BuildHasherDefault;
+use crate::{BuildHasherDefault, Result};
 
 fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
@@ -77,13 +77,13 @@ struct KeyIndex {
 /// [BuildHasherDefault] is used as the default hash-builder.
 ///
 /// If `RandomState` is used as BuildHasher, `std` has got this to say
-/// > A particular instance RandomState will create the same instances
-/// > of Hasher, but the hashers created by two different RandomState
-/// > instances are unlikely to produce the same result for the same values.
+/// > _A particular instance RandomState will create the same instances
+/// > of Hasher, but the hashers created by two different RandomState_
+/// > instances are unlikely to produce the same result for the same values._
 ///
 /// If [DefaultHasher] is used as BuildHasher, `std` has got this to say,
-/// > The internal algorithm is not specified, and so its hashes
-/// > should not be relied upon over releases.
+/// > _The internal algorithm is not specified, and so its hashes
+/// > should not be relied upon over releases._
 ///
 /// The default type for parameter `H` might change when a reliable and commonly used
 /// BuildHasher type is available.
@@ -141,9 +141,9 @@ where
         Xor8 {
             keys: Some(BTreeMap::new()),
             hash_builder,
-            seed: Default::default(),
-            block_length: Default::default(),
-            finger_prints: Default::default(),
+            seed: u64::default(),
+            block_length: u32::default(),
+            finger_prints: Vec::default(),
         }
     }
 }
@@ -183,13 +183,13 @@ where
 
     /// Build bitmap for keys that where previously inserted using [Xor8::insert],
     /// [Xor8::populate] and [Xor8::populate_keys] method.
-    pub fn build(&mut self) {
+    pub fn build(&mut self) -> Result<()> {
         match self.keys.take() {
             Some(keys) => {
                 let digests = keys.iter().map(|(k, _)| *k).collect::<Vec<u64>>();
-                self.build_keys(&digests);
+                self.build_keys(&digests)
             }
-            None => (),
+            None => Ok(()),
         }
     }
 
@@ -199,7 +199,7 @@ where
     ///
     /// It is upto the caller to ensure that digests are unique, that there no
     /// duplicates.
-    pub fn build_keys(&mut self, digests: &[u64]) {
+    pub fn build_keys(&mut self, digests: &[u64]) -> Result<()> {
         let (size, mut rngcounter) = (digests.len(), 1_u64);
         let capacity = {
             let capacity = 32 + ((1.23 * (size as f64)).ceil() as u32);
@@ -207,16 +207,16 @@ where
         };
         self.seed = splitmix64(&mut rngcounter);
         self.block_length = capacity / 3;
-        self.finger_prints = vec![Default::default(); capacity as usize];
+        self.finger_prints = vec![u8::default(); capacity as usize];
 
         let block_length = self.block_length as usize;
         let mut q0: Vec<KeyIndex> = Vec::with_capacity(block_length);
         let mut q1: Vec<KeyIndex> = Vec::with_capacity(block_length);
         let mut q2: Vec<KeyIndex> = Vec::with_capacity(block_length);
         let mut stack: Vec<KeyIndex> = Vec::with_capacity(size);
-        let mut sets0: Vec<XorSet> = vec![Default::default(); block_length];
-        let mut sets1: Vec<XorSet> = vec![Default::default(); block_length];
-        let mut sets2: Vec<XorSet> = vec![Default::default(); block_length];
+        let mut sets0: Vec<XorSet> = vec![XorSet::default(); block_length];
+        let mut sets1: Vec<XorSet> = vec![XorSet::default(); block_length];
+        let mut sets2: Vec<XorSet> = vec![XorSet::default(); block_length];
 
         loop {
             for key in digests.iter() {
@@ -360,13 +360,13 @@ where
             }
 
             for item in sets0.iter_mut() {
-                *item = Default::default();
+                *item = XorSet::default();
             }
             for item in sets1.iter_mut() {
-                *item = Default::default();
+                *item = XorSet::default();
             }
             for item in sets2.iter_mut() {
-                *item = Default::default();
+                *item = XorSet::default();
             }
             self.seed = splitmix64(&mut rngcounter)
         }
@@ -388,6 +388,8 @@ where
             }
             self.finger_prints[ki.index as usize] = val;
         }
+
+        Ok(())
     }
 }
 
@@ -463,7 +465,7 @@ where
 /// TODO: <https://github.com/bnclabs/xorfilter/issues/1>
 impl<H> Xor8<H>
 where
-    H: Default + Clone + Into<Vec<u8>> + From<Vec<u8>> + BuildHasher,
+    H: Into<Vec<u8>> + From<Vec<u8>> + BuildHasher,
 {
     /// File signature write on first 4 bytes of file.
     /// ^ stands for xor
@@ -481,7 +483,10 @@ where
 
     /// Write to file in binary format
     /// TODO Add chechsum of finger_prints into file headers
-    pub fn write_file(&self, path: &ffi::OsStr) -> io::Result<usize> {
+    pub fn write_file(&self, path: &ffi::OsStr) -> io::Result<usize>
+    where
+        H: Clone,
+    {
         let mut f = fs::File::create(path)?;
         let buf = self.to_bytes();
         f.write_all(&buf)?;
@@ -499,7 +504,10 @@ where
         Self::from_bytes(data)
     }
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+    pub fn to_bytes(&self) -> Vec<u8>
+    where
+        H: Clone,
+    {
         let capacity = Self::METADATA_LENGTH + self.finger_prints.len();
         let mut buf: Vec<u8> = Vec::with_capacity(capacity);
         buf.extend_from_slice(&Xor8::<H>::SIGNATURE_V2);
@@ -515,7 +523,12 @@ where
         buf
     }
 
-    pub fn from_bytes(buf: Vec<u8>) -> io::Result<Self> {
+    pub fn from_bytes(buf: Vec<u8>) -> io::Result<Self>
+    where
+        H: Default,
+    {
+        use std::io::Error;
+
         let mut n = 0;
 
         // validate the buf first.
@@ -570,6 +583,8 @@ where
     where
         H: Default,
     {
+        use std::io::Error;
+
         // validate the buf first.
         if Self::METADATA_LENGTH > buf.len() {
             return Err(Error::new(ErrorKind::InvalidData, "invalid byte slice"));
