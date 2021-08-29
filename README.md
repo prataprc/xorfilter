@@ -1,5 +1,5 @@
-![](https://github.com/bnclabs/xorfilter/workflows/simple-build-test/badge.svg)
 [![Rustdoc](https://img.shields.io/badge/rustdoc-hosted-blue.svg)](https://docs.rs/xorfilter-rs)
+[![simple-build-test](https://github.com/bnclabs/xorfilter/actions/workflows/simple-build-test.yml/badge.svg)](https://github.com/bnclabs/xorfilter/actions/workflows/simple-build-test.yml)
 
 Rust library implementing xor filters
 -------------------------------------
