@@ -4,33 +4,17 @@ use std::ffi;
 
 use xorfilter::{BuildHasherDefault, Xor8};
 
-/// Generate a filter with random keys
-fn generate_filter() -> Xor8<BuildHasherDefault> {
-    let seed: u128 = random();
-    println!("seed {}", seed);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
-
-    let testsize = 10000;
-    let mut keys: Vec<u64> = Vec::with_capacity(testsize);
-    keys.resize(testsize, Default::default());
-    for key in keys.iter_mut() {
-        *key = rng.gen();
-    }
-
-    let mut filter = Xor8::<BuildHasherDefault>::new();
-    filter.populate(&keys);
-    filter.build();
-    filter
-}
-
 #[test]
 fn test_same_filter_encode_decode() {
+    let seed: u128 = random();
+    println!("test_same_filter_encode_decode seed:{}", seed);
+
     let file_path = {
         let mut fpath = std::env::temp_dir();
         fpath.push("xorfilter-test-same-filter-encode-decode");
         fpath.into_os_string()
     };
-    let filter = generate_filter();
+    let filter = generate_filter(seed);
 
     filter
         .write_file(&file_path)
@@ -42,22 +26,11 @@ fn test_same_filter_encode_decode() {
         "Filter unequals after encode and decode"
     );
 
-    let filter_second = generate_filter();
+    let filter_second = generate_filter(seed + 1000);
     assert!(
         filter_read != filter_second,
         "Random generated filters should not be the same"
     );
-}
-
-// hack to generate tl1 serialized Xor8 instance.
-#[allow(dead_code)]
-fn save_file(file_path: ffi::OsString, keys: &[u32]) {
-    let mut filter = Xor8::<BuildHasherDefault>::new();
-    filter.populate(&keys);
-    filter.build();
-    filter
-        .write_file(&file_path)
-        .expect("error saving tl1 to file");
 }
 
 #[test]
@@ -97,7 +70,10 @@ fn test_same_filter_bytes_encoding_tl1() {
 
 #[test]
 fn test_same_filter_bytes_encoding_tl2() {
-    let filter = generate_filter();
+    let seed: u128 = random();
+    println!("test_same_filter_bytes_encoding_tl1 seed:{}", seed);
+
+    let filter = generate_filter(seed);
 
     let buf = filter.to_bytes();
     let filter_read =
@@ -107,7 +83,7 @@ fn test_same_filter_bytes_encoding_tl2() {
         "Filter unequals after encode and decode"
     );
 
-    let filter_second = generate_filter();
+    let filter_second = generate_filter(seed + 1000);
     assert!(
         filter_read != filter_second,
         "Random generated filters should not be the same"
@@ -142,4 +118,32 @@ fn test_string_keys() {
     assert!(!filter.contains("show up with cod"));
     // String not in keys(rust_tips)
     assert!(!filter.contains("No magic, just code"));
+}
+
+/// Generate a filter with random keys
+fn generate_filter(seed: u128) -> Xor8<BuildHasherDefault> {
+    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+
+    let testsize = 10000;
+    let mut keys: Vec<u64> = Vec::with_capacity(testsize);
+    keys.resize(testsize, Default::default());
+    for key in keys.iter_mut() {
+        *key = rng.gen();
+    }
+
+    let mut filter = Xor8::<BuildHasherDefault>::new();
+    filter.populate(&keys);
+    filter.build();
+    filter
+}
+
+// hack to generate tl1 serialized Xor8 instance.
+#[allow(dead_code)]
+fn save_file(file_path: ffi::OsString, keys: &[u32]) {
+    let mut filter = Xor8::<BuildHasherDefault>::new();
+    filter.populate(&keys);
+    filter.build();
+    filter
+        .write_file(&file_path)
+        .expect("error saving tl1 to file");
 }
