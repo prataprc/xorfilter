@@ -1,3 +1,29 @@
+0.5.0
+=====
+
+**Breaking Change**
+
+File version moves from `TL1` to `TL2`.
+  * Now includes `hash_builder` field as part of Xor8 serialization.
+  * Test cases for TL1 (backward compatibility) and TL2.
+  * METADATA includes length of the serialized `hash_builder`.
+  * Shape of the serialized file has changed.
+  * `Xor8::write_file`, `Xor8::read_file`, `Xor8::to_bytes`, `Xor8::from_bytes`
+    methods expect that type parameter implements `Default`, `Clone`,
+    `From<Vec<u8>>`, `Into<Vec<u8>>` traits.
+
+* Bugfix: Check for duplicate key-digest. It is possible that, when using
+  `insert()`, `populate()`, keys could generate duplicate digest. This will
+  lead to failure while building the filter. To mitigate this issue we are
+  maintaining the digests in sort order.
+* `Fuse8` and `Fuse16` implementation.
+* hasher: NoHash, to use the types and its methods using `u64` digests.
+* Add `size_of()` method to filter types.
+* Support key-set of size 0, 1, and 2.
+* Improve test cases.
+* rustdoc
+* cargo: fix category slug
+
 0.4.0
 =====
 
