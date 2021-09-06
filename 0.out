@@ -1,0 +1,1139 @@
++ date
+Mon 06 Sep 2021 05:43:40 PM IST
++ exec_prg
++ for i in {0..5}
++ cargo +nightly test --release -- --nocapture
+    Finished release [optimized + debuginfo] target(s) in 0.03s
+     Running unittests (/home/prataprc/.cargo/target/release/deps/xorfilter-766e41993670f8e4)
+
+running 9 tests
+test_fuse8_duplicates
+test_fuse16 seed:277368073673380887632383970413666369758
+test_fuse16_build<RandomState> size:0
+test_fuse16_build<RandomState> bits per entry inf bits
+test_fuse8_u16 seed:184572393009678833965388570529298577564
+test_fuse8_build<RandomState,16> size:0
+test_fuse8_build<RandomState,16> bits per entry inf bits
+test_fuse8_u64 seed:277368073673380887632383970413666369758
+test_fuse8_build<RandomState,16> size:0
+test fuse16::fuse16_test::test_fuse16_billion ... ignored
+test_fuse8_build<RandomState,16> bits per entry inf bits
+test_fuse8_u8 seed:214286934474728707134695831624241168955
+test_fuse8_build<RandomState,u8> size:0
+test_xor8 seed:146126941837140989999113047249580861606
+test_xor8_build<RandomState> size:0
+test_xor8_build<RandomState> bits per entry inf bits
+test_fuse8_build<RandomState,u8> bits per entry inf bits
+test fuse8::fuse8_test::test_fuse8_billion ... ignored
+test fuse8::fuse8_test::test_fuse8_duplicates ... ok
+test xor8::xor8_test::test_xor8_billion ... ignored
+test_fuse8_build<RandomState,16> false positive rate 0.35544%
+test_fuse8_build<BuildHasherDefault,16> size:0
+test_fuse8_build<BuildHasherDefault,16> bits per entry inf bits
+test_fuse8_build<RandomState,u8> false positive rate 0%
+test_fuse8_build<BuildHasherDefault,u8> size:0
+test_fuse8_build<BuildHasherDefault,u8> bits per entry inf bits
+test_fuse8_build<RandomState,16> false positive rate 0.39113%
+test_fuse8_build<BuildHasherDefault,16> size:0
+test_fuse8_build<BuildHasherDefault,16> bits per entry inf bits
+test_fuse16_build<RandomState> false positive rate 0.00152%
+test_fuse16_build<BuildHasherDefault> size:0
+test_fuse16_build<BuildHasherDefault> bits per entry inf bits
+test_xor8_build<RandomState> false positive rate 0.39023%
+test_xor8_build<BuildHasherDefault> size:0
+test_xor8_build<BuildHasherDefault> bits per entry inf bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.45952%
+test_fuse8_build_keys<RandomState,16> size:0
+test_fuse8_build_keys<RandomState,16> bits per entry inf bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00135%
+test_fuse16_build_keys<RandomState> size:0
+test_fuse16_build_keys<RandomState> bits per entry inf bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 0.39002%
+test_fuse8_build_keys<RandomState,u8> size:0
+test_fuse8_build_keys<RandomState,u8> bits per entry inf bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38718%
+test_fuse8_build_keys<RandomState,16> size:0
+test_fuse8_build_keys<RandomState,16> bits per entry inf bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39175%
+test_xor8_build_keys<RandomState> size:0
+test_xor8_build_keys<RandomState> bits per entry inf bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.3818%
+test_fuse8_build_keys<BuildHasherDefault,16> size:0
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry inf bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 0.39073%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:0
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry inf bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00168%
+test_fuse16_build_keys<BuildHasherDefault> size:0
+test_fuse16_build_keys<BuildHasherDefault> bits per entry inf bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39309%
+test_fuse8_build_keys<BuildHasherDefault> size:0
+test_fuse8_build_keys<BuildHasherDefault> bits per entry inf bits
+test_xor8_build_keys<RandomState> false positive rate 0.39033%
+test_xor8_build_keys<BuildHasherDefault> size:0
+test_xor8_build_keys<BuildHasherDefault> bits per entry inf bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00135%
+test_fuse16_build<RandomState> size:1
+test_fuse16_build<RandomState> bits per entry 192 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 0.45952%
+test_fuse8_build<RandomState,16> size:1
+test_fuse8_build<RandomState,16> bits per entry 96 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 0.39002%
+test_fuse8_build<RandomState,u8> size:1
+test_fuse8_build<RandomState,u8> bits per entry 96 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38718%
+test_fuse8_build<RandomState,16> size:1
+test_fuse8_build<RandomState,16> bits per entry 96 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39175%
+test_xor8_build<RandomState> size:1
+test_xor8_build<RandomState> bits per entry 264 bits
+test_fuse8_build<RandomState,16> false positive rate 0.40804%
+test_fuse8_build<BuildHasherDefault,16> size:1
+test_fuse8_build<BuildHasherDefault,16> bits per entry 96 bits
+test_fuse16_build<RandomState> false positive rate 0.00133%
+test_fuse16_build<BuildHasherDefault> size:1
+test_fuse16_build<BuildHasherDefault> bits per entry 192 bits
+test_fuse8_build<RandomState,u8> false positive rate 0.38918%
+test_fuse8_build<BuildHasherDefault,u8> size:1
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 96 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39371%
+test_fuse8_build<BuildHasherDefault,16> size:1
+test_fuse8_build<BuildHasherDefault,16> bits per entry 96 bits
+test_xor8_build<RandomState> false positive rate 0.39273%
+test_xor8_build<BuildHasherDefault> size:1
+test_xor8_build<BuildHasherDefault> bits per entry 264 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.44476%
+test_fuse8_build_keys<RandomState,16> size:1
+test_fuse8_build_keys<RandomState,16> bits per entry 96 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00143%
+test_fuse16_build_keys<RandomState> size:1
+test_fuse16_build_keys<RandomState> bits per entry 192 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 0.77799%
+test_fuse8_build_keys<RandomState,u8> size:1
+test_fuse8_build_keys<RandomState,u8> bits per entry 96 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38825%
+test_fuse8_build_keys<RandomState,16> size:1
+test_fuse8_build_keys<RandomState,16> bits per entry 96 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39158%
+test_xor8_build_keys<RandomState> size:1
+test_xor8_build_keys<RandomState> bits per entry 264 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.41146%
+test_fuse8_build_keys<BuildHasherDefault,16> size:1
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 96 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00145%
+test_fuse16_build_keys<BuildHasherDefault> size:1
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 192 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 2.34587%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:1
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 96 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39218%
+test_fuse8_build_keys<BuildHasherDefault> size:1
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 96 bits
+test_xor8_build_keys<RandomState> false positive rate 0.39524%
+test_xor8_build_keys<BuildHasherDefault> size:1
+test_xor8_build_keys<BuildHasherDefault> bits per entry 264 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00143%
+test_fuse16_build<RandomState> size:2
+test_fuse16_build<RandomState> bits per entry 96 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 0.44476%
+test_fuse8_build<RandomState,16> size:2
+test_fuse8_build<RandomState,16> bits per entry 48 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 0.77799%
+test_fuse8_build<RandomState,u8> size:2
+test_fuse8_build<RandomState,u8> bits per entry 48 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38825%
+test_fuse8_build<RandomState,16> size:2
+test_fuse8_build<RandomState,16> bits per entry 48 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39158%
+test_xor8_build<RandomState> size:2
+test_xor8_build<RandomState> bits per entry 132 bits
+test_fuse16_build<RandomState> false positive rate 0.00154%
+test_fuse16_build<BuildHasherDefault> size:2
+test_fuse16_build<BuildHasherDefault> bits per entry 96 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39072%
+test_fuse8_build<BuildHasherDefault,16> size:2
+test_fuse8_build<BuildHasherDefault,16> bits per entry 48 bits
+test_fuse8_build<RandomState,u8> false positive rate 1.16832%
+test_fuse8_build<BuildHasherDefault,u8> size:2
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 48 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39387%
+test_fuse8_build<BuildHasherDefault,16> size:2
+test_fuse8_build<BuildHasherDefault,16> bits per entry 48 bits
+test_xor8_build<RandomState> false positive rate 0.38998%
+test_xor8_build<BuildHasherDefault> size:2
+test_xor8_build<BuildHasherDefault> bits per entry 132 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00156%
+test_fuse16_build_keys<RandomState> size:2
+test_fuse16_build_keys<RandomState> bits per entry 96 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.44193%
+test_fuse8_build_keys<RandomState,16> size:2
+test_fuse8_build_keys<RandomState,16> bits per entry 48 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 1.17151%
+test_fuse8_build_keys<RandomState,u8> size:2
+test_fuse8_build_keys<RandomState,u8> bits per entry 48 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.39505%
+test_fuse8_build_keys<RandomState,16> size:2
+test_fuse8_build_keys<RandomState,16> bits per entry 48 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39192%
+test_xor8_build_keys<RandomState> size:2
+test_xor8_build_keys<RandomState> bits per entry 132 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00158%
+test_fuse16_build_keys<BuildHasherDefault> size:2
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 96 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.37722%
+test_fuse8_build_keys<BuildHasherDefault,16> size:2
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 48 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 0.77906%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:2
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 48 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39117%
+test_fuse8_build_keys<BuildHasherDefault> size:2
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 48 bits
+test_xor8_build_keys<RandomState> false positive rate 0.39211%
+test_xor8_build_keys<BuildHasherDefault> size:2
+test_xor8_build_keys<BuildHasherDefault> bits per entry 132 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00156%
+test_fuse16_build<RandomState> size:10
+test_fuse16_build<RandomState> bits per entry 76.8 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 0.44193%
+test_fuse8_build<RandomState,16> size:10
+test_fuse8_build<RandomState,16> bits per entry 38.4 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 1.17151%
+test_fuse8_build<RandomState,u8> size:10
+test_fuse8_build<RandomState,u8> bits per entry 38.4 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.39505%
+test_fuse8_build<RandomState,16> size:10
+test_fuse8_build<RandomState,16> bits per entry 38.4 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39192%
+test_xor8_build<RandomState> size:10
+test_xor8_build<RandomState> bits per entry 36 bits
+test_fuse16_build<RandomState> false positive rate 0.00148%
+test_fuse16_build<BuildHasherDefault> size:10
+test_fuse16_build<BuildHasherDefault> bits per entry 76.8 bits
+test_fuse8_build<RandomState,16> false positive rate 0.38029%
+test_fuse8_build<BuildHasherDefault,16> size:10
+test_fuse8_build<BuildHasherDefault,16> bits per entry 38.4 bits
+test_fuse8_build<RandomState,u8> false positive rate 4.28425%
+test_fuse8_build<BuildHasherDefault,u8> size:10
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 38.4 bits
+test_fuse8_build<RandomState,16> false positive rate 0.38924%
+test_fuse8_build<BuildHasherDefault,16> size:10
+test_fuse8_build<BuildHasherDefault,16> bits per entry 38.4 bits
+test_xor8_build<RandomState> false positive rate 0.39133%
+test_xor8_build<BuildHasherDefault> size:10
+test_xor8_build<BuildHasherDefault> bits per entry 36 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00152%
+test_fuse16_build_keys<RandomState> size:10
+test_fuse16_build_keys<RandomState> bits per entry 76.8 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.46192%
+test_fuse8_build_keys<RandomState,16> size:10
+test_fuse8_build_keys<RandomState,16> bits per entry 38.4 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 3.89561%
+test_fuse8_build_keys<RandomState,u8> size:10
+test_fuse8_build_keys<RandomState,u8> bits per entry 38.4 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38873%
+test_fuse8_build_keys<RandomState,16> size:10
+test_fuse8_build_keys<RandomState,16> bits per entry 38.4 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39615%
+test_xor8_build_keys<RandomState> size:10
+test_xor8_build_keys<RandomState> bits per entry 36 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.0014%
+test_fuse16_build_keys<BuildHasherDefault> size:10
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 76.8 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.40603%
+test_fuse8_build_keys<BuildHasherDefault,16> size:10
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 38.4 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 3.89561%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:10
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 38.4 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.38886%
+test_fuse8_build_keys<BuildHasherDefault> size:10
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 38.4 bits
+test_xor8_build_keys<RandomState> false positive rate 0.3925%
+test_xor8_build_keys<BuildHasherDefault> size:10
+test_xor8_build_keys<BuildHasherDefault> bits per entry 36 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00152%
+test_fuse16_build<RandomState> size:1000
+test_fuse16_build<RandomState> bits per entry 22.528 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 0.46192%
+test_fuse8_build<RandomState,16> size:1000
+test_fuse8_build<RandomState,16> bits per entry 11.264 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 3.89561%
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38873%
+test_fuse8_build<RandomState,16> size:1000
+test_fuse8_build<RandomState,16> bits per entry 11.264 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39615%
+test_xor8_build<RandomState> size:1000
+test_xor8_build<RandomState> bits per entry 10.08 bits
+test_fuse16_build<RandomState> false positive rate 0.00149%
+test_fuse16_build<BuildHasherDefault> size:1000
+test_fuse16_build<BuildHasherDefault> bits per entry 22.528 bits
+test_fuse8_build<RandomState,16> false positive rate 1.89301%
+test_fuse8_build<BuildHasherDefault,16> size:1000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 11.264 bits
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39005%
+test_fuse8_build<BuildHasherDefault,16> size:1000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 11.264 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00167%
+test_fuse16_build_keys<RandomState> size:1000
+test_fuse16_build_keys<RandomState> bits per entry 22.528 bits
+test_xor8_build<RandomState> false positive rate 0.39014%
+test_xor8_build<BuildHasherDefault> size:1000
+test_xor8_build<BuildHasherDefault> bits per entry 10.08 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 1.93129%
+test_fuse8_build_keys<RandomState,16> size:1000
+test_fuse8_build_keys<RandomState,16> bits per entry 11.264 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38849%
+test_fuse8_build_keys<RandomState,16> size:1000
+test_fuse8_build_keys<RandomState,16> bits per entry 11.264 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00154%
+test_fuse16_build_keys<BuildHasherDefault> size:1000
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 22.528 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39134%
+test_xor8_build_keys<RandomState> size:1000
+test_xor8_build_keys<RandomState> bits per entry 10.08 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 1.92096%
+test_fuse8_build_keys<BuildHasherDefault,16> size:1000
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 11.264 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39058%
+test_fuse8_build_keys<BuildHasherDefault> size:1000
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 11.264 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00167%
+test_fuse16_build<RandomState> size:10000
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 1.93129%
+test_fuse8_build<RandomState,16> size:9889
+test_fuse8_build<RandomState,16> bits per entry 10.354939832136717 bits
+test_fuse16_build<RandomState> bits per entry 20.48 bits
+test_xor8_build_keys<RandomState> false positive rate 0.39265%
+test_xor8_build_keys<BuildHasherDefault> size:1000
+test_xor8_build_keys<BuildHasherDefault> bits per entry 10.08 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38849%
+test_fuse8_build<RandomState,16> size:10000
+test_fuse8_build<RandomState,16> bits per entry 10.24 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39134%
+test_xor8_build<RandomState> size:10000
+test_fuse16_build<RandomState> false positive rate 0.00125%
+test_fuse16_build<BuildHasherDefault> size:10000
+test_xor8_build<RandomState> bits per entry 9.864 bits
+test_fuse16_build<BuildHasherDefault> bits per entry 20.48 bits
+test_fuse8_build<RandomState,16> false positive rate 15.40808%
+test_fuse8_build<BuildHasherDefault,16> size:9889
+test_fuse8_build<BuildHasherDefault,16> bits per entry 10.354939832136717 bits
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build<RandomState,16> false positive rate 0.3904%
+test_fuse8_build<BuildHasherDefault,16> size:10000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 10.24 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00164%
+test_fuse16_build_keys<RandomState> size:10000
+test_fuse16_build_keys<RandomState> bits per entry 20.48 bits
+test_xor8_build<RandomState> false positive rate 0.39008%
+test_xor8_build<BuildHasherDefault> size:10000
+test_xor8_build<BuildHasherDefault> bits per entry 9.864 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 15.45565%
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_fuse8_build_keys<RandomState,16> size:9889
+test_fuse8_build_keys<RandomState,16> bits per entry 10.354939832136717 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38616%
+test_fuse8_build_keys<RandomState,16> size:10000
+test_fuse8_build_keys<RandomState,16> bits per entry 10.24 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.0015%
+test_fuse16_build_keys<BuildHasherDefault> size:10000
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 20.48 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39173%
+test_xor8_build_keys<RandomState> size:10000
+test_xor8_build_keys<RandomState> bits per entry 9.864 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 15.39787%
+test_fuse8_build_keys<BuildHasherDefault,16> size:9889
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 10.354939832136717 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39179%
+test_fuse8_build_keys<BuildHasherDefault> size:10000
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 10.24 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00164%
+test_fuse16_build<RandomState> size:100000
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test_xor8_build_keys<RandomState> false positive rate 0.38845%
+test_xor8_build_keys<BuildHasherDefault> size:10000
+test_xor8_build_keys<BuildHasherDefault> bits per entry 9.864 bits
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 15.45565%
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38616%
+test_fuse8_build<RandomState,16> size:100000
+test_fuse8_build<RandomState,16> bits per entry 9.50272 bits
+test_fuse16_build<RandomState> bits per entry 19.00544 bits
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39173%
+test_xor8_build<RandomState> size:100000
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_xor8_build<RandomState> bits per entry 9.8424 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39065%
+test_fuse8_build<BuildHasherDefault,16> size:100000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.50272 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_fuse16_build<RandomState> false positive rate 0.00152%
+test_fuse16_build<BuildHasherDefault> size:100000
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_fuse16_build<BuildHasherDefault> bits per entry 19.00544 bits
+test_xor8_build<RandomState> false positive rate 0.39093%
+test_xor8_build<BuildHasherDefault> size:100000
+test_xor8_build<BuildHasherDefault> bits per entry 9.8424 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38938%
+test_fuse8_build_keys<RandomState,16> size:100000
+test_fuse8_build_keys<RandomState,16> bits per entry 9.50272 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00168%
+test_fuse16_build_keys<RandomState> size:100000
+test_fuse16_build_keys<RandomState> bits per entry 19.00544 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39349%
+test_xor8_build_keys<RandomState> size:100000
+test_fuse8_build<RandomState,16> size:58792
+test_fuse8_build<RandomState,16> bits per entry 9.75370798748129 bits
+test_xor8_build_keys<RandomState> bits per entry 9.8424 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39184%
+test_fuse8_build_keys<BuildHasherDefault> size:100000
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 9.50272 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test_fuse16_build_keys<RandomState> false positive rate 0.00167%
+test_fuse16_build_keys<BuildHasherDefault> size:100000
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 19.00544 bits
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_fuse8_build<RandomState,16> false positive rate 89.7583%
+test_xor8_build_keys<RandomState> false positive rate 0.38943%
+test_xor8_build_keys<BuildHasherDefault> size:100000
+test_xor8_build_keys<BuildHasherDefault> bits per entry 9.8424 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38938%
+test_fuse8_build<RandomState,16> size:1000000
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00168%
+test_fuse16_build<RandomState> size:1000000
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_fuse8_build<RandomState,16> bits per entry 9.043968 bits
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39349%
+test_xor8_build<RandomState> size:1000000
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build<RandomState,16> false positive rate 0.3934%
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_fuse8_build<BuildHasherDefault,16> size:1000000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.043968 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse8_build<BuildHasherDefault,16> size:58792
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.75370798748129 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_xor8_build<RandomState> bits per entry 9.84024 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38974%
+test_fuse8_build_keys<RandomState,16> size:1000000
+test_fuse8_build<BuildHasherDefault,16> false positive rate 89.74795%
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build_keys<RandomState,16> bits per entry 9.043968 bits
+test_fuse16_build<RandomState> bits per entry 18.087936 bits
+test_xor8_build<RandomState> false positive rate 0.38918%
+test_xor8_build<BuildHasherDefault> size:1000000
+test_fuse8_build_keys<RandomState,16> false positive rate 0.3898%
+test_fuse16_build<RandomState> false positive rate 0.00172%
+test_fuse8_build_keys<BuildHasherDefault> size:1000000
+test_fuse16_build<BuildHasherDefault> size:1000000
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 9.043968 bits
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_xor8_build<BuildHasherDefault> bits per entry 9.84024 bits
+test_fuse8_build_keys<RandomState,16> size:58792
+test_fuse8_build_keys<RandomState,16> bits per entry 9.75370798748129 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38974%
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_fuse16_build<BuildHasherDefault> bits per entry 18.087936 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39255%
+test_xor8_build_keys<RandomState> size:1000000
+test_fuse8_build_keys<RandomState,16> false positive rate 89.74641%
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00151%
+test_fuse16_build_keys<RandomState> size:1000000
+test_xor8_build_keys<RandomState> bits per entry 9.84024 bits
+test_fuse8_build<RandomState,16> size:10000000
+test_fuse16_build_keys<RandomState> bits per entry 18.087936 bits
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_xor8_build_keys<RandomState> false positive rate 0.39066%
+test_xor8_build_keys<BuildHasherDefault> size:1000000
+test_fuse16_build_keys<RandomState> false positive rate 0.00164%
+test_fuse16_build_keys<BuildHasherDefault> size:1000000
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_xor8_build_keys<BuildHasherDefault> bits per entry 9.84024 bits
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 18.087936 bits
+test_fuse8_build_keys<BuildHasherDefault,16> size:58792
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 9.75370798748129 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39255%
+test_xor8_build<RandomState> size:10000000
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 89.74795%
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00151%
+test_fuse16_build<RandomState> size:10000000
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test fuse8::fuse8_test::test_fuse8_u8 ... ok
+test_fuse8_build<RandomState,16> bits per entry 9.0177536 bits
+test_fuse8_build<RandomState,16> false positive rate 0.3887%
+test_fuse8_build<BuildHasherDefault,16> size:10000000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.0177536 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38981%
+test_fuse8_build_keys<RandomState,16> size:10000000
+test_xor8_build<RandomState> bits per entry 9.840024 bits
+test_fuse8_build_keys<RandomState,16> bits per entry 9.0177536 bits
+test_fuse8_build<RandomState,16> size:65536
+test_fuse8_build<RandomState,16> bits per entry 9.5 bits
+test_fuse8_build<RandomState,16> false positive rate 100%
+test_fuse16_build<RandomState> bits per entry 18.0355072 bits
+test_xor8_build<RandomState> false positive rate 0.392%
+test_xor8_build<BuildHasherDefault> size:10000000
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39018%
+test_fuse8_build_keys<BuildHasherDefault> size:10000000
+test_fuse16_build<RandomState> false positive rate 0.00174%
+test_fuse16_build<BuildHasherDefault> size:10000000
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 9.0177536 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38981%
+test fuse8::fuse8_test::test_fuse8_u64 ... ok
+test_xor8_build<BuildHasherDefault> bits per entry 9.840024 bits
+test_fuse8_build<BuildHasherDefault,16> size:65536
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.5 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 100%
+test_fuse16_build<BuildHasherDefault> bits per entry 18.0355072 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.38901%
+test_xor8_build_keys<RandomState> size:10000000
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00148%
+test_fuse16_build_keys<RandomState> size:10000000
+test_xor8_build_keys<RandomState> bits per entry 9.840024 bits
+test_fuse16_build_keys<RandomState> bits per entry 18.0355072 bits
+test_xor8_build_keys<RandomState> false positive rate 0.38813%
+test_xor8_build_keys<BuildHasherDefault> size:10000000
+test_fuse16_build_keys<RandomState> false positive rate 0.00134%
+test_fuse16_build_keys<BuildHasherDefault> size:10000000
+test_xor8_build_keys<BuildHasherDefault> bits per entry 9.840024 bits
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 18.0355072 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.38901%
+test xor8::xor8_test::test_xor8 ... ok
+test_fuse8_build_keys<RandomState,16> size:65536
+test_fuse8_build_keys<RandomState,16> bits per entry 9.5 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 100%
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00148%
+test fuse16::fuse16_test::test_fuse16 ... ok
+test_fuse8_build_keys<BuildHasherDefault,16> size:65536
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 9.5 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 100%
+test fuse8::fuse8_test::test_fuse8_u16 has been running for over 60 seconds
+test_fuse8_build<RandomState,16> size:65536
+test_fuse8_build<RandomState,16> bits per entry 9.5 bits
+test_fuse8_build<RandomState,16> false positive rate 100%
+test_fuse8_build<BuildHasherDefault,16> size:65536
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.5 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 100%
+test_fuse8_build_keys<RandomState,16> size:65536
+test_fuse8_build_keys<RandomState,16> bits per entry 9.5 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,16> size:65536
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 9.5 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 100%
+test fuse8::fuse8_test::test_fuse8_u16 ... ok
+
+test result: ok. 6 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 494.98s
+
+     Running tests/xorfilter.rs (/home/prataprc/.cargo/target/release/deps/xorfilter-d756142f922eb31b)
+
+running 4 tests
+test test_string_keys ... oktest_same_filter_encode_decode seed:263447217685226670488692109605520466848
+
+test_same_filter_bytes_encoding_tl1 seed:109511877869973084665320651209811053104
+test test_same_filter_bytes_encoding_tl1 ... ok
+test test_same_filter_bytes_encoding_tl2 ... ok
+test test_same_filter_encode_decode ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+   Doc-tests xorfilter
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
++ cargo +nightly test -- --nocapture
+   Compiling xorfilter-rs v0.5.0 (/home/prataprc/myworld/devrs/xorfilter)
+    Finished test [unoptimized + debuginfo] target(s) in 0.80s
+     Running unittests (/home/prataprc/.cargo/target/debug/deps/xorfilter-326e4093c3bae167)
+
+running 9 tests
+test_fuse8_duplicates
+test fuse16::fuse16_test::test_fuse16_billion ... ignored
+test fuse8::fuse8_test::test_fuse8_billion ... ignored
+test xor8::xor8_test::test_xor8_billion ... ignored
+test fuse8::fuse8_test::test_fuse8_duplicates ... ok
+test_fuse8_u64 seed:277368073673380887632383970413666369758
+test_fuse8_u16 seed:54006752808882272739409156988461353914
+test_fuse16 seed:317243231098672456594515636835401398754
+test_fuse16_build<RandomState> size:0
+test_fuse8_build<RandomState,16> size:0
+test_fuse8_build<RandomState,16> size:0
+test_fuse16_build<RandomState> bits per entry inf bits
+test_fuse8_u8 seed:317243231098672456594515636835401398754
+test_fuse8_build<RandomState,16> bits per entry inf bits
+test_xor8 seed:230784000170710301114724886290151124238
+test_xor8_build<RandomState> size:0
+test_fuse8_build<RandomState,u8> size:0
+test_fuse8_build<RandomState,16> bits per entry inf bits
+test_xor8_build<RandomState> bits per entry inf bits
+test_fuse8_build<RandomState,u8> bits per entry inf bits
+test_fuse8_build<RandomState,u8> false positive rate 0.38916%
+test_fuse8_build<BuildHasherDefault,u8> size:0
+test_fuse8_build<BuildHasherDefault,u8> bits per entry inf bits
+test_fuse8_build<RandomState,16> false positive rate 0.37024%
+test_fuse8_build<BuildHasherDefault,16> size:0
+test_fuse8_build<BuildHasherDefault,16> bits per entry inf bits
+test_xor8_build<RandomState> false positive rate 0.39244%
+test_xor8_build<BuildHasherDefault> size:0
+test_xor8_build<BuildHasherDefault> bits per entry inf bits
+test_fuse8_build<RandomState,16> false positive rate 0.3902%
+test_fuse8_build<BuildHasherDefault,16> size:0
+test_fuse8_build<BuildHasherDefault,16> bits per entry inf bits
+test_fuse16_build<RandomState> false positive rate 0.00146%
+test_fuse16_build<BuildHasherDefault> size:0
+test_fuse16_build<BuildHasherDefault> bits per entry inf bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 0.39291%
+test_fuse8_build_keys<RandomState,u8> size:0
+test_fuse8_build_keys<RandomState,u8> bits per entry inf bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.46057%
+test_fuse8_build_keys<RandomState,16> size:0
+test_fuse8_build_keys<RandomState,16> bits per entry inf bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.38962%
+test_xor8_build_keys<RandomState> size:0
+test_xor8_build_keys<RandomState> bits per entry inf bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38718%
+test_fuse8_build_keys<RandomState,16> size:0
+test_fuse8_build_keys<RandomState,16> bits per entry inf bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00158%
+test_fuse16_build_keys<RandomState> size:0
+test_fuse16_build_keys<RandomState> bits per entry inf bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 0.39216%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:0
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry inf bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39729%
+test_fuse8_build_keys<BuildHasherDefault,16> size:0
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry inf bits
+test_xor8_build_keys<RandomState> false positive rate 0.38832%
+test_xor8_build_keys<BuildHasherDefault> size:0
+test_xor8_build_keys<BuildHasherDefault> bits per entry inf bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39202%
+test_fuse8_build_keys<BuildHasherDefault> size:0
+test_fuse8_build_keys<BuildHasherDefault> bits per entry inf bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00146%
+test_fuse16_build_keys<BuildHasherDefault> size:0
+test_fuse16_build_keys<BuildHasherDefault> bits per entry inf bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 0.39291%
+test_fuse8_build<RandomState,u8> size:1
+test_fuse8_build<RandomState,u8> bits per entry 96 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 0.46057%
+test_fuse8_build<RandomState,16> size:1
+test_fuse8_build<RandomState,16> bits per entry 96 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.38962%
+test_xor8_build<RandomState> size:1
+test_xor8_build<RandomState> bits per entry 264 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38718%
+test_fuse8_build<RandomState,16> size:1
+test_fuse8_build<RandomState,16> bits per entry 96 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00158%
+test_fuse16_build<RandomState> size:1
+test_fuse16_build<RandomState> bits per entry 192 bits
+test_fuse8_build<RandomState,u8> false positive rate 1.17471%
+test_fuse8_build<BuildHasherDefault,u8> size:1
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 96 bits
+test_fuse8_build<RandomState,16> false positive rate 0.4112%
+test_fuse8_build<BuildHasherDefault,16> size:1
+test_fuse8_build<BuildHasherDefault,16> bits per entry 96 bits
+test_xor8_build<RandomState> false positive rate 0.39308%
+test_xor8_build<BuildHasherDefault> size:1
+test_xor8_build<BuildHasherDefault> bits per entry 264 bits
+test_fuse8_build<RandomState,16> false positive rate 0.38734%
+test_fuse8_build<BuildHasherDefault,16> size:1
+test_fuse8_build<BuildHasherDefault,16> bits per entry 96 bits
+test_fuse16_build<RandomState> false positive rate 0.00155%
+test_fuse16_build<BuildHasherDefault> size:1
+test_fuse16_build<BuildHasherDefault> bits per entry 192 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 0.78229%
+test_fuse8_build_keys<RandomState,u8> size:1
+test_fuse8_build_keys<RandomState,u8> bits per entry 96 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.43206%
+test_fuse8_build_keys<RandomState,16> size:1
+test_fuse8_build_keys<RandomState,16> bits per entry 96 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.38985%
+test_xor8_build_keys<RandomState> size:1
+test_xor8_build_keys<RandomState> bits per entry 264 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38825%
+test_fuse8_build_keys<RandomState,16> size:1
+test_fuse8_build_keys<RandomState,16> bits per entry 96 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00162%
+test_fuse16_build_keys<RandomState> size:1
+test_fuse16_build_keys<RandomState> bits per entry 192 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 0.38938%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:1
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 96 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.36715%
+test_fuse8_build_keys<BuildHasherDefault,16> size:1
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 96 bits
+test_xor8_build_keys<RandomState> false positive rate 0.39121%
+test_xor8_build_keys<BuildHasherDefault> size:1
+test_xor8_build_keys<BuildHasherDefault> bits per entry 264 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.38867%
+test_fuse8_build_keys<BuildHasherDefault> size:1
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 96 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00143%
+test_fuse16_build_keys<BuildHasherDefault> size:1
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 192 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 0.78229%
+test_fuse8_build<RandomState,u8> size:2
+test_fuse8_build<RandomState,u8> bits per entry 48 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 0.43206%
+test_fuse8_build<RandomState,16> size:2
+test_fuse8_build<RandomState,16> bits per entry 48 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.38985%
+test_xor8_build<RandomState> size:2
+test_xor8_build<RandomState> bits per entry 132 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38825%
+test_fuse8_build<RandomState,16> size:2
+test_fuse8_build<RandomState,16> bits per entry 48 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00162%
+test_fuse16_build<RandomState> size:2
+test_fuse16_build<RandomState> bits per entry 96 bits
+test_fuse8_build<RandomState,u8> false positive rate 1.55544%
+test_fuse8_build<BuildHasherDefault,u8> size:2
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 48 bits
+test_fuse8_build<RandomState,16> false positive rate 0.37881%
+test_fuse8_build<BuildHasherDefault,16> size:2
+test_fuse8_build<BuildHasherDefault,16> bits per entry 48 bits
+test_xor8_build<RandomState> false positive rate 0.38906%
+test_xor8_build<BuildHasherDefault> size:2
+test_xor8_build<BuildHasherDefault> bits per entry 132 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39345%
+test_fuse8_build<BuildHasherDefault,16> size:2
+test_fuse8_build<BuildHasherDefault,16> bits per entry 48 bits
+test_fuse16_build<RandomState> false positive rate 0.00152%
+test_fuse16_build<BuildHasherDefault> size:2
+test_fuse16_build<BuildHasherDefault> bits per entry 96 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 1.16622%
+test_fuse8_build_keys<RandomState,u8> size:2
+test_fuse8_build_keys<RandomState,u8> bits per entry 48 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.40723%
+test_fuse8_build_keys<RandomState,16> size:2
+test_fuse8_build_keys<RandomState,16> bits per entry 48 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.3897%
+test_xor8_build_keys<RandomState> size:2
+test_xor8_build_keys<RandomState> bits per entry 132 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.39505%
+test_fuse8_build_keys<RandomState,16> size:2
+test_fuse8_build_keys<RandomState,16> bits per entry 48 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00149%
+test_fuse16_build_keys<RandomState> size:2
+test_fuse16_build_keys<RandomState> bits per entry 96 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 0.7774%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:2
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 48 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.35194%
+test_fuse8_build_keys<BuildHasherDefault,16> size:2
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 48 bits
+test_xor8_build_keys<RandomState> false positive rate 0.38988%
+test_xor8_build_keys<BuildHasherDefault> size:2
+test_xor8_build_keys<BuildHasherDefault> bits per entry 132 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.38869%
+test_fuse8_build_keys<BuildHasherDefault> size:2
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 48 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00137%
+test_fuse16_build_keys<BuildHasherDefault> size:2
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 96 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 1.16622%
+test_fuse8_build<RandomState,u8> size:10
+test_fuse8_build<RandomState,u8> bits per entry 38.4 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 0.40723%
+test_fuse8_build<RandomState,16> size:10
+test_fuse8_build<RandomState,16> bits per entry 38.4 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.3897%
+test_xor8_build<RandomState> size:10
+test_xor8_build<RandomState> bits per entry 36 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.39505%
+test_fuse8_build<RandomState,16> size:10
+test_fuse8_build<RandomState,16> bits per entry 38.4 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00149%
+test_fuse16_build<RandomState> size:10
+test_fuse16_build<RandomState> bits per entry 76.8 bits
+test_fuse8_build<RandomState,u8> false positive rate 3.90316%
+test_fuse8_build<BuildHasherDefault,u8> size:10
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 38.4 bits
+test_fuse8_build<RandomState,16> false positive rate 0.43603%
+test_fuse8_build<BuildHasherDefault,16> size:10
+test_fuse8_build<BuildHasherDefault,16> bits per entry 38.4 bits
+test_xor8_build<RandomState> false positive rate 0.38973%
+test_xor8_build<BuildHasherDefault> size:10
+test_xor8_build<BuildHasherDefault> bits per entry 36 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39378%
+test_fuse8_build<BuildHasherDefault,16> size:10
+test_fuse8_build<BuildHasherDefault,16> bits per entry 38.4 bits
+test_fuse16_build<RandomState> false positive rate 0.00186%
+test_fuse16_build<BuildHasherDefault> size:10
+test_fuse16_build<BuildHasherDefault> bits per entry 76.8 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 3.90316%
+test_fuse8_build_keys<RandomState,u8> size:10
+test_fuse8_build_keys<RandomState,u8> bits per entry 38.4 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.47021%
+test_fuse8_build_keys<RandomState,16> size:10
+test_fuse8_build_keys<RandomState,16> bits per entry 38.4 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.38722%
+test_xor8_build_keys<RandomState> size:10
+test_xor8_build_keys<RandomState> bits per entry 36 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38873%
+test_fuse8_build_keys<RandomState,16> size:10
+test_fuse8_build_keys<RandomState,16> bits per entry 38.4 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00141%
+test_fuse16_build_keys<RandomState> size:10
+test_fuse16_build_keys<RandomState> bits per entry 76.8 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 4.67928%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:10
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 38.4 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.38297%
+test_fuse8_build_keys<BuildHasherDefault,16> size:10
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 38.4 bits
+test_xor8_build_keys<RandomState> false positive rate 0.39063%
+test_xor8_build_keys<BuildHasherDefault> size:10
+test_xor8_build_keys<BuildHasherDefault> bits per entry 36 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 3.90316%
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39326%
+test_fuse8_build_keys<BuildHasherDefault> size:10
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 38.4 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00146%
+test_fuse16_build_keys<BuildHasherDefault> size:10
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 76.8 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 0.47021%
+test_fuse8_build<RandomState,16> size:1000
+test_fuse8_build<RandomState,16> bits per entry 11.264 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.38722%
+test_xor8_build<RandomState> size:1000
+test_xor8_build<RandomState> bits per entry 10.08 bits
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38873%
+test_fuse8_build<RandomState,16> size:1000
+test_fuse8_build<RandomState,16> bits per entry 11.264 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00141%
+test_fuse16_build<RandomState> size:1000
+test_fuse16_build<RandomState> bits per entry 22.528 bits
+test_fuse8_build<RandomState,16> false positive rate 1.90932%
+test_fuse8_build<BuildHasherDefault,16> size:1000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 11.264 bits
+test_xor8_build<RandomState> false positive rate 0.3902%
+test_xor8_build<BuildHasherDefault> size:1000
+test_xor8_build<BuildHasherDefault> bits per entry 10.08 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39015%
+test_fuse8_build<BuildHasherDefault,16> size:1000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 11.264 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 1.89364%
+test_fuse8_build_keys<RandomState,16> size:1000
+test_fuse8_build_keys<RandomState,16> bits per entry 11.264 bits
+test_fuse16_build<RandomState> false positive rate 0.00156%
+test_fuse16_build<BuildHasherDefault> size:1000
+test_fuse16_build<BuildHasherDefault> bits per entry 22.528 bits
+test fuse16::fuse16_test::test_fuse16 has been running for over 60 seconds
+test fuse8::fuse8_test::test_fuse8_u16 has been running for over 60 seconds
+test fuse8::fuse8_test::test_fuse8_u64 has been running for over 60 seconds
+test fuse8::fuse8_test::test_fuse8_u8 has been running for over 60 seconds
+test xor8::xor8_test::test_xor8 has been running for over 60 seconds
+test_xor8_build<BuildHasherDefault> false positive rate 0.39087%
+test_xor8_build_keys<RandomState> size:1000
+test_xor8_build_keys<RandomState> bits per entry 10.08 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38849%
+test_fuse8_build_keys<RandomState,16> size:1000
+test_fuse8_build_keys<RandomState,16> bits per entry 11.264 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 1.90998%
+test_fuse8_build_keys<BuildHasherDefault,16> size:1000
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 11.264 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00148%
+test_fuse16_build_keys<RandomState> size:1000
+test_fuse16_build_keys<RandomState> bits per entry 22.528 bits
+test_xor8_build_keys<RandomState> false positive rate 0.3912%
+test_xor8_build_keys<BuildHasherDefault> size:1000
+test_xor8_build_keys<BuildHasherDefault> bits per entry 10.08 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 1.89364%
+test_fuse8_build<RandomState,16> size:9881
+test_fuse8_build<RandomState,16> bits per entry 10.363323550247951 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39027%
+test_fuse8_build_keys<BuildHasherDefault> size:1000
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 11.264 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00163%
+test_fuse16_build_keys<BuildHasherDefault> size:1000
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 22.528 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39087%
+test_xor8_build<RandomState> size:10000
+test_xor8_build<RandomState> bits per entry 9.864 bits
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build<RandomState,16> false positive rate 15.4181%
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38849%
+test_fuse8_build<RandomState,16> size:10000
+test_fuse8_build<RandomState,16> bits per entry 10.24 bits
+test_fuse8_build<BuildHasherDefault,16> size:9881
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00148%
+test_fuse16_build<RandomState> size:10000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 10.363323550247951 bits
+test_fuse16_build<RandomState> bits per entry 20.48 bits
+test_xor8_build<RandomState> false positive rate 0.38659%
+test_xor8_build<BuildHasherDefault> size:10000
+test_xor8_build<BuildHasherDefault> bits per entry 9.864 bits
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 15.39054%
+test_fuse8_build_keys<RandomState,16> size:9881
+test_fuse8_build_keys<RandomState,16> bits per entry 10.363323550247951 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39116%
+test_fuse8_build<BuildHasherDefault,16> size:10000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 10.24 bits
+test_fuse16_build<RandomState> false positive rate 0.00162%
+test_fuse16_build<BuildHasherDefault> size:10000
+test_fuse16_build<BuildHasherDefault> bits per entry 20.48 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39106%
+test_xor8_build_keys<RandomState> size:10000
+test_xor8_build_keys<RandomState> bits per entry 9.864 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 15.42005%
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38616%
+test_fuse8_build_keys<RandomState,16> size:10000
+test_fuse8_build_keys<RandomState,16> bits per entry 10.24 bits
+test_fuse8_build_keys<BuildHasherDefault,16> size:9881
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 10.363323550247951 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00136%
+test_fuse16_build_keys<RandomState> size:10000
+test_fuse16_build_keys<RandomState> bits per entry 20.48 bits
+test_xor8_build_keys<RandomState> false positive rate 0.39235%
+test_xor8_build_keys<BuildHasherDefault> size:10000
+test_xor8_build_keys<BuildHasherDefault> bits per entry 9.864 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 15.39054%
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39327%
+test_fuse8_build_keys<BuildHasherDefault> size:10000
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 10.24 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00146%
+test_fuse16_build_keys<BuildHasherDefault> size:10000
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 20.48 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39106%
+test_xor8_build<RandomState> size:100000
+test_xor8_build<RandomState> bits per entry 9.8424 bits
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38616%
+test_fuse8_build<RandomState,16> size:100000
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00136%
+test_fuse16_build<RandomState> size:100000
+test_fuse8_build<RandomState,16> bits per entry 9.50272 bits
+test_fuse16_build<RandomState> bits per entry 19.00544 bits
+test_xor8_build<RandomState> false positive rate 0.39122%
+test_xor8_build<BuildHasherDefault> size:100000
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_xor8_build<BuildHasherDefault> bits per entry 9.8424 bits
+test_fuse8_build<RandomState,16> false positive rate 0.39122%
+test_fuse8_build<BuildHasherDefault,16> size:100000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.50272 bits
+test_fuse16_build<RandomState> false positive rate 0.00166%
+test_fuse16_build<BuildHasherDefault> size:100000
+test_xor8_build<BuildHasherDefault> false positive rate 0.38888%
+test_xor8_build_keys<RandomState> size:100000
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_xor8_build_keys<RandomState> bits per entry 9.8424 bits
+test_fuse16_build<BuildHasherDefault> bits per entry 19.00544 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38938%
+test_fuse8_build_keys<RandomState,16> size:100000
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build_keys<RandomState,16> bits per entry 9.50272 bits
+test_xor8_build_keys<RandomState> false positive rate 0.38539%
+test_xor8_build_keys<BuildHasherDefault> size:100000
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00167%
+test_fuse16_build_keys<RandomState> size:100000
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_xor8_build_keys<BuildHasherDefault> bits per entry 9.8424 bits
+test_fuse16_build_keys<RandomState> bits per entry 19.00544 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.38894%
+test_fuse8_build_keys<BuildHasherDefault> size:100000
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 9.50272 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.38888%
+test_xor8_build<RandomState> size:1000000
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.00164%
+test_fuse16_build_keys<BuildHasherDefault> size:100000
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 19.00544 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38938%
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00167%
+test_fuse16_build<RandomState> size:1000000
+test_fuse8_build<RandomState,16> size:1000000
+test_xor8_build<RandomState> bits per entry 9.84024 bits
+test_fuse8_build<RandomState,16> bits per entry 9.043968 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_xor8_build<RandomState> false positive rate 0.38832%
+test_xor8_build<BuildHasherDefault> size:1000000
+test_fuse8_build<RandomState,16> false positive rate 0.38804%
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test_fuse16_build<RandomState> bits per entry 18.087936 bits
+test_fuse8_build<BuildHasherDefault,16> size:1000000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.043968 bits
+test_fuse16_build<RandomState> false positive rate 0.00134%
+test_fuse16_build<BuildHasherDefault> size:1000000
+test_fuse8_build<RandomState,u8> size:256
+test_fuse8_build<RandomState,u8> bits per entry 12 bits
+test_xor8_build<BuildHasherDefault> bits per entry 9.84024 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38974%
+test_fuse8_build_keys<RandomState,16> size:1000000
+test_fuse8_build<RandomState,u8> false positive rate 100%
+test_xor8_build<BuildHasherDefault> false positive rate 0.39059%
+test_xor8_build_keys<RandomState> size:1000000
+test_fuse8_build_keys<RandomState,16> bits per entry 9.043968 bits
+test_fuse16_build<BuildHasherDefault> bits per entry 18.087936 bits
+test_xor8_build_keys<RandomState> bits per entry 9.84024 bits
+test_fuse8_build<BuildHasherDefault,u8> size:256
+test_fuse8_build<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39014%
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00157%
+test_fuse16_build_keys<RandomState> size:1000000
+test_fuse8_build_keys<BuildHasherDefault> size:1000000
+test_xor8_build_keys<RandomState> false positive rate 0.38605%
+test_xor8_build_keys<BuildHasherDefault> size:1000000
+test_fuse8_build<BuildHasherDefault,u8> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 9.043968 bits
+test_fuse16_build_keys<RandomState> bits per entry 18.087936 bits
+test_fuse8_build<RandomState,16> size:58707
+test_fuse8_build<RandomState,16> bits per entry 9.767830071371387 bits
+test_xor8_build_keys<BuildHasherDefault> bits per entry 9.84024 bits
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38974%
+test_fuse8_build<RandomState,16> false positive rate 89.63556%
+test_fuse16_build_keys<RandomState> false positive rate 0.00151%
+test_fuse16_build_keys<BuildHasherDefault> size:1000000
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39059%
+test_xor8_build<RandomState> size:10000000
+test_fuse8_build_keys<RandomState,u8> size:256
+test_fuse8_build_keys<RandomState,u8> bits per entry 12 bits
+test_fuse8_build_keys<RandomState,u8> false positive rate 100%
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 18.087936 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00157%
+test_fuse16_build<RandomState> size:10000000
+test_fuse8_build_keys<BuildHasherDefault,u8> size:256
+test_fuse8_build_keys<BuildHasherDefault,u8> bits per entry 12 bits
+test_fuse8_build_keys<BuildHasherDefault,u8> false positive rate 100%
+test fuse8::fuse8_test::test_fuse8_u8 ... ok
+test_fuse8_build<RandomState,16> size:10000000
+test_fuse8_build<RandomState,16> bits per entry 9.0177536 bits
+test_fuse8_build<BuildHasherDefault,16> size:58707
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.767830071371387 bits
+test_fuse8_build<RandomState,16> false positive rate 0.38906%
+test_fuse8_build<BuildHasherDefault,16> false positive rate 89.61086%
+test_fuse8_build<BuildHasherDefault,16> size:10000000
+test_xor8_build<RandomState> bits per entry 9.840024 bits
+test_xor8_build<RandomState> false positive rate 0.38876%
+test_xor8_build<BuildHasherDefault> size:10000000
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.0177536 bits
+test_fuse16_build<RandomState> bits per entry 18.0355072 bits
+test_fuse8_build_keys<RandomState,16> size:58707
+test_fuse8_build_keys<RandomState,16> bits per entry 9.767830071371387 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 0.38981%
+test_fuse16_build<RandomState> false positive rate 0.00143%
+test_fuse16_build<BuildHasherDefault> size:10000000
+test_fuse8_build_keys<RandomState,16> false positive rate 89.60694%
+test_fuse8_build_keys<RandomState,16> size:10000000
+test_fuse8_build_keys<RandomState,16> bits per entry 9.0177536 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 0.39141%
+test_fuse8_build_keys<BuildHasherDefault,16> size:58707
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 9.767830071371387 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 89.61086%
+test_fuse8_build_keys<BuildHasherDefault> size:10000000
+test_xor8_build<BuildHasherDefault> bits per entry 9.840024 bits
+test_xor8_build<BuildHasherDefault> false positive rate 0.39504%
+test_xor8_build_keys<RandomState> size:10000000
+test_fuse16_build<BuildHasherDefault> bits per entry 18.0355072 bits
+test_fuse8_build_keys<BuildHasherDefault> bits per entry 9.0177536 bits
+test_fuse16_build<BuildHasherDefault> false positive rate 0.00144%
+test_fuse16_build_keys<RandomState> size:10000000
+test_fuse8_build_keys<BuildHasherDefault> false positive rate 0.38981%
+test fuse8::fuse8_test::test_fuse8_u64 ... ok
+test_xor8_build_keys<RandomState> bits per entry 9.840024 bits
+test_xor8_build_keys<RandomState> false positive rate 0.38823%
+test_xor8_build_keys<BuildHasherDefault> size:10000000
+test_fuse16_build_keys<RandomState> bits per entry 18.0355072 bits
+test_fuse16_build_keys<RandomState> false positive rate 0.0017%
+test_fuse16_build_keys<BuildHasherDefault> size:10000000
+test_xor8_build_keys<BuildHasherDefault> bits per entry 9.840024 bits
+test_xor8_build_keys<BuildHasherDefault> false positive rate 0.39504%
+test xor8::xor8_test::test_xor8 ... ok
+test_fuse16_build_keys<BuildHasherDefault> bits per entry 18.0355072 bits
+test_fuse16_build_keys<BuildHasherDefault> false positive rate 0.00144%
+test fuse16::fuse16_test::test_fuse16 ... ok
+test_fuse8_build<RandomState,16> size:65536
+test_fuse8_build<RandomState,16> bits per entry 9.5 bits
+test_fuse8_build<RandomState,16> false positive rate 100%
+test_fuse8_build<BuildHasherDefault,16> size:65536
+test_fuse8_build<BuildHasherDefault,16> bits per entry 9.5 bits
+test_fuse8_build<BuildHasherDefault,16> false positive rate 100%
+test_fuse8_build_keys<RandomState,16> size:65536
+test_fuse8_build_keys<RandomState,16> bits per entry 9.5 bits
+test_fuse8_build_keys<RandomState,16> false positive rate 100%
+test_fuse8_build_keys<BuildHasherDefault,16> size:65536
+test_fuse8_build_keys<BuildHasherDefault,16> bits per entry 9.5 bits
+test_fuse8_build_keys<BuildHasherDefault,16> false positive rate 100%

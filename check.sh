@@ -8,15 +8,14 @@ exec 2>&1
 
 set -o xtrace
 
-date
 exec_prg() {
 
     for i in {0..5};
     do
-        cargo +nightly test --release -- --nocapture || exit $?;
-        cargo +nightly test -- --nocapture || exit $?;
-        cargo +stable test --release -- --nocapture || exit $?;
-        cargo +stable test -- --nocapture || exit $?;
+        date; cargo +nightly test --release -- --nocapture || exit $?;
+        date; cargo +nightly test -- --nocapture || exit $?;
+        date; cargo +stable test --release -- --nocapture || exit $?;
+        date; cargo +stable test -- --nocapture || exit $?;
     done
 }
 
