@@ -164,6 +164,24 @@ fn test_fuse8() {
 }
 
 #[test]
+fn test_fuse8_duplicates() {
+    println!("test_fuse8_duplicates");
+
+    let keys = vec![102, 123, 1242352, 12314, 124235, 1231234, 12414, 1242352];
+
+    let mut filter = Fuse8::<RandomState>::new(keys.len() as u32);
+
+    filter
+        .build_keys(&keys)
+        .expect("build with duplicate keys failed");
+
+    // contains api
+    for key in keys.iter() {
+        assert!(filter.contains_key(*key), "key {} not present", key);
+    }
+}
+
+#[test]
 #[ignore]
 fn test_fuse8_billion() {
     let seed: u128 = random();
