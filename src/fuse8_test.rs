@@ -1,9 +1,18 @@
 use super::*;
-use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
+use rand::{
+    distributions::{Distribution, Standard},
+    prelude::random,
+    rngs::SmallRng,
+    Rng, SeedableRng,
+};
 
-fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
-    let mut keys: Vec<u64> = Vec::with_capacity(size);
-    keys.resize(size, u64::default());
+fn generate_unique_keys<K>(rng: &mut SmallRng, size: usize) -> Vec<K>
+where
+    K: Clone + Default + Ord,
+    Standard: Distribution<K>,
+{
+    let mut keys: Vec<K> = Vec::with_capacity(size);
+    keys.resize(size, K::default());
 
     for key in keys.iter_mut() {
         *key = rng.gen();
@@ -12,7 +21,7 @@ fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
     keys.dedup();
 
     for _i in 0..(size - keys.len()) {
-        let key = rng.gen::<u64>();
+        let key = rng.gen::<K>();
         if !keys.contains(&key) {
             keys.push(key)
         }
@@ -21,21 +30,25 @@ fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
     keys
 }
 
-fn test_fuse8_build<H>(name: &str, seed: u128, size: u32)
+fn test_fuse8_build<H, K>(name: &str, seed: u128, size: u32)
 where
     H: Default + BuildHasher,
+    K: Clone + Default + Ord + Hash + std::fmt::Display,
+    Standard: Distribution<K>,
 {
+    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+
+    let keys = generate_unique_keys(&mut rng, size as usize);
+    let size = keys.len() as u32;
     let (x, y) = {
         let size = size as usize;
         (size / 3, size / 3)
     };
+    let (keys1, keys2, keys3) = (&keys[0..x], &keys[x..x + y], &keys[x + y..]);
 
     println!("test_fuse8_build<{}> size:{}", name, size);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
     let mut filter = Fuse8::<H>::new(size);
-    let keys = generate_unique_keys(&mut rng, size as usize);
-    let (keys1, keys2, keys3) = (&keys[0..x], &keys[x..x + y], &keys[x + y..]);
 
     // populate api
     filter.populate(keys1);
@@ -72,32 +85,38 @@ where
     let (falsesize, mut matches) = (10_000_000, 0_f64);
     let bpv = (filter.finger_prints.len() as f64) * 8.0 / (keys.len() as f64);
     println!("test_fuse8_build<{}> bits per entry {} bits", name, bpv);
-    if size > 1000 {
-        assert!(bpv < 12.0, "bpv({}) >= 12.0", bpv);
-    }
 
     for _ in 0..falsesize {
-        if filter.contains(&rng.gen::<u64>()) {
+        if filter.contains(&rng.gen::<K>()) {
             matches += 1_f64;
         }
     }
 
     let fpp = matches * 100.0 / (falsesize as f64);
     println!("test_fuse8_build<{}> false positive rate {}%", name, fpp);
-    assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
+
+    if size > 100_000 {
+        assert!(bpv < 12.0, "bpv({}) >= 12.0", bpv);
+        assert!(fpp < 0.4, "fpp({}) >= 0.4", fpp);
+    }
 }
 
-fn test_fuse8_build_keys<H>(name: &str, seed: u128, size: u32)
+fn test_fuse8_build_keys<H, K>(name: &str, seed: u128, size: u32)
 where
     H: Default + BuildHasher,
+    K: Clone + Default + Ord + Hash + std::fmt::Display,
+    Standard: Distribution<K>,
 {
-    println!("test_fuse8_build_keys<{}> size:{}", name, size);
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+
+    let keys = generate_unique_keys(&mut rng, size as usize);
+    let size = keys.len() as u32;
+
+    println!("test_fuse8_build_keys<{}> size:{}", name, size);
 
     let mut filter = Fuse8::<H>::new(size);
 
     // build_keys api
-    let keys = generate_unique_keys(&mut rng, size as usize);
     let digests: Vec<u64> = keys
         .iter()
         .map(|k| {
@@ -127,12 +146,9 @@ where
         "test_fuse8_build_keys<{}> bits per entry {} bits",
         name, bpv
     );
-    if size > 1000 {
-        assert!(bpv < 12.0, "bpv({}) >= 12.0", bpv);
-    }
 
     for _ in 0..falsesize {
-        if filter.contains(&rng.gen::<u64>()) {
+        if filter.contains(&rng.gen::<K>()) {
             matches += 1_f64;
         }
     }
@@ -142,24 +158,76 @@ where
         "test_fuse8_build_keys<{}> false positive rate {}%",
         name, fpp
     );
-    assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
+
+    if size > 100_000 {
+        assert!(bpv < 12.0, "bpv({}) >= 12.0", bpv);
+        assert!(fpp < 0.4, "fpp({}) >= 0.4", fpp);
+    }
 }
 
 #[test]
-fn test_fuse8() {
+fn test_fuse8_u8() {
     let mut seed: u128 = [
         317243231098672456594515636835401398754_u128,
         277368073673380887632383970413666369758,
         random(),
     ][random::<usize>() % 3];
-    println!("test_fuse8 seed:{}", seed);
+    println!("test_fuse8_u8 seed:{}", seed);
 
     for size in [0, 1, 2, 10, 1000, 10_000, 100_000, 1_000_000, 10_000_000].iter() {
         seed = seed.wrapping_add(*size as u128);
-        test_fuse8_build::<RandomState>("RandomState", seed, *size);
-        test_fuse8_build::<BuildHasherDefault>("BuildHasherDefault", seed, *size);
-        test_fuse8_build_keys::<RandomState>("RandomState", seed, *size);
-        test_fuse8_build_keys::<BuildHasherDefault>("BuildHasherDefault", seed, *size);
+        test_fuse8_build::<RandomState, u8>("RandomState,u8", seed, *size);
+        test_fuse8_build::<BuildHasherDefault, u8>("BuildHasherDefault,u8", seed, *size);
+        test_fuse8_build_keys::<RandomState, u8>("RandomState,u8", seed, *size);
+        test_fuse8_build_keys::<BuildHasherDefault, u8>(
+            "BuildHasherDefault,u8",
+            seed,
+            *size,
+        );
+    }
+}
+
+#[test]
+fn test_fuse8_u16() {
+    let mut seed: u128 = [
+        317243231098672456594515636835401398754_u128,
+        277368073673380887632383970413666369758,
+        random(),
+    ][random::<usize>() % 3];
+    println!("test_fuse8_u16 seed:{}", seed);
+
+    for size in [0, 1, 2, 10, 1000, 10_000, 100_000, 1_000_000, 10_000_000].iter() {
+        seed = seed.wrapping_add(*size as u128);
+        test_fuse8_build::<RandomState, u16>("RandomState,16", seed, *size);
+        test_fuse8_build::<BuildHasherDefault, u16>("BuildHasherDefault,16", seed, *size);
+        test_fuse8_build_keys::<RandomState, u16>("RandomState,16", seed, *size);
+        test_fuse8_build_keys::<BuildHasherDefault, u16>(
+            "BuildHasherDefault,16",
+            seed,
+            *size,
+        );
+    }
+}
+
+#[test]
+fn test_fuse8_u64() {
+    let mut seed: u128 = [
+        317243231098672456594515636835401398754_u128,
+        277368073673380887632383970413666369758,
+        random(),
+    ][random::<usize>() % 3];
+    println!("test_fuse8_u64 seed:{}", seed);
+
+    for size in [0, 1, 2, 10, 1000, 10_000, 100_000, 1_000_000, 10_000_000].iter() {
+        seed = seed.wrapping_add(*size as u128);
+        test_fuse8_build::<RandomState, u64>("RandomState,16", seed, *size);
+        test_fuse8_build::<BuildHasherDefault, u64>("BuildHasherDefault,16", seed, *size);
+        test_fuse8_build_keys::<RandomState, u64>("RandomState,16", seed, *size);
+        test_fuse8_build_keys::<BuildHasherDefault, u64>(
+            "BuildHasherDefault",
+            seed,
+            *size,
+        );
     }
 }
 
@@ -188,8 +256,12 @@ fn test_fuse8_billion() {
     println!("test_fuse8_billion seed:{}", seed);
 
     let size = 1_000_000_000;
-    test_fuse8_build::<RandomState>("RandomState", seed, size);
-    test_fuse8_build::<BuildHasherDefault>("BuildHasherDefault", seed, size);
-    test_fuse8_build_keys::<RandomState>("RandomState", seed, size);
-    test_fuse8_build_keys::<BuildHasherDefault>("BuildHasherDefault", seed, size);
+    test_fuse8_build::<RandomState, u64>("RandomState,u64", seed, size);
+    test_fuse8_build::<BuildHasherDefault, u64>("BuildHasherDefault,u64", seed, size);
+    test_fuse8_build_keys::<RandomState, u64>("RandomState,u64", seed, size);
+    test_fuse8_build_keys::<BuildHasherDefault, u64>(
+        "BuildHasherDefault,u64",
+        seed,
+        size,
+    );
 }
