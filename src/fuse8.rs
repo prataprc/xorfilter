@@ -1,9 +1,6 @@
 #[allow(unused_imports)]
 use std::collections::hash_map::{DefaultHasher, RandomState};
-use std::{
-    collections::BTreeMap,
-    hash::{BuildHasher, Hash, Hasher},
-};
+use std::hash::{BuildHasher, Hash, Hasher};
 
 use crate::{BuildHasherDefault, Error, Result};
 
@@ -119,7 +116,7 @@ pub struct Fuse8<H = BuildHasherDefault>
 where
     H: BuildHasher,
 {
-    keys: Option<BTreeMap<u64, ()>>,
+    keys: Option<Vec<u64>>,
     pub hash_builder: H,
     pub seed: u64,
     pub segment_length: u32,
@@ -211,7 +208,7 @@ where
         let segment_count_length = segment_count * segment_length;
 
         Fuse8 {
-            keys: Some(BTreeMap::new()),
+            keys: Some(Vec::default()),
             hash_builder,
             seed: u64::default(),
             segment_length,
@@ -241,7 +238,7 @@ where
             key.hash(&mut hasher);
             hasher.finish()
         };
-        self.keys.as_mut().unwrap().insert(digest, ());
+        self.keys.as_mut().unwrap().push(digest);
     }
 
     /// Populate with 64-bit digests for a collection of keys of type `K`. Digest for
@@ -251,15 +248,13 @@ where
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
-            self.keys.as_mut().unwrap().insert(hasher.finish(), ());
+            self.keys.as_mut().unwrap().push(hasher.finish());
         })
     }
 
     /// Populate with pre-compute collection of 64-bit digests.
     pub fn populate_keys(&mut self, digests: &[u64]) {
-        for digest in digests.iter() {
-            self.keys.as_mut().unwrap().insert(*digest, ());
-        }
+        self.keys.as_mut().unwrap().extend_from_slice(&digests);
     }
 
     // construct the filter, returns true on success, false on failure.
@@ -274,10 +269,7 @@ where
     /// [Fuse8::populate] and [Fuse8::populate_keys] method.
     pub fn build(&mut self) -> Result<()> {
         match self.keys.take() {
-            Some(keys) => {
-                let digests = keys.iter().map(|(k, _)| *k).collect::<Vec<u64>>();
-                self.build_keys(&digests)
-            }
+            Some(keys) => self.build_keys(&keys),
             None => Ok(()),
         }
     }
@@ -339,6 +331,7 @@ where
             }
 
             let mut error: isize = 0;
+            let mut duplicates = 0;
             for (_, rev_order) in reverse_order.iter().enumerate().take(size) {
                 let hash: u64 = *rev_order;
 
@@ -355,6 +348,26 @@ where
                 t2count[h2] = t2count[h2].wrapping_add(4);
                 t2hash[h2] ^= hash;
                 t2count[h2] ^= 2;
+
+                // If we have duplicated hash values, then it is likely that
+                // the next comparison is true
+                if (t2hash[h0] & t2hash[h1] & t2hash[h2]) == 0 {
+                    // next we do the actual test
+                    if ((t2hash[h0] == 0) && (t2count[h0] == 8))
+                        || ((t2hash[h1] == 0) && (t2count[h1] == 8))
+                        || ((t2hash[h2] == 0) && (t2count[h2] == 8))
+                    {
+                        duplicates += 1;
+                        t2count[h0] = t2count[h0].wrapping_sub(4);
+                        t2hash[h0] ^= hash;
+                        t2count[h1] = t2count[h1].wrapping_sub(4);
+                        t2count[h1] ^= 1;
+                        t2hash[h1] ^= hash;
+                        t2count[h2] = t2count[h2].wrapping_sub(4);
+                        t2hash[h2] ^= hash;
+                        t2count[h2] ^= 2;
+                    }
+                }
 
                 error = if t2count[h0] < 4 { 1 } else { error };
                 error = if t2count[h1] < 4 { 1 } else { error };
@@ -417,7 +430,7 @@ where
                 }
             }
 
-            if stack_size == size {
+            if (stack_size + duplicates) == size {
                 break; // success
             }
 
@@ -427,6 +440,10 @@ where
             t2hash.fill(0);
 
             self.seed = binary_fuse_rng_splitmix64(&mut rng_counter);
+        }
+
+        if size == 0 {
+            return Ok(());
         }
 
         for i in (0_usize..size).rev() {
