@@ -1,3 +1,11 @@
+0.5.1
+=====
+
+* Fuse8: handle duplicates without sorting.
+* Fuse8: improve test case with duplicate keys.
+* CI: improvement to check.sh script.
+* rustdoc.
+
 0.5.0
 =====
 
