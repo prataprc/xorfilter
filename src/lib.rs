@@ -13,6 +13,15 @@
 //! differences between [Xor8], [Fuse8] and [Fuse16] filters. Otherwise, all the types
 //! provides similar methods.
 //!
+//! **Handling duplicates**
+//!
+//! * [Fuse16] and [Xor8] implementation uses BTreeMap to make sure all the digests
+//!   generated from keys are unique, this avoids duplicates but decreases the build
+//!   performance significantly.
+//! * [Fuse8] implementation computes duplicates on the fly leading to significantly
+//!   better build performance. On the other hand, Fuse8 cannot handle more than
+//!   few duplicates.
+//!
 //! This is ported from its original implementation:
 //!
 //! * [Xor8] from <https://github.com/FastFilter/xorfilter>, written in golang.

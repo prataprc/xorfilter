@@ -112,6 +112,12 @@ pub(crate) fn binary_fuse_mod3(x: u8) -> u8 {
 ///
 /// The default type for parameter `H` might change when a reliable and commonly used
 /// BuildHasher type available.
+///
+/// IMPORTANT: Fuse8 filter can only tolerate few duplicates in a given data-set.
+/// So make sure to supply a hasher that is capable of generating unique digests,
+/// _(with allowed tolerance of duplicates)_ and while supplying the digests directly
+/// via `populate_keys()` and `build_keys()` make sure they don't have more than few
+/// duplicates.
 pub struct Fuse8<H = BuildHasherDefault>
 where
     H: BuildHasher,
