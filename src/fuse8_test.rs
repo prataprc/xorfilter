@@ -18,14 +18,10 @@ where
         *key = rng.gen();
     }
     keys.sort_unstable();
-    keys.dedup();
 
-    for _i in 0..(size - keys.len()) {
-        let key = rng.gen::<K>();
-        if !keys.contains(&key) {
-            keys.push(key)
-        }
-    }
+    let mut ks = keys.clone();
+    ks.dedup();
+    println!("number of duplicates {}", size - ks.len());
 
     keys
 }
@@ -36,9 +32,12 @@ where
     K: Clone + Default + Ord + Hash + std::fmt::Display,
     Standard: Distribution<K>,
 {
+    use std::cmp;
+
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
     let keys = generate_unique_keys(&mut rng, size as usize);
+
     let size = keys.len() as u32;
     let (x, y) = {
         let size = size as usize;
@@ -82,13 +81,18 @@ where
     }
 
     // print some statistics
-    let (falsesize, mut matches) = (10_000_000, 0_f64);
+    let (falsesize, mut matches) = (cmp::min(size * 10, 10_000_000), 0_f64);
     let bpv = (filter.finger_prints.len() as f64) * 8.0 / (keys.len() as f64);
     println!("test_fuse8_build<{}> bits per entry {} bits", name, bpv);
 
     for _ in 0..falsesize {
-        if filter.contains(&rng.gen::<K>()) {
-            matches += 1_f64;
+        let k = rng.gen::<K>();
+        let ok = filter.contains(&k);
+        match keys.binary_search(&k) {
+            Ok(_) if !ok => panic!("false negative {}", k),
+            Ok(_) => (),
+            Err(_) if ok => matches += 1_f64,
+            Err(_) => (),
         }
     }
 
@@ -107,6 +111,8 @@ where
     K: Clone + Default + Ord + Hash + std::fmt::Display,
     Standard: Distribution<K>,
 {
+    use std::cmp;
+
     let mut rng = SmallRng::from_seed(seed.to_le_bytes());
 
     let keys = generate_unique_keys(&mut rng, size as usize);
@@ -140,7 +146,7 @@ where
     }
 
     // print some statistics
-    let (falsesize, mut matches) = (10_000_000, 0_f64);
+    let (falsesize, mut matches) = (cmp::min(size * 10, 10_000_000), 0_f64);
     let bpv = (filter.finger_prints.len() as f64) * 8.0 / (keys.len() as f64);
     println!(
         "test_fuse8_build_keys<{}> bits per entry {} bits",
@@ -148,8 +154,13 @@ where
     );
 
     for _ in 0..falsesize {
-        if filter.contains(&rng.gen::<K>()) {
-            matches += 1_f64;
+        let k = rng.gen::<K>();
+        let ok = filter.contains(&k);
+        match keys.binary_search(&k) {
+            Ok(_) if !ok => panic!("false negative {}", k),
+            Ok(_) => (),
+            Err(_) if ok => matches += 1_f64,
+            Err(_) => (),
         }
     }
 
@@ -174,7 +185,7 @@ fn test_fuse8_u8() {
     ][random::<usize>() % 3];
     println!("test_fuse8_u8 seed:{}", seed);
 
-    for size in [0, 1, 2, 10, 1000, 10_000, 100_000, 1_000_000, 10_000_000].iter() {
+    for size in [0, 1, 2, 10, 100].iter() {
         seed = seed.wrapping_add(*size as u128);
         test_fuse8_build::<RandomState, u8>("RandomState,u8", seed, *size);
         test_fuse8_build::<BuildHasherDefault, u8>("BuildHasherDefault,u8", seed, *size);
@@ -196,7 +207,7 @@ fn test_fuse8_u16() {
     ][random::<usize>() % 3];
     println!("test_fuse8_u16 seed:{}", seed);
 
-    for size in [0, 1, 2, 10, 1000, 10_000, 100_000, 1_000_000, 10_000_000].iter() {
+    for size in [0, 1, 2, 10, 100, 500, 1000].iter() {
         seed = seed.wrapping_add(*size as u128);
         test_fuse8_build::<RandomState, u16>("RandomState,16", seed, *size);
         test_fuse8_build::<BuildHasherDefault, u16>("BuildHasherDefault,16", seed, *size);
@@ -220,11 +231,11 @@ fn test_fuse8_u64() {
 
     for size in [0, 1, 2, 10, 1000, 10_000, 100_000, 1_000_000, 10_000_000].iter() {
         seed = seed.wrapping_add(*size as u128);
-        test_fuse8_build::<RandomState, u64>("RandomState,16", seed, *size);
-        test_fuse8_build::<BuildHasherDefault, u64>("BuildHasherDefault,16", seed, *size);
-        test_fuse8_build_keys::<RandomState, u64>("RandomState,16", seed, *size);
+        test_fuse8_build::<RandomState, u64>("RandomState,64", seed, *size);
+        test_fuse8_build::<BuildHasherDefault, u64>("BuildHasherDefault,64", seed, *size);
+        test_fuse8_build_keys::<RandomState, u64>("RandomState,64", seed, *size);
         test_fuse8_build_keys::<BuildHasherDefault, u64>(
-            "BuildHasherDefault",
+            "BuildHasherDefault,64",
             seed,
             *size,
         );
