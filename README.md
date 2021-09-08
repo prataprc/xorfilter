@@ -60,7 +60,7 @@ Following are the results for a set of 10-million `u64` keys:
 | Xor8-C      |   1.206 secs    |    NA       | 0.389 % |  9.84 bits  |
 | Xor8-rust   |   1.809 secs    | 61.716 ns   | 0.392 % |  9.84 bits  |
 | Fuse8-C     |   0.508 secs    |    NA       | 0.390 % |  9.02 bits  |
-| Fuse8-rust  |   0.611 secs    | 42.657 ns   | 0.392 % |  9.02 bits  |
+| Fuse8-rust  |   0.577 secs    | 42.657 ns   | 0.392 % |  9.02 bits  |
 | Fuse16-C    |   0.515 secs    |    NA       | 0.001 % | 18.04 bits  |
 | Fuse16-rust |   0.621 secs    | 54.657 ns   | 0.001 % | 18.03 bits  |
 
