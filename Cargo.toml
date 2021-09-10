@@ -40,3 +40,6 @@ harness = false
 [[bench]]
 name = "fuse16_bench"
 harness = false
+
+[badges]
+maintenance = { status = "actively-developed" }
