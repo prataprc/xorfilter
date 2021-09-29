@@ -1,1 +1,4 @@
-* src/bin/perf: performance suite for fuse8, fuse16, xor8
+TODO List
+=========
+
+* Can we have parallel build algorithm for Xor8, Fuse8 and Fuse16 filters ?
