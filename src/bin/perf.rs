@@ -1,0 +1,115 @@
+use rand::{random, rngs::SmallRng, Rng, SeedableRng};
+use structopt::StructOpt;
+use xorfilter::{BuildHasherDefault, Fuse16, Fuse8, Xor8};
+
+use std::time;
+
+/// Command line options.
+#[derive(Clone, StructOpt)]
+pub struct Opt {
+    #[structopt(long = "seed", default_value = "0")]
+    seed: u128,
+
+    #[structopt(long = "loads", default_value = "10000000")]
+    loads: usize,
+
+    #[structopt(long = "gets", default_value = "10000000")]
+    gets: usize,
+
+    command: String,
+}
+
+fn main() {
+    let mut opts = Opt::from_args();
+    if opts.seed == 0 {
+        opts.seed = random();
+    }
+
+    match opts.command.as_str() {
+        "xor8" => run_xor8(opts),
+        "fuse8" => run_fuse8(opts),
+        "fuse16" => run_fuse16(opts),
+        _ => unreachable!(),
+    }
+}
+
+fn run_xor8(opts: Opt) {
+    let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
+    let keys: Vec<u64> = (0..(opts.loads as u64)).collect();
+
+    let mut filter = Xor8::<BuildHasherDefault>::new();
+    filter.populate(&keys);
+
+    let start = time::Instant::now();
+    filter.build().unwrap();
+    println!("Took {:?} to build {} keys", start.elapsed(), keys.len());
+
+    let mut hits = 0;
+    let start = time::Instant::now();
+    for _i in 0..opts.gets {
+        let off: usize = rng.gen::<usize>() % keys.len();
+        if filter.contains(&keys[off]) {
+            hits += 1;
+        }
+    }
+    println!(
+        "Took {:?} to check {} keys, hits:{} ",
+        start.elapsed(),
+        keys.len(),
+        hits
+    );
+}
+
+fn run_fuse8(opts: Opt) {
+    let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
+    let keys: Vec<u64> = (0..(opts.loads as u64)).collect();
+
+    let mut filter = Fuse8::<BuildHasherDefault>::new(keys.len() as u32);
+    filter.populate(&keys);
+
+    let start = time::Instant::now();
+    filter.build().unwrap();
+    println!("Took {:?} to build {} keys", start.elapsed(), keys.len());
+
+    let mut hits = 0;
+    let start = time::Instant::now();
+    for _i in 0..opts.gets {
+        let off: usize = rng.gen::<usize>() % keys.len();
+        if filter.contains(&keys[off]) {
+            hits += 1;
+        }
+    }
+    println!(
+        "Took {:?} to check {} keys, hits:{} ",
+        start.elapsed(),
+        keys.len(),
+        hits
+    );
+}
+
+fn run_fuse16(opts: Opt) {
+    let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
+    let keys: Vec<u64> = (0..(opts.loads as u64)).collect();
+
+    let mut filter = Fuse16::<BuildHasherDefault>::new(keys.len() as u32);
+    filter.populate(&keys);
+
+    let start = time::Instant::now();
+    filter.build().unwrap();
+    println!("Took {:?} to build {} keys", start.elapsed(), keys.len());
+
+    let mut hits = 0;
+    let start = time::Instant::now();
+    for _i in 0..opts.gets {
+        let off: usize = rng.gen::<usize>() % keys.len();
+        if filter.contains(&keys[off]) {
+            hits += 1;
+        }
+    }
+    println!(
+        "Took {:?} to check {} keys, hits:{} ",
+        start.elapsed(),
+        keys.len(),
+        hits
+    );
+}

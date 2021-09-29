@@ -5,7 +5,7 @@ use xorfilter::Fuse8;
 
 use std::collections::hash_map::RandomState;
 
-const SIZE: usize = 10_000_000;
+const SIZE: usize = 1_000_000;
 
 fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
     let mut keys: Vec<u64> = Vec::with_capacity(size);

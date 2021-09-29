@@ -21,13 +21,19 @@ debug = true
 [lib]
 name = "xorfilter"
 
+[[bin]]
+name = "perf"
+required-features = ["perf"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+structopt = { version = "0.3.20", default-features = false, optional = true }
+rand = { version = "0.7.3", features = ["small_rng"], optional = true }
 
 [dev-dependencies]
-rand = "0.6.4"
 criterion = "0.3"
+rand = { version = "0.7.3", features = ["small_rng"] }
 
 [[bench]]
 name = "xor_bench"
@@ -40,6 +46,9 @@ harness = false
 [[bench]]
 name = "fuse16_bench"
 harness = false
+
+[features]
+perf = ["structopt", "rand"]
 
 [badges]
 maintenance = { status = "actively-developed" }
