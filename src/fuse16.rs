@@ -3,6 +3,7 @@ use std::collections::hash_map::{DefaultHasher, RandomState};
 use std::{
     collections::BTreeMap,
     hash::{BuildHasher, Hash, Hasher},
+    sync::Arc,
 };
 
 use crate::{
@@ -50,7 +51,25 @@ where
     pub segment_length_mask: u32,
     pub segment_count: u32,
     pub segment_count_length: u32,
-    pub finger_prints: Vec<u16>,
+    pub finger_prints: Arc<Vec<u16>>,
+}
+
+impl<H> Clone for Fuse16<H>
+where
+    H: Clone + BuildHasher,
+{
+    fn clone(&self) -> Self {
+        Fuse16 {
+            keys: None,
+            hash_builder: self.hash_builder.clone(),
+            seed: self.seed,
+            segment_length: self.segment_length,
+            segment_length_mask: self.segment_length_mask,
+            segment_count: self.segment_count,
+            segment_count_length: self.segment_count_length,
+            finger_prints: Arc::clone(&self.finger_prints),
+        }
+    }
 }
 
 impl<H> Fuse16<H>
@@ -135,7 +154,7 @@ where
             segment_length_mask,
             segment_count,
             segment_count_length,
-            finger_prints: vec![0; array_length as usize],
+            finger_prints: Arc::new(vec![0; array_length as usize]),
         }
     }
 }
@@ -354,7 +373,7 @@ where
             h012[3] = h012[0];
             h012[4] = h012[1];
 
-            self.finger_prints[h012[found] as usize] = xor2
+            Arc::get_mut(&mut self.finger_prints).unwrap()[h012[found] as usize] = xor2
                 ^ self.finger_prints[h012[found + 1] as usize]
                 ^ self.finger_prints[h012[found + 2] as usize];
         }

@@ -137,7 +137,7 @@ fn generate_filter(seed: u128) -> Xor8<BuildHasherDefault> {
 #[allow(dead_code)]
 fn save_file(file_path: ffi::OsString, keys: &[u32]) {
     let mut filter = Xor8::<BuildHasherDefault>::new();
-    filter.populate(&keys);
+    filter.populate(keys);
     filter.build().expect("build failed");
     filter
         .write_file(&file_path)

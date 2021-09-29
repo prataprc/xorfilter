@@ -22,6 +22,11 @@
 //!   better build performance. On the other hand, Fuse8 cannot handle more than
 //!   few duplicates.
 //!
+//! **Cloning**
+//!
+//! Cloning [Xor8], [Fuse8], [Fuse16] is fast, but valid only after the filter
+//! is constructed. This can linearly scale for read-concurrency with lookup operation.
+//!
 //! This is ported from its original implementation:
 //!
 //! * [Xor8] from <https://github.com/FastFilter/xorfilter>, written in golang.

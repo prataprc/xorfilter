@@ -2,7 +2,7 @@ use rand::{random, rngs::SmallRng, Rng, SeedableRng};
 use structopt::StructOpt;
 use xorfilter::{BuildHasherDefault, Fuse16, Fuse8, Xor8};
 
-use std::time;
+use std::{sync::Arc, thread, time};
 
 /// Command line options.
 #[derive(Clone, StructOpt)]
@@ -15,6 +15,9 @@ pub struct Opt {
 
     #[structopt(long = "gets", default_value = "10000000")]
     gets: usize,
+
+    #[structopt(long = "readers", default_value = "1")]
+    readers: usize,
 
     command: String,
 }
@@ -34,7 +37,6 @@ fn main() {
 }
 
 fn run_xor8(opts: Opt) {
-    let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
     let keys: Vec<u64> = (0..(opts.loads as u64)).collect();
 
     let mut filter = Xor8::<BuildHasherDefault>::new();
@@ -44,24 +46,36 @@ fn run_xor8(opts: Opt) {
     filter.build().unwrap();
     println!("Took {:?} to build {} keys", start.elapsed(), keys.len());
 
-    let mut hits = 0;
-    let start = time::Instant::now();
-    for _i in 0..opts.gets {
-        let off: usize = rng.gen::<usize>() % keys.len();
-        if filter.contains(&keys[off]) {
-            hits += 1;
-        }
+    let mut handles = vec![];
+    let keys = Arc::new(keys);
+    for j in 0..opts.readers {
+        let (opts, filter, keys) = (opts.clone(), filter.clone(), Arc::clone(&keys));
+        let handle = thread::spawn(move || {
+            let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
+            let (mut hits, start) = (0, time::Instant::now());
+            for _i in 0..opts.gets {
+                let off: usize = rng.gen::<usize>() % keys.len();
+                if filter.contains(&keys[off]) {
+                    hits += 1;
+                }
+            }
+            println!(
+                "Reader-{} took {:?} to check {} keys, hits:{} ",
+                j,
+                start.elapsed(),
+                keys.len(),
+                hits
+            );
+        });
+        handles.push(handle);
     }
-    println!(
-        "Took {:?} to check {} keys, hits:{} ",
-        start.elapsed(),
-        keys.len(),
-        hits
-    );
+
+    for handle in handles.into_iter() {
+        handle.join().unwrap()
+    }
 }
 
 fn run_fuse8(opts: Opt) {
-    let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
     let keys: Vec<u64> = (0..(opts.loads as u64)).collect();
 
     let mut filter = Fuse8::<BuildHasherDefault>::new(keys.len() as u32);
@@ -71,24 +85,36 @@ fn run_fuse8(opts: Opt) {
     filter.build().unwrap();
     println!("Took {:?} to build {} keys", start.elapsed(), keys.len());
 
-    let mut hits = 0;
-    let start = time::Instant::now();
-    for _i in 0..opts.gets {
-        let off: usize = rng.gen::<usize>() % keys.len();
-        if filter.contains(&keys[off]) {
-            hits += 1;
-        }
+    let mut handles = vec![];
+    let keys = Arc::new(keys);
+    for j in 0..opts.readers {
+        let (opts, filter, keys) = (opts.clone(), filter.clone(), Arc::clone(&keys));
+        let handle = thread::spawn(move || {
+            let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
+            let (mut hits, start) = (0, time::Instant::now());
+            for _i in 0..opts.gets {
+                let off: usize = rng.gen::<usize>() % keys.len();
+                if filter.contains(&keys[off]) {
+                    hits += 1;
+                }
+            }
+            println!(
+                "Reader-{} took {:?} to check {} keys, hits:{} ",
+                j,
+                start.elapsed(),
+                keys.len(),
+                hits
+            );
+        });
+        handles.push(handle);
     }
-    println!(
-        "Took {:?} to check {} keys, hits:{} ",
-        start.elapsed(),
-        keys.len(),
-        hits
-    );
+
+    for handle in handles.into_iter() {
+        handle.join().unwrap()
+    }
 }
 
 fn run_fuse16(opts: Opt) {
-    let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
     let keys: Vec<u64> = (0..(opts.loads as u64)).collect();
 
     let mut filter = Fuse16::<BuildHasherDefault>::new(keys.len() as u32);
@@ -98,18 +124,31 @@ fn run_fuse16(opts: Opt) {
     filter.build().unwrap();
     println!("Took {:?} to build {} keys", start.elapsed(), keys.len());
 
-    let mut hits = 0;
-    let start = time::Instant::now();
-    for _i in 0..opts.gets {
-        let off: usize = rng.gen::<usize>() % keys.len();
-        if filter.contains(&keys[off]) {
-            hits += 1;
-        }
+    let mut handles = vec![];
+    let keys = Arc::new(keys);
+    for j in 0..opts.readers {
+        let (opts, filter, keys) = (opts.clone(), filter.clone(), Arc::clone(&keys));
+        let handle = thread::spawn(move || {
+            let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
+            let (mut hits, start) = (0, time::Instant::now());
+            for _i in 0..opts.gets {
+                let off: usize = rng.gen::<usize>() % keys.len();
+                if filter.contains(&keys[off]) {
+                    hits += 1;
+                }
+            }
+            println!(
+                "Reader-{} took {:?} to check {} keys, hits:{} ",
+                j,
+                start.elapsed(),
+                keys.len(),
+                hits
+            );
+        });
+        handles.push(handle);
     }
-    println!(
-        "Took {:?} to check {} keys, hits:{} ",
-        start.elapsed(),
-        keys.len(),
-        hits
-    );
+
+    for handle in handles.into_iter() {
+        handle.join().unwrap()
+    }
 }

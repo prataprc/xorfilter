@@ -12,6 +12,7 @@ use std::{
     ffi, fs,
     hash::{BuildHasher, Hash, Hasher},
     io::{self, ErrorKind, Read, Write},
+    sync::Arc,
 };
 
 use crate::{BuildHasherDefault, Result};
@@ -95,7 +96,22 @@ where
     pub hash_builder: H,
     pub seed: u64,
     pub block_length: u32,
-    pub finger_prints: Vec<u8>,
+    pub finger_prints: Arc<Vec<u8>>,
+}
+
+impl<H> Clone for Xor8<H>
+where
+    H: Clone + BuildHasher,
+{
+    fn clone(&self) -> Self {
+        Xor8 {
+            keys: None,
+            hash_builder: self.hash_builder.clone(),
+            seed: self.seed,
+            block_length: self.block_length,
+            finger_prints: Arc::clone(&self.finger_prints),
+        }
+    }
 }
 
 impl<H> PartialEq for Xor8<H>
@@ -119,7 +135,7 @@ where
             hash_builder: H::default(),
             seed: u64::default(),
             block_length: u32::default(),
-            finger_prints: Vec::default(),
+            finger_prints: Arc::new(Vec::default()),
         }
     }
 }
@@ -143,7 +159,7 @@ where
             hash_builder,
             seed: u64::default(),
             block_length: u32::default(),
-            finger_prints: Vec::default(),
+            finger_prints: Arc::new(Vec::default()),
         }
     }
 }
@@ -207,7 +223,7 @@ where
         };
         self.seed = splitmix64(&mut rngcounter);
         self.block_length = capacity / 3;
-        self.finger_prints = vec![u8::default(); capacity as usize];
+        self.finger_prints = Arc::new(vec![u8::default(); capacity as usize]);
 
         let block_length = self.block_length as usize;
         let mut q0: Vec<KeyIndex> = Vec::with_capacity(block_length);
@@ -386,7 +402,7 @@ where
                 let h1 = (self.geth1(ki.hash) + self.block_length) as usize;
                 val ^= self.finger_prints[h0] ^ self.finger_prints[h1]
             }
-            self.finger_prints[ki.index as usize] = val;
+            Arc::get_mut(&mut self.finger_prints).unwrap()[ki.index as usize] = val;
         }
 
         Ok(())
@@ -565,7 +581,7 @@ where
         }
 
         // fetch the finger print
-        let finger_prints = buf[n..n + fp_len].to_vec();
+        let finger_prints = Arc::new(buf[n..n + fp_len].to_vec());
         n += fp_len;
         // fetch the hash_builder
         let hash_builder: H = buf[n..n + hb_len].to_vec().into();
@@ -604,7 +620,7 @@ where
             hash_builder: H::default(),
             seed: u64::from_be_bytes(buf[4..12].try_into().unwrap()),
             block_length: u32::from_be_bytes(buf[12..16].try_into().unwrap()),
-            finger_prints: buf[20..].to_vec(),
+            finger_prints: Arc::new(buf[20..].to_vec()),
         })
     }
 }
