@@ -8,12 +8,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Build stable dev
-      run: cargo +stable build --verbose
-    - name: Build stable release
-      run: cargo +stable build --verbose --release
-    - name: Test stable dev
-      run: cargo +stable test --verbose
-    - name: Test stable release
-      run: cargo +stable test --verbose --release
+      - name: Install nightly toolchain with clippy available
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: clippy
+      - uses: actions/checkout@v1
+      - name: Build nightly dev
+        run: cargo +nightly build --verbose
+      - name: Build nightly release
+        run: cargo +nightly build --verbose --release
+      - name: Test nightly dev
+        run: cargo +nightly test --verbose
+      - name: Test nightly release
+        run: cargo +nightly test --verbose --release

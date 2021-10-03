@@ -26,9 +26,8 @@ name = "perf"
 required-features = ["perf"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-cbordata = { version = "0.5.0", path = "../cbordata" }
+cbordata = { version = "0.5.1" }
 
 structopt = { version = "0.3.20", default-features = false, optional = true }
 rand = { version = "0.7.3", features = ["small_rng"], optional = true }
