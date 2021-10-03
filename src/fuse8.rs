@@ -270,7 +270,9 @@ where
             key.hash(&mut hasher);
             hasher.finish()
         };
-        self.num_keys.as_mut().map(|x| *x = *x + 1);
+        if let Some(x) = self.num_keys.as_mut() {
+            *x += 1
+        }
         self.keys.as_mut().unwrap().push(digest);
     }
 
@@ -278,7 +280,9 @@ where
     /// key shall be generated using the default-hasher or via hasher supplied
     /// via [Fuse8::with_hasher] method.
     pub fn populate<K: Hash>(&mut self, keys: &[K]) {
-        self.num_keys.as_mut().map(|x| *x = *x + keys.len());
+        if let Some(x) = self.num_keys.as_mut() {
+            *x += keys.len()
+        }
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
@@ -288,7 +292,9 @@ where
 
     /// Populate with pre-compute collection of 64-bit digests.
     pub fn populate_keys(&mut self, digests: &[u64]) {
-        self.num_keys.as_mut().map(|x| *x = *x + digests.len());
+        if let Some(x) = self.num_keys.as_mut() {
+            *x += digests.len()
+        }
         self.keys.as_mut().unwrap().extend_from_slice(digests);
     }
 
@@ -505,6 +511,7 @@ impl<H> Fuse8<H>
 where
     H: BuildHasher,
 {
+    #[allow(clippy::len_without_is_empty)]
     /// Return the number of keys added/built into the bitmap index.
     pub fn len(&self) -> Option<usize> {
         self.num_keys
@@ -572,7 +579,7 @@ where
             segment_length_mask: self.segment_length_mask,
             segment_count: self.segment_count,
             segment_count_length: self.segment_count_length,
-            finger_prints: finger_prints,
+            finger_prints,
         };
         val.into_cbor()
     }
