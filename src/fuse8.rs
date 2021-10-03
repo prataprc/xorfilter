@@ -541,8 +541,7 @@ where
 
 //------ Implement cbordata related functionalities
 
-// Intermediate type to serialize and de-serialized Fuse8 into bytes using
-// `mkit` macros.
+// Intermediate type to serialize and de-serialized Fuse8 into bytes.
 #[derive(Cborize)]
 struct CborFuse8 {
     hash_builder: Vec<u8>,
