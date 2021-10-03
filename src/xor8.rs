@@ -4,6 +4,8 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
+use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
+
 #[allow(unused_imports)]
 use std::collections::hash_map::{DefaultHasher, RandomState};
 use std::{
@@ -95,6 +97,7 @@ where
     keys: Option<BTreeMap<u64, ()>>,
     pub hash_builder: H,
     pub seed: u64,
+    pub num_keys: Option<usize>,
     pub block_length: u32,
     pub finger_prints: Arc<Vec<u8>>,
 }
@@ -108,6 +111,7 @@ where
             keys: None,
             hash_builder: self.hash_builder.clone(),
             seed: self.seed,
+            num_keys: self.num_keys,
             block_length: self.block_length,
             finger_prints: Arc::clone(&self.finger_prints),
         }
@@ -119,7 +123,13 @@ where
     H: BuildHasher,
 {
     fn eq(&self, other: &Self) -> bool {
+        let num_keys = match (self.num_keys, other.num_keys) {
+            (Some(a), Some(b)) => a == b,
+            (_, _) => true,
+        };
+
         self.seed == other.seed
+            && num_keys
             && self.block_length == other.block_length
             && self.finger_prints == other.finger_prints
     }
@@ -134,6 +144,7 @@ where
             keys: Some(BTreeMap::new()),
             hash_builder: H::default(),
             seed: u64::default(),
+            num_keys: None,
             block_length: u32::default(),
             finger_prints: Arc::new(Vec::default()),
         }
@@ -158,6 +169,7 @@ where
             keys: Some(BTreeMap::new()),
             hash_builder,
             seed: u64::default(),
+            num_keys: None,
             block_length: u32::default(),
             finger_prints: Arc::new(Vec::default()),
         }
@@ -176,6 +188,7 @@ where
             key.hash(&mut hasher);
             hasher.finish()
         };
+        self.num_keys.as_mut().map(|x| *x = *x + 1);
         self.keys.as_mut().unwrap().insert(hashed_key, ());
     }
 
@@ -183,6 +196,7 @@ where
     /// key shall be generated using the default-hasher or via hasher supplied
     /// via [Xor8::with_hasher] method.
     pub fn populate<K: Hash>(&mut self, keys: &[K]) {
+        self.num_keys.as_mut().map(|x| *x = *x + keys.len());
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
@@ -192,6 +206,7 @@ where
 
     /// Populate with pre-compute collection of 64-bit digests.
     pub fn populate_keys(&mut self, digests: &[u64]) {
+        self.num_keys.as_mut().map(|x| *x = *x + digests.len());
         for digest in digests.iter() {
             self.keys.as_mut().unwrap().insert(*digest, ());
         }
@@ -216,6 +231,7 @@ where
     /// It is upto the caller to ensure that digests are unique, that there no
     /// duplicates.
     pub fn build_keys(&mut self, digests: &[u64]) -> Result<()> {
+        self.num_keys = Some(digests.len());
         let (size, mut rngcounter) = (digests.len(), 1_u64);
         let capacity = {
             let capacity = 32 + ((1.23 * (size as f64)).ceil() as u32);
@@ -413,6 +429,11 @@ impl<H> Xor8<H>
 where
     H: BuildHasher,
 {
+    /// Return the number of keys added/built into the bitmap index.
+    pub fn len(&self) -> Option<usize> {
+        self.num_keys
+    }
+
     /// Contains tell you whether the key is likely part of the set, with false
     /// positive rate.
     pub fn contains<K: ?Sized + Hash>(&self, key: &K) -> bool {
@@ -488,13 +509,14 @@ where
     /// TL stands for filter
     /// 1 stands for version 1
     /// 2 stands for version 2
+    /// 3 stands for version 3
     const SIGNATURE_V1: [u8; 4] = [b'^', b'T', b'L', 1];
     const SIGNATURE_V2: [u8; 4] = [b'^', b'T', b'L', 2];
 
     /// METADATA_LENGTH is size that required to write size of all the
     /// metadata of the serialized filter.
-    // signature length + seed length + block-length +
-    //      fingerprint length + hasher-builder length + fingerprint + hash-builder
+    // signature length + seed-length + block-length +
+    //      fingerprint-length + hasher-builder length + fingerprint + hash-builder
     const METADATA_LENGTH: usize = 4 + 8 + 4 + 4 + 4;
 
     /// Write to file in binary format
@@ -590,6 +612,7 @@ where
             keys: None,
             hash_builder,
             seed,
+            num_keys: None,
             block_length,
             finger_prints,
         })
@@ -601,16 +624,6 @@ where
     {
         use std::io::Error;
 
-        // validate the buf first.
-        if Self::METADATA_LENGTH > buf.len() {
-            return Err(Error::new(ErrorKind::InvalidData, "invalid byte slice"));
-        }
-        if buf[..4] != Xor8::<H>::SIGNATURE_V1 {
-            return Err(Error::new(
-                ErrorKind::InvalidData,
-                "File signature incorrect",
-            ));
-        }
         let fp_len = u32::from_be_bytes(buf[16..20].try_into().unwrap()) as usize;
         if buf[20..].len() < fp_len {
             return Err(Error::new(ErrorKind::InvalidData, "invalid byte slice"));
@@ -619,9 +632,63 @@ where
             keys: None,
             hash_builder: H::default(),
             seed: u64::from_be_bytes(buf[4..12].try_into().unwrap()),
+            num_keys: None,
             block_length: u32::from_be_bytes(buf[12..16].try_into().unwrap()),
             finger_prints: Arc::new(buf[20..].to_vec()),
         })
+    }
+}
+
+//------ Implement cbordata related functionalities
+
+// Intermediate type to serialize and de-serialized Xor8 into bytes using
+// `mkit` macros.
+#[derive(Cborize)]
+struct CborXor8 {
+    hash_builder: Vec<u8>,
+    seed: u64,
+    num_keys: Option<usize>,
+    block_length: u32,
+    finger_prints: Vec<u8>,
+}
+
+impl CborXor8 {
+    const ID: &'static str = "xor8/0.0.1";
+}
+
+impl<H> IntoCbor for Xor8<H>
+where
+    H: BuildHasher + Into<Vec<u8>>,
+{
+    fn into_cbor(self) -> cbor::Result<Cbor> {
+        let val = CborXor8 {
+            hash_builder: self.hash_builder.into(),
+            seed: self.seed,
+            num_keys: self.num_keys,
+            block_length: self.block_length,
+            finger_prints: self.finger_prints.to_vec(),
+        };
+        val.into_cbor()
+    }
+}
+
+impl<H> FromCbor for Xor8<H>
+where
+    H: BuildHasher + From<Vec<u8>>,
+{
+    fn from_cbor(val: Cbor) -> cbor::Result<Self> {
+        let val = CborXor8::from_cbor(val)?;
+
+        let filter = Xor8 {
+            keys: None,
+            hash_builder: val.hash_builder.into(),
+            seed: val.seed,
+            num_keys: val.num_keys,
+            block_length: val.block_length,
+            finger_prints: Arc::new(val.finger_prints),
+        };
+
+        Ok(filter)
     }
 }
 

@@ -1,15 +1,19 @@
 build:
 	# ... build ...
 	cargo +nightly build
-	cargo +stable build
+	# TODO cargo +stable build
+	#
 	# ... test ...
 	cargo +nightly test --no-run
-	cargo +stable test --no-run
+	# TODO cargo +stable test --no-run
+	#
 	# ... bench ...
 	cargo +nightly bench --no-run
+	#
 	# ... doc ...
 	cargo +nightly doc
-	cargo +stable doc
+	# TODO cargo +stable doc
+	#
 	# ... meta commands ...
 	cargo +nightly clippy --all-targets --all-features
 

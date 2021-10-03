@@ -1,5 +1,6 @@
-use super::*;
 use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
+
+use super::*;
 
 fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
     let mut keys: Vec<u64> = Vec::with_capacity(size);
@@ -164,4 +165,33 @@ fn test_xor8_billion() {
     test_xor8_build::<BuildHasherDefault>("BuildHasherDefault", seed, size);
     test_xor8_build_keys::<RandomState>("RandomState", seed, size);
     test_xor8_build_keys::<BuildHasherDefault>("BuildHasherDefault", seed, size);
+}
+
+#[test]
+fn test_xor8_cbor() {
+    let seed: u128 = random();
+    println!("test_xor8_cbor seed:{}", seed);
+    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+
+    let keys: Vec<u64> = (0..100_000).map(|_| rng.gen::<u64>()).collect();
+
+    let filter = {
+        let mut filter = Xor8::<BuildHasherDefault>::new();
+        filter.populate(&keys);
+        filter.build().expect("fail building xor8 filter");
+        filter
+    };
+
+    for key in keys.iter() {
+        assert!(filter.contains(key), "key {} not present", key);
+    }
+
+    let filter = {
+        let val = filter.into_cbor().unwrap();
+        Xor8::<BuildHasherDefault>::from_cbor(val).unwrap()
+    };
+
+    for key in keys.iter() {
+        assert!(filter.contains(key), "key {} not present", key);
+    }
 }

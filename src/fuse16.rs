@@ -1,3 +1,5 @@
+use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
+
 #[allow(unused_imports)]
 use std::collections::hash_map::{DefaultHasher, RandomState};
 use std::{
@@ -47,6 +49,7 @@ where
     keys: Option<BTreeMap<u64, ()>>,
     pub hash_builder: H,
     pub seed: u64,
+    pub num_keys: Option<usize>,
     pub segment_length: u32,
     pub segment_length_mask: u32,
     pub segment_count: u32,
@@ -63,6 +66,7 @@ where
             keys: None,
             hash_builder: self.hash_builder.clone(),
             seed: self.seed,
+            num_keys: self.num_keys,
             segment_length: self.segment_length,
             segment_length_mask: self.segment_length_mask,
             segment_count: self.segment_count,
@@ -150,6 +154,7 @@ where
             keys: Some(BTreeMap::new()),
             hash_builder,
             seed: u64::default(),
+            num_keys: None,
             segment_length,
             segment_length_mask,
             segment_count,
@@ -177,6 +182,7 @@ where
             key.hash(&mut hasher);
             hasher.finish()
         };
+        self.num_keys.as_mut().map(|x| *x = *x + 1);
         self.keys.as_mut().unwrap().insert(digest, ());
     }
 
@@ -184,6 +190,7 @@ where
     /// key shall be generated using the default-hasher or via hasher supplied
     /// via [Fuse16::with_hasher] method.
     pub fn populate<K: Hash>(&mut self, keys: &[K]) {
+        self.num_keys.as_mut().map(|x| *x = *x + keys.len());
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
@@ -193,6 +200,7 @@ where
 
     /// Populate with pre-compute collection of 64-bit digests.
     pub fn populate_keys(&mut self, digests: &[u64]) {
+        self.num_keys.as_mut().map(|x| *x = *x + digests.len());
         for digest in digests.iter() {
             self.keys.as_mut().unwrap().insert(*digest, ());
         }
@@ -228,6 +236,7 @@ where
         let capacity = self.finger_prints.len();
         let size = digests.len();
 
+        self.num_keys = Some(digests.len());
         self.seed = binary_fuse_rng_splitmix64(&mut rng_counter);
         let mut reverse_order: Vec<u64> = vec![0; size + 1];
         let mut reverse_h: Vec<u8> = vec![0; size];
@@ -386,6 +395,11 @@ impl<H> Fuse16<H>
 where
     H: BuildHasher,
 {
+    /// Return the number of keys added/built into the bitmap index.
+    pub fn len(&self) -> Option<usize> {
+        self.num_keys
+    }
+
     /// Contains tell you whether the key is likely part of the set, with false
     /// positive rate.
     pub fn contains<K: ?Sized + Hash>(&self, key: &K) -> bool {
@@ -412,6 +426,68 @@ where
     #[allow(dead_code)]
     fn get_hasher(&self) -> H::Hasher {
         self.hash_builder.build_hasher()
+    }
+}
+
+//------ Implement cbordata related functionalities
+
+// Intermediate type to serialize and de-serialized Fuse16 into bytes using
+// `mkit` macros.
+#[derive(Cborize)]
+struct CborFuse16 {
+    hash_builder: Vec<u8>,
+    seed: u64,
+    num_keys: Option<usize>,
+    segment_length: u32,
+    segment_length_mask: u32,
+    segment_count: u32,
+    segment_count_length: u32,
+    finger_prints: Vec<u16>,
+}
+
+impl CborFuse16 {
+    const ID: &'static str = "fuse8/0.0.1";
+}
+
+impl<H> IntoCbor for Fuse16<H>
+where
+    H: BuildHasher + Into<Vec<u8>>,
+{
+    fn into_cbor(self) -> cbor::Result<Cbor> {
+        let val = CborFuse16 {
+            hash_builder: self.hash_builder.into(),
+            seed: self.seed,
+            num_keys: self.num_keys,
+            segment_length: self.segment_length,
+            segment_length_mask: self.segment_length_mask,
+            segment_count: self.segment_count,
+            segment_count_length: self.segment_count_length,
+            finger_prints: self.finger_prints.to_vec(),
+        };
+        val.into_cbor()
+    }
+}
+
+impl<H> FromCbor for Fuse16<H>
+where
+    H: BuildHasher + From<Vec<u8>>,
+{
+    fn from_cbor(val: Cbor) -> cbor::Result<Self> {
+        let val = CborFuse16::from_cbor(val)?;
+
+        let filter = Fuse16 {
+            keys: None,
+            hash_builder: val.hash_builder.into(),
+            seed: val.seed,
+            num_keys: val.num_keys,
+            segment_length: val.segment_length,
+            segment_length_mask: val.segment_length_mask,
+            segment_count: val.segment_count,
+            segment_count_length: val.segment_count_length,
+            finger_prints: Arc::new(val.finger_prints),
+        };
+
+        Ok(filter)
     }
 }
 

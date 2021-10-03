@@ -175,3 +175,32 @@ fn test_fuse16_billion() {
     test_fuse16_build_keys::<RandomState>("RandomState", seed, size);
     test_fuse16_build_keys::<BuildHasherDefault>("BuildHasherDefault", seed, size);
 }
+
+#[test]
+fn test_fuse16_cbor() {
+    let seed: u128 = random();
+    println!("test_fuse16_cbor seed:{}", seed);
+    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+
+    let keys: Vec<u64> = (0..100_000).map(|_| rng.gen::<u64>()).collect();
+
+    let filter = {
+        let mut filter = Fuse16::<BuildHasherDefault>::new(keys.len() as u32);
+        filter.populate(&keys);
+        filter.build().expect("fail building fuse16 filter");
+        filter
+    };
+
+    for key in keys.iter() {
+        assert!(filter.contains(key), "key {} not present", key);
+    }
+
+    let filter = {
+        let val = filter.into_cbor().unwrap();
+        Fuse16::<BuildHasherDefault>::from_cbor(val).unwrap()
+    };
+
+    for key in keys.iter() {
+        assert!(filter.contains(key), "key {} not present", key);
+    }
+}
