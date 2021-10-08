@@ -1,18 +1,25 @@
 build:
 	# ... build ...
 	cargo +nightly build
-	# TODO cargo +stable build
+	cargo +nightly build --features cbordata
+	cargo +stable build
+	# TODO cargo +stable build --features cbordata
 	#
 	# ... test ...
 	cargo +nightly test --no-run
-	# TODO cargo +stable test --no-run
+	cargo +nightly test --no-run --features cbordata
+	cargo +stable test --no-run
+	# TODO cargo +stable test --no-run --features cbordata
 	#
 	# ... bench ...
 	cargo +nightly bench --no-run
+	cargo +nightly bench --no-run --features cbordata
 	#
 	# ... doc ...
 	cargo +nightly doc
-	# TODO cargo +stable doc
+	cargo +nightly doc --features cbordata
+	cargo +stable doc
+	# TODO cargo +stable doc --features cbordata
 	#
 	# ... meta commands ...
 	cargo +nightly clippy --all-targets --all-features
@@ -20,12 +27,15 @@ build:
 test:
 	# ... test ...
 	cargo +nightly test
-	# TODO: cargo +stable test --no-run
+	cargo +nightly test --features cbordata
+	cargo +stable test --no-run
+	# TODO cargo +stable test --no-run --features cbordata
 
 bench:
 	# ... test ...
 	cargo +nightly bench
-	# TODO: cargo +stable test --no-run
+	cargo +nightly bench --features cbordata
+	cargo +stable test --no-run
 
 flamegraph:
 	echo "not an executable"

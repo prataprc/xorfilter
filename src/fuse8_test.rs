@@ -278,6 +278,7 @@ fn test_fuse8_billion() {
     );
 }
 
+#[cfg(feature = "cbordata")]
 #[test]
 fn test_fuse8_cbor() {
     let seed: u128 = random();

@@ -1,3 +1,4 @@
+#[cfg(feature = "cbordata")]
 use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
 
 #[allow(unused_imports)]
@@ -441,6 +442,7 @@ where
 //------ Implement cbordata related functionalities
 
 // Intermediate type to serialize and de-serialized Fuse16 into bytes.
+#[cfg(feature = "cbordata")]
 #[derive(Cborize)]
 struct CborFuse16 {
     hash_builder: Vec<u8>,
@@ -453,10 +455,12 @@ struct CborFuse16 {
     finger_prints: Vec<u16>,
 }
 
+#[cfg(feature = "cbordata")]
 impl CborFuse16 {
     const ID: &'static str = "fuse8/0.0.1";
 }
 
+#[cfg(feature = "cbordata")]
 impl<H> IntoCbor for Fuse16<H>
 where
     H: BuildHasher + Into<Vec<u8>>,
@@ -476,6 +480,7 @@ where
     }
 }
 
+#[cfg(feature = "cbordata")]
 impl<H> FromCbor for Fuse16<H>
 where
     H: BuildHasher + From<Vec<u8>>,

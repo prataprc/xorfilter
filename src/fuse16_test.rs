@@ -176,6 +176,7 @@ fn test_fuse16_billion() {
     test_fuse16_build_keys::<BuildHasherDefault>("BuildHasherDefault", seed, size);
 }
 
+#[cfg(feature = "cbordata")]
 #[test]
 fn test_fuse16_cbor() {
     let seed: u128 = random();

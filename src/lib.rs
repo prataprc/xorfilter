@@ -29,6 +29,11 @@
 //!
 //! This is ported from its original implementation:
 //!
+//! **Features**
+//!
+//! * Enable ``cbordata`` feature for serialize and deserialize [Xor8] [Fuse8] [Fuse16]
+//!   types using CBOR spec.
+//!
 //! * [Xor8] from <https://github.com/FastFilter/xorfilter>, written in golang.
 //! * [Fuse8] and [Fuse16] from <https://github.com/FastFilter/xor_singleheader>  written in C.
 

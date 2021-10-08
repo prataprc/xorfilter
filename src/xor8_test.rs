@@ -167,6 +167,7 @@ fn test_xor8_billion() {
     test_xor8_build_keys::<BuildHasherDefault>("BuildHasherDefault", seed, size);
 }
 
+#[cfg(feature = "cbordata")]
 #[test]
 fn test_xor8_cbor() {
     let seed: u128 = random();

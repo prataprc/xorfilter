@@ -4,6 +4,7 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
+#[cfg(feature = "cbordata")]
 use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
 
 #[allow(unused_imports)]
@@ -649,6 +650,7 @@ where
 //------ Implement cbordata related functionalities
 
 // Intermediate type to serialize and de-serialized Xor8 into bytes.
+#[cfg(feature = "cbordata")]
 #[derive(Cborize)]
 struct CborXor8 {
     hash_builder: Vec<u8>,
@@ -658,10 +660,12 @@ struct CborXor8 {
     finger_prints: Vec<u8>,
 }
 
+#[cfg(feature = "cbordata")]
 impl CborXor8 {
     const ID: &'static str = "xor8/0.0.1";
 }
 
+#[cfg(feature = "cbordata")]
 impl<H> IntoCbor for Xor8<H>
 where
     H: BuildHasher + Into<Vec<u8>>,
@@ -678,6 +682,7 @@ where
     }
 }
 
+#[cfg(feature = "cbordata")]
 impl<H> FromCbor for Xor8<H>
 where
     H: BuildHasher + From<Vec<u8>>,
