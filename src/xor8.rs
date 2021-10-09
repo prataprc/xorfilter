@@ -109,7 +109,7 @@ where
 {
     fn clone(&self) -> Self {
         Xor8 {
-            keys: None,
+            keys: Some(BTreeMap::new()),
             hash_builder: self.hash_builder.clone(),
             seed: self.seed,
             num_keys: self.num_keys,

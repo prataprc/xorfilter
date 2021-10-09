@@ -152,7 +152,7 @@ where
 {
     fn clone(&self) -> Self {
         Fuse8 {
-            keys: None,
+            keys: Some(Vec::default()),
             hash_builder: self.hash_builder.clone(),
             seed: self.seed,
             num_keys: self.num_keys,
