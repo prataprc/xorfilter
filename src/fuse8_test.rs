@@ -2,11 +2,11 @@ use super::*;
 use rand::{
     distributions::{Distribution, Standard},
     prelude::random,
-    rngs::SmallRng,
+    rngs::StdRng,
     Rng, SeedableRng,
 };
 
-fn generate_unique_keys<K>(prefix: &str, rng: &mut SmallRng, size: usize) -> Vec<K>
+fn generate_unique_keys<K>(prefix: &str, rng: &mut StdRng, size: usize) -> Vec<K>
 where
     K: Clone + Default + Ord,
     Standard: Distribution<K>,
@@ -26,7 +26,7 @@ where
     keys
 }
 
-fn test_fuse8_build<H, K>(name: &str, seed: u128, size: u32)
+fn test_fuse8_build<H, K>(name: &str, seed: u64, size: u32)
 where
     H: Default + BuildHasher,
     K: Clone + Default + Ord + Hash + std::fmt::Display,
@@ -34,7 +34,7 @@ where
 {
     use std::cmp;
 
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(name, &mut rng, size as usize);
 
@@ -105,7 +105,7 @@ where
     }
 }
 
-fn test_fuse8_build_keys<H, K>(name: &str, seed: u128, size: u32)
+fn test_fuse8_build_keys<H, K>(name: &str, seed: u64, size: u32)
 where
     H: Default + BuildHasher,
     K: Clone + Default + Ord + Hash + std::fmt::Display,
@@ -113,7 +113,7 @@ where
 {
     use std::cmp;
 
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(name, &mut rng, size as usize);
     let size = keys.len() as u32;
@@ -178,15 +178,11 @@ where
 
 #[test]
 fn test_fuse8_u8() {
-    let mut seed: u128 = [
-        317243231098672456594515636835401398754_u128,
-        277368073673380887632383970413666369758,
-        random(),
-    ][random::<usize>() % 3];
+    let mut seed: u64 = random();
     println!("test_fuse8_u8 seed:{}", seed);
 
     for size in [0, 1, 2, 10, 100].iter() {
-        seed = seed.wrapping_add(*size as u128);
+        seed = seed.wrapping_add(*size as u64);
         test_fuse8_build::<RandomState, u8>("RandomState,u8", seed, *size);
         test_fuse8_build::<BuildHasherDefault, u8>("BuildHasherDefault,u8", seed, *size);
         test_fuse8_build_keys::<RandomState, u8>("RandomState,u8", seed, *size);
@@ -200,16 +196,11 @@ fn test_fuse8_u8() {
 
 #[test]
 fn test_fuse8_u16() {
-    let mut seed: u128 = [
-        317243231098672456594515636835401398754_u128,
-        277368073673380887632383970413666369758,
-        random(),
-    ][random::<usize>() % 3];
-    // let mut seed: u128 = 277368073673380887632383970413666369758;
+    let mut seed: u64 = random();
     println!("test_fuse8_u16 seed:{}", seed);
 
     for size in [0, 1, 2, 10, 100, 500].iter() {
-        seed = seed.wrapping_add(*size as u128);
+        seed = seed.wrapping_add(*size as u64);
         test_fuse8_build::<RandomState, u16>("RandomState,16", seed, *size);
         test_fuse8_build::<BuildHasherDefault, u16>("BuildHasherDefault,16", seed, *size);
         test_fuse8_build_keys::<RandomState, u16>("RandomState,16", seed, *size);
@@ -223,15 +214,11 @@ fn test_fuse8_u16() {
 
 #[test]
 fn test_fuse8_u64() {
-    let mut seed: u128 = [
-        317243231098672456594515636835401398754_u128,
-        277368073673380887632383970413666369758,
-        random(),
-    ][random::<usize>() % 3];
+    let mut seed: u64 = random();
     println!("test_fuse8_u64 seed:{}", seed);
 
     for size in [0, 1, 2, 10, 1000, 10_000, 100_000, 1_000_000, 10_000_000].iter() {
-        seed = seed.wrapping_add(*size as u128);
+        seed = seed.wrapping_add(*size as u64);
         test_fuse8_build::<RandomState, u64>("RandomState,64", seed, *size);
         test_fuse8_build::<BuildHasherDefault, u64>("BuildHasherDefault,64", seed, *size);
         test_fuse8_build_keys::<RandomState, u64>("RandomState,64", seed, *size);
@@ -264,7 +251,7 @@ fn test_fuse8_duplicates() {
 #[test]
 #[ignore]
 fn test_fuse8_billion() {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("test_fuse8_billion seed:{}", seed);
 
     let size = 1_000_000_000;
@@ -281,9 +268,9 @@ fn test_fuse8_billion() {
 #[cfg(feature = "cbordata")]
 #[test]
 fn test_fuse8_cbor() {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("test_fuse8_cbor seed:{}", seed);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys: Vec<u64> = (0..100_000).map(|_| rng.gen::<u64>()).collect();
 

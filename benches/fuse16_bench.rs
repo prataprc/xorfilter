@@ -1,13 +1,13 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
-use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
+use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
 use xorfilter::Fuse16;
 
 use std::collections::hash_map::RandomState;
 
 const SIZE: usize = 1_000_000;
 
-fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
+fn generate_unique_keys(rng: &mut StdRng, size: usize) -> Vec<u64> {
     let mut keys: Vec<u64> = Vec::with_capacity(size);
     keys.resize(size, Default::default());
 
@@ -28,9 +28,9 @@ fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
 }
 
 fn bench_fuse16_populate_keys(c: &mut Criterion) {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("bench_fuse16_populate_keys seed:{}", seed);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(&mut rng, SIZE);
 
@@ -44,9 +44,9 @@ fn bench_fuse16_populate_keys(c: &mut Criterion) {
 }
 
 fn bench_fuse16_build_keys(c: &mut Criterion) {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("bench_fuse16_build_keys seed:{}", seed);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(&mut rng, SIZE);
 
@@ -59,9 +59,9 @@ fn bench_fuse16_build_keys(c: &mut Criterion) {
 }
 
 fn bench_fuse16_populate(c: &mut Criterion) {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("bench_fuse16_populate seed:{}", seed);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(&mut rng, SIZE);
 
@@ -75,9 +75,9 @@ fn bench_fuse16_populate(c: &mut Criterion) {
 }
 
 fn bench_fuse16_insert(c: &mut Criterion) {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("bench_fuse16_insert seed:{}", seed);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(&mut rng, SIZE);
 
@@ -91,9 +91,9 @@ fn bench_fuse16_insert(c: &mut Criterion) {
 }
 
 fn bench_fuse16_contains(c: &mut Criterion) {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("bench_fuse16_contains seed:{}", seed);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(&mut rng, SIZE);
 
@@ -114,9 +114,9 @@ fn bench_fuse16_contains(c: &mut Criterion) {
 }
 
 fn bench_fuse16_contains_key(c: &mut Criterion) {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("bench_fuse16_contains_key seed:{}", seed);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(&mut rng, SIZE);
 

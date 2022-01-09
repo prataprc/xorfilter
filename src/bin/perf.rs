@@ -1,4 +1,4 @@
-use rand::{random, rngs::SmallRng, Rng, SeedableRng};
+use rand::{random, rngs::StdRng, Rng, SeedableRng};
 use structopt::StructOpt;
 use xorfilter::{BuildHasherDefault, Fuse16, Fuse8, Xor8};
 
@@ -8,7 +8,7 @@ use std::{sync::Arc, thread, time};
 #[derive(Clone, StructOpt)]
 pub struct Opt {
     #[structopt(long = "seed", default_value = "0")]
-    seed: u128,
+    seed: u64,
 
     #[structopt(long = "loads", default_value = "10000000")]
     loads: usize,
@@ -51,7 +51,7 @@ fn run_xor8(opts: Opt) {
     for j in 0..opts.readers {
         let (opts, filter, keys) = (opts.clone(), filter.clone(), Arc::clone(&keys));
         let handle = thread::spawn(move || {
-            let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
+            let mut rng = StdRng::seed_from_u64(opts.seed);
             let (mut hits, start) = (0, time::Instant::now());
             for _i in 0..opts.gets {
                 let off: usize = rng.gen::<usize>() % keys.len();
@@ -90,7 +90,7 @@ fn run_fuse8(opts: Opt) {
     for j in 0..opts.readers {
         let (opts, filter, keys) = (opts.clone(), filter.clone(), Arc::clone(&keys));
         let handle = thread::spawn(move || {
-            let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
+            let mut rng = StdRng::seed_from_u64(opts.seed);
             let (mut hits, start) = (0, time::Instant::now());
             for _i in 0..opts.gets {
                 let off: usize = rng.gen::<usize>() % keys.len();
@@ -129,7 +129,7 @@ fn run_fuse16(opts: Opt) {
     for j in 0..opts.readers {
         let (opts, filter, keys) = (opts.clone(), filter.clone(), Arc::clone(&keys));
         let handle = thread::spawn(move || {
-            let mut rng = SmallRng::from_seed(opts.seed.to_le_bytes());
+            let mut rng = StdRng::seed_from_u64(opts.seed);
             let (mut hits, start) = (0, time::Instant::now());
             for _i in 0..opts.gets {
                 let off: usize = rng.gen::<usize>() % keys.len();

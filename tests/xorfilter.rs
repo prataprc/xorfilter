@@ -1,4 +1,4 @@
-use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
+use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
 
 use std::ffi;
 
@@ -6,7 +6,7 @@ use xorfilter::{BuildHasherDefault, Xor8};
 
 #[test]
 fn test_same_filter_encode_decode() {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("test_same_filter_encode_decode seed:{}", seed);
 
     let file_path = {
@@ -67,7 +67,7 @@ fn test_same_filter_bytes_encoding_tl1() {
 
 #[test]
 fn test_same_filter_bytes_encoding_tl2() {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("test_same_filter_bytes_encoding_tl1 seed:{}", seed);
 
     let filter = generate_filter(seed);
@@ -117,8 +117,8 @@ fn test_string_keys() {
 }
 
 /// Generate a filter with random keys
-fn generate_filter(seed: u128) -> Xor8<BuildHasherDefault> {
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+fn generate_filter(seed: u64) -> Xor8<BuildHasherDefault> {
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let testsize = 10000;
     let mut keys: Vec<u64> = Vec::with_capacity(testsize);

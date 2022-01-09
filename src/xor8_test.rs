@@ -1,8 +1,8 @@
-use rand::{prelude::random, rngs::SmallRng, Rng, SeedableRng};
+use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
 
 use super::*;
 
-fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
+fn generate_unique_keys(rng: &mut StdRng, size: usize) -> Vec<u64> {
     let mut keys: Vec<u64> = Vec::with_capacity(size);
     keys.resize(size, u64::default());
 
@@ -22,7 +22,7 @@ fn generate_unique_keys(rng: &mut SmallRng, size: usize) -> Vec<u64> {
     keys
 }
 
-fn test_xor8_build<H>(name: &str, seed: u128, size: u32)
+fn test_xor8_build<H>(name: &str, seed: u64, size: u32)
 where
     H: Default + BuildHasher,
 {
@@ -32,7 +32,7 @@ where
     };
 
     println!("test_xor8_build<{}> size:{}", name, size);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let mut filter = Xor8::<H>::new();
     let keys = generate_unique_keys(&mut rng, size as usize);
@@ -88,12 +88,12 @@ where
     assert!(fpp < 0.40, "fpp({}) >= 0.40", fpp);
 }
 
-fn test_xor8_build_keys<H>(name: &str, seed: u128, size: u32)
+fn test_xor8_build_keys<H>(name: &str, seed: u64, size: u32)
 where
     H: Default + BuildHasher,
 {
     println!("test_xor8_build_keys<{}> size:{}", name, size);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let mut filter = Xor8::<H>::new();
 
@@ -142,11 +142,11 @@ where
 
 #[test]
 fn test_xor8() {
-    let mut seed: u128 = random();
+    let mut seed: u64 = random();
     println!("test_xor8 seed:{}", seed);
 
     for size in [0, 1, 2, 10, 1000, 10_000, 100_000, 1_000_000, 10_000_000].iter() {
-        seed = seed.wrapping_add(*size as u128);
+        seed = seed.wrapping_add(*size as u64);
         test_xor8_build::<RandomState>("RandomState", seed, *size);
         test_xor8_build::<BuildHasherDefault>("BuildHasherDefault", seed, *size);
         test_xor8_build_keys::<RandomState>("RandomState", seed, *size);
@@ -157,7 +157,7 @@ fn test_xor8() {
 #[test]
 #[ignore]
 fn test_xor8_billion() {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("test_xor8_billion seed:{}", seed);
 
     let size = 1_000_000_000;
@@ -170,9 +170,9 @@ fn test_xor8_billion() {
 #[cfg(feature = "cbordata")]
 #[test]
 fn test_xor8_cbor() {
-    let seed: u128 = random();
+    let seed: u64 = random();
     println!("test_xor8_cbor seed:{}", seed);
-    let mut rng = SmallRng::from_seed(seed.to_le_bytes());
+    let mut rng = StdRng::seed_from_u64(seed);
 
     let keys: Vec<u64> = (0..100_000).map(|_| rng.gen::<u64>()).collect();
 
