@@ -39,14 +39,7 @@ fn test_same_filter_bytes_encoding_tl1() {
 
     let file_path = {
         let mut loc = path::PathBuf::new();
-        loc.push(
-            path::Path::new(file!())
-                .parent()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string(),
-        );
+        loc.push(path::Path::new(file!()).parent().unwrap().to_str().unwrap());
         loc.push("tl1-serialized.data");
         loc.into_os_string()
     };

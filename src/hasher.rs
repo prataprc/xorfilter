@@ -5,7 +5,7 @@ use std::{
 
 /// Wrapper type for [std::hash::BuildHasherDefault], that uses
 /// [DefaultHasher] as the hasher.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct BuildHasherDefault {
     hasher: hash::BuildHasherDefault<DefaultHasher>,
 }
@@ -29,14 +29,6 @@ impl BuildHasher for BuildHasherDefault {
 
     fn build_hasher(&self) -> Self::Hasher {
         self.hasher.build_hasher()
-    }
-}
-
-impl Default for BuildHasherDefault {
-    fn default() -> Self {
-        BuildHasherDefault {
-            hasher: hash::BuildHasherDefault::<DefaultHasher>::default(),
-        }
     }
 }
 
