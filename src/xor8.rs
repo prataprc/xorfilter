@@ -9,14 +9,9 @@ use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
 
 #[allow(unused_imports)]
 use std::collections::hash_map::{DefaultHasher, RandomState};
-use std::{
-    collections::BTreeMap,
-    convert::TryInto,
-    ffi, fs,
-    hash::{BuildHasher, Hash, Hasher},
-    io::{self, ErrorKind, Read, Write},
-    sync::Arc,
-};
+use std::hash::{BuildHasher, Hash, Hasher};
+use std::io::{self, ErrorKind, Read, Write};
+use std::{collections::BTreeMap, convert::TryInto, ffi, fs, sync::Arc};
 
 use crate::{BuildHasherDefault, Result};
 

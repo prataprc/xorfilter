@@ -47,7 +47,7 @@ use std::{error, fmt, result};
 ///
 /// ```ignore
 /// use crate::Error;
-/// err_at!(ParseError, msg: format!("bad argument"));
+/// err_at!(ParseError, msg: "bad argument");
 /// ```
 ///
 /// ```ignore
@@ -57,7 +57,7 @@ use std::{error, fmt, result};
 ///
 /// ```ignore
 /// use crate::Error;
-/// err_at!(ParseError, std::fs::read(file_path), format!("read failed"));
+/// err_at!(ParseError, std::fs::read(file_path), "read failed");
 /// ```
 ///
 macro_rules! err_at {
