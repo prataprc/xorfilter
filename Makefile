@@ -3,13 +3,13 @@ build:
 	cargo +nightly build
 	cargo +nightly build --features cbordata
 	cargo +stable build
-	# TODO cargo +stable build --features cbordata
+	cargo +stable build --features cbordata
 	#
 	# ... test ...
 	cargo +nightly test --no-run
 	cargo +nightly test --no-run --features cbordata
 	cargo +stable test --no-run
-	# TODO cargo +stable test --no-run --features cbordata
+	cargo +stable test --no-run --features cbordata
 	#
 	# ... bench ...
 	cargo +nightly bench --no-run
@@ -19,7 +19,7 @@ build:
 	cargo +nightly doc
 	cargo +nightly doc --features cbordata
 	cargo +stable doc
-	# TODO cargo +stable doc --features cbordata
+	cargo +stable doc --features cbordata
 	#
 	# ... meta commands ...
 	cargo +nightly clippy --all-targets --all-features
@@ -29,7 +29,7 @@ test:
 	cargo +nightly test
 	cargo +nightly test --features cbordata
 	cargo +stable test --no-run
-	# TODO cargo +stable test --no-run --features cbordata
+	cargo +stable test --no-run --features cbordata
 
 bench:
 	# ... test ...
