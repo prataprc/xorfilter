@@ -16,10 +16,10 @@ exec_prg() {
         date; cargo +nightly test -- --nocapture || exit $?;
         date; cargo +nightly test --release --features cbordata -- --nocapture || exit $?;
         date; cargo +nightly test --features cbordata -- --nocapture || exit $?;
-        # TODO date; cargo +stable test --release -- --nocapture || exit $?;
-        # TODO date; cargo +stable test -- --nocapture || exit $?;
-        # TODO date; cargo +stable test --release --features cbordata -- --nocapture || exit $?;
-        # TODO date; cargo +stable test --features cbordata -- --nocapture || exit $?;
+        date; cargo +stable test --release -- --nocapture || exit $?;
+        date; cargo +stable test -- --nocapture || exit $?;
+        date; cargo +stable test --release --features cbordata -- --nocapture || exit $?;
+        date; cargo +stable test --features cbordata -- --nocapture || exit $?;
     done
 }
 
