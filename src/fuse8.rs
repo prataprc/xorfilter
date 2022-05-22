@@ -3,10 +3,8 @@ use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
 
 #[allow(unused_imports)]
 use std::collections::hash_map::{DefaultHasher, RandomState};
-use std::{
-    hash::{BuildHasher, Hash, Hasher},
-    sync::Arc,
-};
+use std::hash::{BuildHasher, Hash, Hasher};
+use std::sync::Arc;
 
 use crate::{BuildHasherDefault, Error, Result};
 

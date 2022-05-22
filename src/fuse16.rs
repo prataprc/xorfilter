@@ -3,20 +3,11 @@ use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
 
 #[allow(unused_imports)]
 use std::collections::hash_map::{DefaultHasher, RandomState};
-use std::{
-    collections::BTreeMap,
-    hash::{BuildHasher, Hash, Hasher},
-    sync::Arc,
-};
+use std::hash::{BuildHasher, Hash, Hasher};
+use std::{collections::BTreeMap, sync::Arc};
 
-use crate::{
-    fuse8::{
-        binary_fuse_calculate_segment_length, binary_fuse_calculate_size_factor,
-        binary_fuse_mix_split, binary_fuse_mod3, binary_fuse_mulhi, binary_fuse_murmur64,
-        binary_fuse_rng_splitmix64, BinaryHashes,
-    },
-    BuildHasherDefault, Error, Result,
-};
+use crate::fuse8::BinaryHashes;
+use crate::{BuildHasherDefault, Error, Result};
 
 // probabillity of success should always be > 0.5 so 100 iterations is highly unlikely.
 const XOR_MAX_ITERATIONS: usize = 100;
@@ -83,6 +74,8 @@ where
 {
     #[inline]
     fn binary_fuse16_hash_batch(&self, hash: u64) -> BinaryHashes {
+        use crate::fuse8::binary_fuse_mulhi;
+
         let mut ans = BinaryHashes::default();
 
         ans.h0 = binary_fuse_mulhi(hash, self.segment_count_length.into()) as u32;
@@ -95,6 +88,8 @@ where
 
     #[inline]
     fn binary_fuse16_hash(&self, index: u32, hash: u64) -> u32 {
+        use crate::fuse8::binary_fuse_mulhi;
+
         let mut h = binary_fuse_mulhi(hash, self.segment_count_length.into());
         h += (index * self.segment_length) as u64;
         // keep the lower 36 bits
@@ -121,6 +116,8 @@ where
 
     /// New Fuse16 instance initialized with supplied hasher.
     pub fn with_hasher(size: u32, hash_builder: H) -> Fuse16<H> {
+        use crate::fuse8::binary_fuse_calculate_segment_length;
+        use crate::fuse8::binary_fuse_calculate_size_factor;
         use std::cmp;
 
         let arity = 3_u32;
@@ -241,6 +238,9 @@ where
     /// It is upto the caller to ensure that digests are unique, that there no
     /// duplicates.
     pub fn build_keys(&mut self, digests: &[u64]) -> Result<()> {
+        use crate::fuse8::binary_fuse_rng_splitmix64;
+        use crate::fuse8::{binary_fuse_mod3, binary_fuse_murmur64};
+
         let mut rng_counter = 0x726b2b9d438b9d4d_u64;
         let capacity = self.finger_prints.len();
         let size = digests.len();
@@ -424,6 +424,8 @@ where
     /// Contains tell you whether the key, as pre-computed digest form, is likely
     /// part of the set, with false positive rate.
     pub fn contains_key(&self, digest: u64) -> bool {
+        use crate::fuse8::binary_fuse_mix_split;
+
         let hash = binary_fuse_mix_split(digest, self.seed);
         let mut f = binary_fuse16_fingerprint(hash) as u16;
         let BinaryHashes { h0, h1, h2 } = self.binary_fuse16_hash_batch(hash);

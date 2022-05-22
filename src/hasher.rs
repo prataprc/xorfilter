@@ -1,7 +1,5 @@
-use std::{
-    collections::hash_map::DefaultHasher,
-    hash::{self, BuildHasher, Hasher},
-};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{self, BuildHasher, Hasher};
 
 /// Wrapper type for [std::hash::BuildHasherDefault], that uses
 /// [DefaultHasher] as the hasher.

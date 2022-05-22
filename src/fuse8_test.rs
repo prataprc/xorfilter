@@ -1,10 +1,6 @@
 use super::*;
-use rand::{
-    distributions::{Distribution, Standard},
-    prelude::random,
-    rngs::StdRng,
-    Rng, SeedableRng,
-};
+use rand::distributions::{Distribution, Standard};
+use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
 
 fn generate_unique_keys<K>(prefix: &str, rng: &mut StdRng, size: usize) -> Vec<K>
 where
