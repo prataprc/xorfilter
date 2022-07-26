@@ -416,6 +416,11 @@ where
             }
 
             if error > 0 {
+                reverse_order.fill(0);
+                reverse_order[size] = 1; // sentinel
+                t2count.fill(0);
+                t2hash.fill(0);
+                self.seed = binary_fuse_rng_splitmix64(&mut rng_counter);
                 continue;
             }
 
