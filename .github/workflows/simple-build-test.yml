@@ -11,28 +11,35 @@ jobs:
     name: xorfilter
     runs-on: ubuntu-latest
 
+
+    strategy:
+      matrix:
+        toolchain:
+          - "stable"
+          - "nightly"
+        profile:
+          - "--release"
+          - ""
+        cmd:
+          - "build"
+          - "test"
+
+
     steps:
-      - name: Install nightly toolchain with clippy available
+      - name: Install toolchain with clippy available
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: "${{ matrix.toolchain }}"
           override: true
           components: clippy
+
+
       - uses: actions/checkout@v1
-      - name: Build nightly dev
-        run: cargo +nightly build --verbose
-      - name: Build nightly release
-        run: cargo +nightly build --verbose --release
-      - name: Test nightly dev
-        run: cargo +nightly test --verbose
-      - name: Test nightly release
-        run: cargo +nightly test --verbose --release
-      - name: Build stable dev
-        run: cargo +stable build --verbose
-      - name: Build stable release
-        run: cargo +stable build --verbose --release
-      - name: Test stable dev
-        run: cargo +stable test --verbose
-      - name: Test stable release
-        run: cargo +stable test --verbose --release
+
+
+      - name: "${{ matrix.toolchain }} ${{ matrix.cmd }} ${{ matrix.profile }}"
+        uses: actions-rs/cargo@v1
+        with:
+          command: "${{ matrix.cmd }}"
+          args: --verbose ${{ matrix.profile }}
