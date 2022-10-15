@@ -141,6 +141,62 @@ where
 }
 
 #[test]
+fn test_xor8_build_keys_simple() {
+    let seed: u64 = random();
+    println!("test_xor8 seed:{}", seed);
+
+    let size = 1_00_000;
+    let name = "BuildHasherDefault";
+
+    println!("test_xor8_build_keys<{}> size:{}", name, size);
+    let mut rng = StdRng::seed_from_u64(seed);
+
+    let mut filter = Xor8::<BuildHasherDefault>::new();
+
+    // build_keys api
+    let keys = generate_unique_keys(&mut rng, size as usize);
+    let digests: Vec<u64> = keys
+        .iter()
+        .map(|k| {
+            let mut hasher = filter.get_hasher();
+            k.hash(&mut hasher);
+            hasher.finish()
+        })
+        .collect();
+
+    filter.build_keys(&digests).expect("failed build_keys");
+
+    // contains api
+    for key in keys.iter() {
+        assert!(filter.contains(key), "key {} not present", key);
+    }
+
+    // contains_key api
+    for digest in digests.into_iter() {
+        assert!(filter.contains_key(digest), "digest {} not present", digest);
+    }
+
+    // print some statistics
+    let (falsesize, mut matches) = (10_000_000, 0_f64);
+    let bpv = (filter.finger_prints.len() as f64) * 8.0 / (keys.len() as f64);
+    println!("test_xor8_build_keys<{}> bits per entry {} bits", name, bpv);
+    assert!(bpv < 12.0, "bpv({}) >= 12.0", bpv);
+
+    for _ in 0..falsesize {
+        if filter.contains(&rng.gen::<u64>()) {
+            matches += 1_f64;
+        }
+    }
+
+    let fpp = matches * 100.0 / (falsesize as f64);
+    println!(
+        "test_xor8_build_keys<{}> false positive rate {}%",
+        name, fpp
+    );
+    assert!(fpp < 0.50, "fpp({}) >= 0.50%", fpp);
+}
+
+#[test]
 fn test_xor8() {
     let mut seed: u64 = random();
     println!("test_xor8 seed:{}", seed);
