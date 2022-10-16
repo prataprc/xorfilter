@@ -126,3 +126,4 @@ pub use fuse8::Fuse8;
 pub use hasher::BuildHasherDefault;
 pub use hasher::NoHash;
 pub use xor8::Xor8;
+pub use xor8::Xor8Builder;
