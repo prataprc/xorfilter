@@ -1,1 +1,11 @@
-max_width = 90
+reorder_imports         = true
+imports_granularity     = "Item"
+group_imports           = "StdExternalCrate"
+where_single_line       = true
+trailing_comma          = "Vertical"
+overflow_delimited_expr = true
+wrap_comments           = true
+comment_width           = 90
+max_width               = 90
+merge_derives           = false
+chain_width             = 90
