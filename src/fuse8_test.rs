@@ -1,6 +1,11 @@
+use rand::distributions::Distribution;
+use rand::distributions::Standard;
+use rand::prelude::random;
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
+
 use super::*;
-use rand::distributions::{Distribution, Standard};
-use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
 
 fn generate_unique_keys<K>(prefix: &str, rng: &mut StdRng, size: usize) -> Vec<K>
 where
@@ -128,9 +133,7 @@ where
         })
         .collect();
 
-    filter
-        .build_keys(&digests)
-        .expect("failed to build fuse16 filter");
+    filter.build_keys(&digests).expect("failed to build fuse16 filter");
 
     // contains api
     for key in keys.iter() {
@@ -234,9 +237,7 @@ fn test_fuse8_duplicates() {
 
     let mut filter = Fuse8::<RandomState>::new(keys.len() as u32);
 
-    filter
-        .build_keys(&keys)
-        .expect("build with duplicate keys failed");
+    filter.build_keys(&keys).expect("build with duplicate keys failed");
 
     // contains api
     for key in keys.iter() {

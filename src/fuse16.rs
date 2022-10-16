@@ -1,13 +1,28 @@
-#[cfg(feature = "cbordata")]
-use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
-
 #[allow(unused_imports)]
-use std::collections::hash_map::{DefaultHasher, RandomState};
-use std::hash::{BuildHasher, Hash, Hasher};
-use std::{collections::BTreeMap, sync::Arc};
+use std::collections::hash_map::DefaultHasher;
+#[allow(unused_imports)]
+use std::collections::hash_map::RandomState;
+use std::collections::BTreeMap;
+use std::hash::BuildHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
+use std::sync::Arc;
+
+#[cfg(feature = "cbordata")]
+use cbordata::Cbor;
+#[cfg(feature = "cbordata")]
+use cbordata::Cborize;
+#[cfg(feature = "cbordata")]
+use cbordata::FromCbor;
+#[cfg(feature = "cbordata")]
+use cbordata::IntoCbor;
+#[cfg(feature = "cbordata")]
+use cbordata::{self as cbor};
 
 use crate::fuse8::BinaryHashes;
-use crate::{BuildHasherDefault, Error, Result};
+use crate::BuildHasherDefault;
+use crate::Error;
+use crate::Result;
 
 // probabillity of success should always be > 0.5 so 100 iterations is highly unlikely.
 const XOR_MAX_ITERATIONS: usize = 100;
@@ -35,8 +50,7 @@ pub fn binary_fuse16_fingerprint(hash: u64) -> u64 {
 /// The default type for parameter `H` might change when a reliable and commonly used
 /// BuildHasher type available.
 pub struct Fuse16<H = BuildHasherDefault>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     keys: Option<BTreeMap<u64, ()>>,
     pub hash_builder: H,
@@ -50,8 +64,7 @@ where
 }
 
 impl<H> Clone for Fuse16<H>
-where
-    H: Clone + BuildHasher,
+where H: Clone + BuildHasher
 {
     fn clone(&self) -> Self {
         Fuse16 {
@@ -69,8 +82,7 @@ where
 }
 
 impl<H> Fuse16<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     #[inline]
     fn binary_fuse16_hash_batch(&self, hash: u64) -> BinaryHashes {
@@ -102,23 +114,21 @@ where
 }
 
 impl<H> Fuse16<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     /// New Fuse16 instance that can index size number of keys. Internal data-structures
     /// are pre-allocated for `size`.  `size` should be at least 2.
     pub fn new(size: u32) -> Fuse16<H>
-    where
-        H: Default,
-    {
+    where H: Default {
         Self::with_hasher(size, H::default())
     }
 
     /// New Fuse16 instance initialized with supplied hasher.
     pub fn with_hasher(size: u32, hash_builder: H) -> Fuse16<H> {
+        use std::cmp;
+
         use crate::fuse8::binary_fuse_calculate_segment_length;
         use crate::fuse8::binary_fuse_calculate_size_factor;
-        use std::cmp;
 
         let arity = 3_u32;
 
@@ -163,8 +173,7 @@ where
 }
 
 impl<H> Fuse16<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     /// Return the size of index.
     #[inline]
@@ -238,8 +247,9 @@ where
     /// It is upto the caller to ensure that digests are unique, that there no
     /// duplicates.
     pub fn build_keys(&mut self, digests: &[u64]) -> Result<()> {
+        use crate::fuse8::binary_fuse_mod3;
+        use crate::fuse8::binary_fuse_murmur64;
         use crate::fuse8::binary_fuse_rng_splitmix64;
-        use crate::fuse8::{binary_fuse_mod3, binary_fuse_murmur64};
 
         let mut rng_counter = 0x726b2b9d438b9d4d_u64;
         let capacity = self.finger_prints.len();
@@ -406,8 +416,7 @@ where
 }
 
 impl<H> Fuse16<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     #[allow(clippy::len_without_is_empty)]
     /// Return the number of keys added/built into the bitmap index.
@@ -469,8 +478,7 @@ impl CborFuse16 {
 
 #[cfg(feature = "cbordata")]
 impl<H> IntoCbor for Fuse16<H>
-where
-    H: BuildHasher + Into<Vec<u8>>,
+where H: BuildHasher + Into<Vec<u8>>
 {
     fn into_cbor(self) -> cbor::Result<Cbor> {
         let val = CborFuse16 {
@@ -489,8 +497,7 @@ where
 
 #[cfg(feature = "cbordata")]
 impl<H> FromCbor for Fuse16<H>
-where
-    H: BuildHasher + From<Vec<u8>>,
+where H: BuildHasher + From<Vec<u8>>
 {
     fn from_cbor(val: Cbor) -> cbor::Result<Self> {
         let val = CborFuse16::from_cbor(val)?;

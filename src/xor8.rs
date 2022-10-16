@@ -4,17 +4,36 @@
 //! [original implementation](https://github.com/FastFilter/xorfilter)
 //! written in golang.
 
-#[cfg(feature = "cbordata")]
-use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
-
 #[allow(unused_imports)]
-use std::collections::hash_map::{DefaultHasher, RandomState};
+use std::collections::hash_map::DefaultHasher;
+#[allow(unused_imports)]
+use std::collections::hash_map::RandomState;
 use std::collections::HashSet;
-use std::hash::{BuildHasher, Hash, Hasher};
-use std::io::{self, ErrorKind, Read, Write};
-use std::{convert::TryInto, ffi, fs, sync::Arc};
+use std::convert::TryInto;
+use std::ffi;
+use std::fs;
+use std::hash::BuildHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
+use std::io::ErrorKind;
+use std::io::Read;
+use std::io::Write;
+use std::io::{self};
+use std::sync::Arc;
 
-use crate::{BuildHasherDefault, Result};
+#[cfg(feature = "cbordata")]
+use cbordata::Cbor;
+#[cfg(feature = "cbordata")]
+use cbordata::Cborize;
+#[cfg(feature = "cbordata")]
+use cbordata::FromCbor;
+#[cfg(feature = "cbordata")]
+use cbordata::IntoCbor;
+#[cfg(feature = "cbordata")]
+use cbordata::{self as cbor};
+
+use crate::BuildHasherDefault;
+use crate::Result;
 
 fn murmur64(mut h: u64) -> u64 {
     h ^= h >> 33;
@@ -88,8 +107,7 @@ struct KeyIndex {
 /// The default type for parameter `H` might change when a reliable and commonly used
 /// BuildHasher type is available.
 pub struct Xor8<H = BuildHasherDefault>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     keys: Option<HashSet<u64>>,
     pub hash_builder: H,
@@ -100,8 +118,7 @@ where
 }
 
 impl<H> Clone for Xor8<H>
-where
-    H: Clone + BuildHasher,
+where H: Clone + BuildHasher
 {
     fn clone(&self) -> Self {
         Xor8 {
@@ -116,8 +133,7 @@ where
 }
 
 impl<H> PartialEq for Xor8<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     fn eq(&self, other: &Self) -> bool {
         let num_keys = match (self.num_keys, other.num_keys) {
@@ -133,8 +149,7 @@ where
 }
 
 impl<H> Default for Xor8<H>
-where
-    H: BuildHasher + Default,
+where H: BuildHasher + Default
 {
     fn default() -> Self {
         Xor8 {
@@ -149,14 +164,11 @@ where
 }
 
 impl<H> Xor8<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     /// New Xor8 instance initialized with [DefaultHasher].
     pub fn new() -> Self
-    where
-        H: Default,
-    {
+    where H: Default {
         Self {
             // keys: Some(HashSet::with_capacity(10)),
             keys: Some(HashSet::new()),
@@ -178,13 +190,12 @@ where
 }
 
 impl<H> Xor8<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     /// Insert 64-bit digest of a single key.
     ///
-    /// Digest for the key shall be generated using the default-hasher or via hasher supplied via
-    /// [Xor8::with_hasher] method.
+    /// Digest for the key shall be generated using the default-hasher or via hasher
+    /// supplied via [Xor8::with_hasher] method.
     pub fn insert<K: ?Sized + Hash>(&mut self, key: &K) {
         let hashed_key = {
             let mut hasher = self.hash_builder.build_hasher();
@@ -199,8 +210,8 @@ where
 
     /// Populate with 64-bit digests for a collection of keys of type `K`.
     ///
-    /// Digest for key shall be generated using the default-hasher or via hasher supplied via
-    /// [Xor8::with_hasher] method.
+    /// Digest for key shall be generated using the default-hasher or via hasher supplied
+    /// via [Xor8::with_hasher] method.
     pub fn populate<K: Hash>(&mut self, keys: &[K]) {
         if let Some(x) = self.num_keys.as_mut() {
             *x += keys.len()
@@ -452,8 +463,7 @@ where
 }
 
 impl<H> Xor8<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     #[allow(clippy::len_without_is_empty)]
     /// Return the number of keys added/built into the bitmap index.
@@ -500,8 +510,7 @@ where
 }
 
 impl<H> Xor8<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     fn get_h0h1h2(&self, k: u64) -> Hashes {
         let h = mixsplit(k, self.seed);
@@ -535,8 +544,7 @@ where
 ///
 /// TODO: <https://github.com/bnclabs/xorfilter/issues/1>
 impl<H> Xor8<H>
-where
-    H: Into<Vec<u8>> + From<Vec<u8>> + BuildHasher,
+where H: Into<Vec<u8>> + From<Vec<u8>> + BuildHasher
 {
     /// File signature write on first 4 bytes of file.
     /// ^ stands for xor
@@ -556,9 +564,7 @@ where
     /// Write to file in binary format
     /// TODO Add chechsum of finger_prints into file headers
     pub fn write_file(&self, path: &ffi::OsStr) -> io::Result<usize>
-    where
-        H: Clone,
-    {
+    where H: Clone {
         let mut f = fs::File::create(path)?;
         let buf = self.to_bytes();
         f.write_all(&buf)?;
@@ -567,9 +573,7 @@ where
 
     /// Read from file in binary format
     pub fn read_file(path: &ffi::OsStr) -> io::Result<Self>
-    where
-        H: Default,
-    {
+    where H: Default {
         let mut f = fs::File::open(path)?;
         let mut data = Vec::new();
         f.read_to_end(&mut data)?;
@@ -577,9 +581,7 @@ where
     }
 
     pub fn to_bytes(&self) -> Vec<u8>
-    where
-        H: Clone,
-    {
+    where H: Clone {
         let capacity = Self::METADATA_LENGTH + self.finger_prints.len();
         let mut buf: Vec<u8> = Vec::with_capacity(capacity);
         buf.extend_from_slice(&Xor8::<H>::SIGNATURE_V2);
@@ -596,9 +598,7 @@ where
     }
 
     pub fn from_bytes(buf: Vec<u8>) -> io::Result<Self>
-    where
-        H: Default,
-    {
+    where H: Default {
         use std::io::Error;
 
         let mut n = 0;
@@ -653,9 +653,7 @@ where
     }
 
     fn from_bytes_v1(buf: Vec<u8>) -> io::Result<Self>
-    where
-        H: Default,
-    {
+    where H: Default {
         use std::io::Error;
 
         let fp_len = u32::from_be_bytes(buf[16..20].try_into().unwrap()) as usize;
@@ -693,8 +691,7 @@ impl CborXor8 {
 
 #[cfg(feature = "cbordata")]
 impl<H> IntoCbor for Xor8<H>
-where
-    H: BuildHasher + Into<Vec<u8>>,
+where H: BuildHasher + Into<Vec<u8>>
 {
     fn into_cbor(self) -> cbor::Result<Cbor> {
         let val = CborXor8 {
@@ -710,8 +707,7 @@ where
 
 #[cfg(feature = "cbordata")]
 impl<H> FromCbor for Xor8<H>
-where
-    H: BuildHasher + From<Vec<u8>>,
+where H: BuildHasher + From<Vec<u8>>
 {
     fn from_cbor(val: Cbor) -> cbor::Result<Self> {
         let val = CborXor8::from_cbor(val)?;

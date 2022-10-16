@@ -1,4 +1,7 @@
-use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
+use rand::prelude::random;
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
 
 use super::*;
 
@@ -23,9 +26,7 @@ fn generate_unique_keys(rng: &mut StdRng, size: usize) -> Vec<u64> {
 }
 
 fn test_xor8_build<H>(name: &str, seed: u64, size: u32)
-where
-    H: Default + BuildHasher,
-{
+where H: Default + BuildHasher {
     let (x, y) = {
         let size = size as usize;
         (size / 3, size / 3)
@@ -89,9 +90,7 @@ where
 }
 
 fn test_xor8_build_keys<H>(name: &str, seed: u64, size: u32)
-where
-    H: Default + BuildHasher,
-{
+where H: Default + BuildHasher {
     println!("test_xor8_build_keys<{}> size:{}", name, size);
     let mut rng = StdRng::seed_from_u64(seed);
 
@@ -107,9 +106,7 @@ where
             hasher.finish()
         })
         .collect();
-    filter
-        .build_from_digests(&digests)
-        .expect("failed build_keys");
+    filter.build_from_digests(&digests).expect("failed build_keys");
 
     // contains api
     for key in keys.iter() {
@@ -170,9 +167,7 @@ fn test_xor8_build_keys_simple() {
         })
         .collect();
 
-    filter
-        .build_from_digests(&digests)
-        .expect("failed build_keys");
+    filter.build_from_digests(&digests).expect("failed build_keys");
 
     // contains api
     for key in keys.iter() {

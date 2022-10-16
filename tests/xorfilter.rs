@@ -1,8 +1,11 @@
-use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
-
 use std::ffi;
 
-use xorfilter::{BuildHasherDefault, Xor8};
+use rand::prelude::random;
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
+use xorfilter::BuildHasherDefault;
+use xorfilter::Xor8;
 
 #[test]
 fn test_same_filter_encode_decode() {
@@ -132,7 +135,5 @@ fn save_file(file_path: ffi::OsString, keys: &[u32]) {
     let mut filter = Xor8::<BuildHasherDefault>::new();
     filter.populate(keys);
     filter.build().expect("build failed");
-    filter
-        .write_file(&file_path)
-        .expect("error saving tl1 to file");
+    filter.write_file(&file_path).expect("error saving tl1 to file");
 }
