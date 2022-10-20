@@ -1,4 +1,4 @@
-name: simple-build-test
+name: unittest
 
 on:
   push:
