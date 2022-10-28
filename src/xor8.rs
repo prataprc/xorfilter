@@ -205,12 +205,17 @@ where
     }
 
     /// Populate with pre-compute collection of 64-bit digests.
-    pub fn populate_keys(&mut self, digests: &[u64]) {
-        if let Some(x) = self.num_keys.as_mut() {
-            *x += digests.len()
+    pub fn populate_keys<'i, I: IntoIterator<Item = &'i u64>>(&mut self, digests: I) {
+        let mut n = 0;
+
+        let keys = self.keys.as_mut().unwrap();
+        for digest in digests.into_iter() {
+            n += 1;
+            keys.insert(*digest, ());
         }
-        for digest in digests.iter() {
-            self.keys.as_mut().unwrap().insert(*digest, ());
+
+        if let Some(x) = self.num_keys.as_mut() {
+            *x += n
         }
     }
 
