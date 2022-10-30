@@ -19,7 +19,9 @@ jobs:
           - "nightly"
         profile:
           - "--release"
-          - ""
+          # Disable debug mode test
+          # It's about 10 times slower with debug mode: ~ 10 minutes
+          # - ""
         cmd:
           - "build"
           - "test"
