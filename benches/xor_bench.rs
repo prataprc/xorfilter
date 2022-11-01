@@ -27,13 +27,13 @@ fn generate_unique_keys(rng: &mut StdRng, size: usize) -> Vec<u64> {
     keys
 }
 
-fn bench_xor8_populate_keys(c: &mut Criterion) {
+fn bench_xor8_populate_digests(c: &mut Criterion) {
     let seed: u64 = random();
     let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(&mut rng, SIZE);
 
-    c.bench_function("xor8_populate_keys", |b| {
+    c.bench_function("xor8_populate_digests", |b| {
         b.iter(|| {
             let mut filter = Xor8::<RandomState>::new();
             filter.populate_keys(&keys);
@@ -42,16 +42,16 @@ fn bench_xor8_populate_keys(c: &mut Criterion) {
     });
 }
 
-fn bench_xor8_build_keys(c: &mut Criterion) {
+fn bench_xor8_build_from_digests(c: &mut Criterion) {
     let seed: u64 = random();
     let mut rng = StdRng::seed_from_u64(seed);
 
     let keys = generate_unique_keys(&mut rng, SIZE);
 
-    c.bench_function("xor8_build_keys", |b| {
+    c.bench_function("xor8_build_from_digests", |b| {
         b.iter(|| {
             let mut filter = Xor8::<RandomState>::new();
-            filter.build_keys(&keys).expect("failed build");
+            filter.build_from_digests(&keys).expect("failed build");
         })
     });
 }
@@ -108,7 +108,7 @@ fn bench_xor8_contains(c: &mut Criterion) {
     });
 }
 
-fn bench_xor8_contains_key(c: &mut Criterion) {
+fn bench_xor8_contains_digest(c: &mut Criterion) {
     let seed: u64 = random();
     let mut rng = StdRng::seed_from_u64(seed);
 
@@ -122,9 +122,9 @@ fn bench_xor8_contains_key(c: &mut Criterion) {
     };
 
     let mut n = 0;
-    c.bench_function("xor8_contains_key", |b| {
+    c.bench_function("xor8_contains_digest", |b| {
         b.iter(|| {
-            filter.contains_key(keys[n % keys.len()]);
+            filter.contains_digest(keys[n % keys.len()]);
             n += 1;
         })
     });
@@ -132,12 +132,12 @@ fn bench_xor8_contains_key(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    bench_xor8_populate_keys,
-    bench_xor8_build_keys,
+    bench_xor8_populate_digests,
+    bench_xor8_build_from_digests,
     bench_xor8_populate,
     bench_xor8_insert,
     bench_xor8_contains,
-    bench_xor8_contains_key,
+    bench_xor8_contains_digest,
 );
 
 criterion_main!(benches);

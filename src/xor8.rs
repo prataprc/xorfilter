@@ -176,8 +176,10 @@ impl<H> Xor8<H>
 where
     H: BuildHasher,
 {
-    /// Insert 64-bit digest of a single key. Digest for the key shall be generated
-    /// using the default-hasher or via hasher supplied via [Xor8::with_hasher] method.
+    /// Insert 64-bit digest of a single key.
+    ///
+    /// Digest for the key shall be generated using the default-hasher or via hasher supplied via
+    /// [Xor8::with_hasher] method.
     pub fn insert<K: ?Sized + Hash>(&mut self, key: &K) {
         let hashed_key = {
             let mut hasher = self.hash_builder.build_hasher();
@@ -190,9 +192,10 @@ where
         self.keys.as_mut().unwrap().insert(hashed_key, ());
     }
 
-    /// Populate with 64-bit digests for a collection of keys of type `K`. Digest for
-    /// key shall be generated using the default-hasher or via hasher supplied
-    /// via [Xor8::with_hasher] method.
+    /// Populate with 64-bit digests for a collection of keys of type `K`.
+    ///
+    /// Digest for key shall be generated using the default-hasher or via hasher supplied via
+    /// [Xor8::with_hasher] method.
     pub fn populate<K: Hash>(&mut self, keys: &[K]) {
         if let Some(x) = self.num_keys.as_mut() {
             *x += keys.len()
@@ -225,19 +228,30 @@ where
         match self.keys.take() {
             Some(keys) => {
                 let digests = keys.iter().map(|(k, _)| *k).collect::<Vec<u64>>();
-                self.build_keys(&digests)
+                self.build_from_digests(&digests)
             }
             None => Ok(()),
         }
     }
 
-    /// Build a bitmap for pre-computed 64-bit digests for keys. If keys where
-    /// previously inserted using [Xor8::insert] or [Xor8::populate] or
+    /// Build a bitmap for pre-computed 64-bit digests for keys.
+    ///
+    /// If keys where previously inserted using [Xor8::insert] or [Xor8::populate] or
     /// [Xor8::populate_keys] methods, they shall be ignored.
     ///
-    /// It is upto the caller to ensure that digests are unique, that there no
-    /// duplicates.
+    /// It is upto the caller to ensure that digests are unique, that there no duplicates.
+    #[deprecated(since = "0.5.2", note = "use build_from_digests instead")]
     pub fn build_keys(&mut self, digests: &[u64]) -> Result<()> {
+        self.build_from_digests(digests)
+    }
+
+    /// Build a bitmap for pre-computed 64-bit digests for keys.
+    ///
+    /// If keys where previously inserted using [Xor8::insert] or [Xor8::populate] or
+    /// [Xor8::populate_keys] methods, they shall be ignored.
+    ///
+    /// It is upto the caller to ensure that digests are unique, that there no duplicates.
+    pub fn build_from_digests(&mut self, digests: &[u64]) -> Result<()> {
         self.num_keys = Some(digests.len());
         let (size, mut rngcounter) = (digests.len(), 1_u64);
         let capacity = {
@@ -259,7 +273,7 @@ where
 
         loop {
             for key in digests.iter() {
-                let hs = self.geth0h1h2(*key);
+                let hs = self.get_h0h1h2(*key);
                 sets0[hs.h0 as usize].xor_mask ^= hs.h;
                 sets0[hs.h0 as usize].count += 1;
                 sets1[hs.h1 as usize].xor_mask ^= hs.h;
@@ -309,8 +323,8 @@ where
                         continue;
                     }
                     let hash = keyindexvar.hash;
-                    let h1 = self.geth1(hash);
-                    let h2 = self.geth2(hash);
+                    let h1 = self.get_h1(hash);
+                    let h2 = self.get_h2(hash);
                     stack.push(keyindexvar);
 
                     let mut s = unsafe { sets1.get_unchecked_mut(h1 as usize) };
@@ -338,8 +352,8 @@ where
                         continue;
                     }
                     let hash = keyindexvar.hash;
-                    let h0 = self.geth0(hash);
-                    let h2 = self.geth2(hash);
+                    let h0 = self.get_h0(hash);
+                    let h2 = self.get_h2(hash);
                     keyindexvar.index += self.block_length;
                     stack.push(keyindexvar);
 
@@ -368,8 +382,8 @@ where
                         continue;
                     }
                     let hash = keyindexvar.hash;
-                    let h0 = self.geth0(hash);
-                    let h1 = self.geth1(hash);
+                    let h0 = self.get_h0(hash);
+                    let h1 = self.get_h1(hash);
                     keyindexvar.index += 2 * self.block_length;
                     stack.push(keyindexvar);
 
@@ -413,16 +427,16 @@ where
         while let Some(ki) = stack.pop() {
             let mut val = fingerprint(ki.hash) as u8;
             if ki.index < self.block_length {
-                let h1 = (self.geth1(ki.hash) + self.block_length) as usize;
-                let h2 = (self.geth2(ki.hash) + 2 * self.block_length) as usize;
+                let h1 = (self.get_h1(ki.hash) + self.block_length) as usize;
+                let h2 = (self.get_h2(ki.hash) + 2 * self.block_length) as usize;
                 val ^= self.finger_prints[h1] ^ self.finger_prints[h2];
             } else if ki.index < 2 * self.block_length {
-                let h0 = self.geth0(ki.hash) as usize;
-                let h2 = (self.geth2(ki.hash) + 2 * self.block_length) as usize;
+                let h0 = self.get_h0(ki.hash) as usize;
+                let h2 = (self.get_h2(ki.hash) + 2 * self.block_length) as usize;
                 val ^= self.finger_prints[h0] ^ self.finger_prints[h2];
             } else {
-                let h0 = self.geth0(ki.hash) as usize;
-                let h1 = (self.geth1(ki.hash) + self.block_length) as usize;
+                let h0 = self.get_h0(ki.hash) as usize;
+                let h1 = (self.get_h1(ki.hash) + self.block_length) as usize;
                 val ^= self.finger_prints[h0] ^ self.finger_prints[h1]
             }
             Arc::get_mut(&mut self.finger_prints).unwrap()[ki.index as usize] = val;
@@ -450,12 +464,19 @@ where
             key.hash(&mut hasher);
             hasher.finish()
         };
-        self.contains_key(hashed_key)
+        self.contains_digest(hashed_key)
     }
 
     /// Contains tell you whether the key, as pre-computed digest form, is likely
     /// part of the set, with false positive rate.
+    #[deprecated(since = "0.5.2", note = "use contains_digest instead")]
     pub fn contains_key(&self, digest: u64) -> bool {
+        self.contains_digest(digest)
+    }
+
+    /// Contains tell you whether the key, as pre-computed digest form, is likely
+    /// part of the set, with false positive rate.
+    pub fn contains_digest(&self, digest: u64) -> bool {
         let hash = mixsplit(digest, self.seed);
         let f = fingerprint(hash) as u8;
         let r0 = hash as u32;
@@ -477,7 +498,7 @@ impl<H> Xor8<H>
 where
     H: BuildHasher,
 {
-    fn geth0h1h2(&self, k: u64) -> Hashes {
+    fn get_h0h1h2(&self, k: u64) -> Hashes {
         let h = mixsplit(k, self.seed);
         Hashes {
             h,
@@ -487,17 +508,17 @@ where
         }
     }
 
-    fn geth0(&self, hash: u64) -> u32 {
+    fn get_h0(&self, hash: u64) -> u32 {
         let r0 = hash as u32;
         reduce(r0, self.block_length)
     }
 
-    fn geth1(&self, hash: u64) -> u32 {
+    fn get_h1(&self, hash: u64) -> u32 {
         let r1 = hash.rotate_left(21) as u32;
         reduce(r1, self.block_length)
     }
 
-    fn geth2(&self, hash: u64) -> u32 {
+    fn get_h2(&self, hash: u64) -> u32 {
         let r2 = hash.rotate_left(42) as u32;
         reduce(r2, self.block_length)
     }
