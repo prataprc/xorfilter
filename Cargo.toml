@@ -1,6 +1,6 @@
 [package]
 name = "xorfilter-rs"
-version = "0.5.1"
+version = "0.5.2"
 description = "Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters"
 repository = "https://github.com/bnclabs/xorfilter"
 documentation = "https://docs.rs/xorfilter-rs"

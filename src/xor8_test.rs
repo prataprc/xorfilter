@@ -66,7 +66,7 @@ where
             key.hash(&mut hasher);
             hasher.finish()
         };
-        assert!(filter.contains_key(digest), "key {} not present", key);
+        assert!(filter.contains_digest(digest), "key {} not present", key);
     }
 
     // print some statistics
@@ -107,7 +107,9 @@ where
             hasher.finish()
         })
         .collect();
-    filter.build_keys(&digests).expect("failed build_keys");
+    filter
+        .build_from_digests(&digests)
+        .expect("failed build_keys");
 
     // contains api
     for key in keys.iter() {
@@ -115,7 +117,11 @@ where
     }
     // contains_key api
     for digest in digests.into_iter() {
-        assert!(filter.contains_key(digest), "digest {} not present", digest);
+        assert!(
+            filter.contains_digest(digest),
+            "digest {} not present",
+            digest
+        );
     }
 
     // print some statistics
@@ -164,7 +170,9 @@ fn test_xor8_build_keys_simple() {
         })
         .collect();
 
-    filter.build_keys(&digests).expect("failed build_keys");
+    filter
+        .build_from_digests(&digests)
+        .expect("failed build_keys");
 
     // contains api
     for key in keys.iter() {
@@ -173,27 +181,65 @@ fn test_xor8_build_keys_simple() {
 
     // contains_key api
     for digest in digests.into_iter() {
-        assert!(filter.contains_key(digest), "digest {} not present", digest);
+        assert!(
+            filter.contains_digest(digest),
+            "digest {} not present",
+            digest
+        );
     }
 
     // print some statistics
-    let (falsesize, mut matches) = (10_000_000, 0_f64);
+    let (false_size, mut matches) = (10_000_000, 0_f64);
     let bpv = (filter.finger_prints.len() as f64) * 8.0 / (keys.len() as f64);
     println!("test_xor8_build_keys<{}> bits per entry {} bits", name, bpv);
     assert!(bpv < 12.0, "bpv({}) >= 12.0", bpv);
 
-    for _ in 0..falsesize {
+    for _ in 0..false_size {
         if filter.contains(&rng.gen::<u64>()) {
             matches += 1_f64;
         }
     }
 
-    let fpp = matches * 100.0 / (falsesize as f64);
+    let fpp = matches * 100.0 / (false_size as f64);
     println!(
         "test_xor8_build_keys<{}> false positive rate {}%",
         name, fpp
     );
     assert!(fpp < 0.50, "fpp({}) >= 0.50%", fpp);
+}
+
+/// Assert that deprecated APIs should still work until being removed:
+/// - `build_keys()`
+/// - `contains_key()`
+#[test]
+fn test_xor8_backward_compatible() {
+    let seed: u64 = random();
+
+    let size = 1_00_000;
+
+    let mut rng = StdRng::seed_from_u64(seed);
+
+    let mut filter = Xor8::<BuildHasherDefault>::new();
+
+    // build_keys api
+    let keys = generate_unique_keys(&mut rng, size as usize);
+    let digests: Vec<u64> = keys
+        .iter()
+        .map(|k| {
+            let mut hasher = filter.get_hasher();
+            k.hash(&mut hasher);
+            hasher.finish()
+        })
+        .collect();
+
+    #[allow(deprecated)]
+    filter.build_keys(&digests).expect("failed build_keys");
+
+    for digest in digests.into_iter() {
+        #[allow(deprecated)]
+        let contains = filter.contains_key(digest);
+        assert!(contains, "digest {} not present", digest);
+    }
 }
 
 #[test]
