@@ -9,9 +9,10 @@ use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
 
 #[allow(unused_imports)]
 use std::collections::hash_map::{DefaultHasher, RandomState};
+use std::collections::HashSet;
 use std::hash::{BuildHasher, Hash, Hasher};
 use std::io::{self, ErrorKind, Read, Write};
-use std::{collections::BTreeMap, convert::TryInto, ffi, fs, sync::Arc};
+use std::{convert::TryInto, ffi, fs, sync::Arc};
 
 use crate::{BuildHasherDefault, Result};
 
@@ -90,7 +91,7 @@ pub struct Xor8<H = BuildHasherDefault>
 where
     H: BuildHasher,
 {
-    keys: Option<BTreeMap<u64, ()>>,
+    keys: Option<HashSet<u64>>,
     pub hash_builder: H,
     pub seed: u64,
     pub num_keys: Option<usize>,
@@ -104,7 +105,7 @@ where
 {
     fn clone(&self) -> Self {
         Xor8 {
-            keys: Some(BTreeMap::new()),
+            keys: Some(Default::default()),
             hash_builder: self.hash_builder.clone(),
             seed: self.seed,
             num_keys: self.num_keys,
@@ -137,7 +138,7 @@ where
 {
     fn default() -> Self {
         Xor8 {
-            keys: Some(BTreeMap::new()),
+            keys: Some(HashSet::new()),
             hash_builder: H::default(),
             seed: u64::default(),
             num_keys: None,
@@ -156,13 +157,17 @@ where
     where
         H: Default,
     {
-        Self::default()
+        Self {
+            // keys: Some(HashSet::with_capacity(10)),
+            keys: Some(HashSet::new()),
+            ..Default::default()
+        }
     }
 
     /// New Xor8 instance initialized with supplied `hasher`.
     pub fn with_hasher(hash_builder: H) -> Self {
         Xor8 {
-            keys: Some(BTreeMap::new()),
+            keys: Some(HashSet::new()),
             hash_builder,
             seed: u64::default(),
             num_keys: None,
@@ -189,7 +194,7 @@ where
         if let Some(x) = self.num_keys.as_mut() {
             *x += 1
         }
-        self.keys.as_mut().unwrap().insert(hashed_key, ());
+        self.keys.as_mut().unwrap().insert(hashed_key);
     }
 
     /// Populate with 64-bit digests for a collection of keys of type `K`.
@@ -203,7 +208,7 @@ where
         keys.iter().for_each(|key| {
             let mut hasher = self.hash_builder.build_hasher();
             key.hash(&mut hasher);
-            self.keys.as_mut().unwrap().insert(hasher.finish(), ());
+            self.keys.as_mut().unwrap().insert(hasher.finish());
         })
     }
 
@@ -214,7 +219,7 @@ where
         let keys = self.keys.as_mut().unwrap();
         for digest in digests.into_iter() {
             n += 1;
-            keys.insert(*digest, ());
+            keys.insert(*digest);
         }
 
         if let Some(x) = self.num_keys.as_mut() {
@@ -227,7 +232,7 @@ where
     pub fn build(&mut self) -> Result<()> {
         match self.keys.take() {
             Some(keys) => {
-                let digests = keys.iter().map(|(k, _)| *k).collect::<Vec<u64>>();
+                let digests = keys.iter().copied().collect::<Vec<u64>>();
                 self.build_from_digests(&digests)
             }
             None => Ok(()),
