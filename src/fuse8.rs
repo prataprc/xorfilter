@@ -1,12 +1,26 @@
-#[cfg(feature = "cbordata")]
-use cbordata::{self as cbor, Cbor, Cborize, FromCbor, IntoCbor};
-
 #[allow(unused_imports)]
-use std::collections::hash_map::{DefaultHasher, RandomState};
-use std::hash::{BuildHasher, Hash, Hasher};
+use std::collections::hash_map::DefaultHasher;
+#[allow(unused_imports)]
+use std::collections::hash_map::RandomState;
+use std::hash::BuildHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
 use std::sync::Arc;
 
-use crate::{BuildHasherDefault, Error, Result};
+#[cfg(feature = "cbordata")]
+use cbordata::Cbor;
+#[cfg(feature = "cbordata")]
+use cbordata::Cborize;
+#[cfg(feature = "cbordata")]
+use cbordata::FromCbor;
+#[cfg(feature = "cbordata")]
+use cbordata::IntoCbor;
+#[cfg(feature = "cbordata")]
+use cbordata::{self as cbor};
+
+use crate::BuildHasherDefault;
+use crate::Error;
+use crate::Result;
 
 // probabillity of success should always be > 0.5 so 100 iterations is highly unlikely.
 const XOR_MAX_ITERATIONS: usize = 100;
@@ -123,8 +137,7 @@ pub(crate) fn binary_fuse_mod3(x: u8) -> u8 {
 /// via `populate_keys()` and `build_keys()` make sure they don't have more than few
 /// duplicates.
 pub struct Fuse8<H = BuildHasherDefault>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     keys: Option<Vec<u64>>,
     pub hash_builder: H,
@@ -145,8 +158,7 @@ pub(crate) struct BinaryHashes {
 }
 
 impl<H> Clone for Fuse8<H>
-where
-    H: Clone + BuildHasher,
+where H: Clone + BuildHasher
 {
     fn clone(&self) -> Self {
         Fuse8 {
@@ -164,8 +176,7 @@ where
 }
 
 impl<H> Fuse8<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     #[inline]
     fn binary_fuse8_hash_batch(&self, hash: u64) -> BinaryHashes {
@@ -193,15 +204,12 @@ where
 }
 
 impl<H> Fuse8<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     /// New Fuse8 instance that can index size number of keys. Internal data-structures
     /// are pre-allocated for `size`.  `size` should be at least 2.
     pub fn new(size: u32) -> Fuse8<H>
-    where
-        H: Default,
-    {
+    where H: Default {
         Self::with_hasher(size, H::default())
     }
 
@@ -252,8 +260,7 @@ where
 }
 
 impl<H> Fuse8<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     /// Return the size of index.
     #[inline]
@@ -512,8 +519,7 @@ where
 }
 
 impl<H> Fuse8<H>
-where
-    H: BuildHasher,
+where H: BuildHasher
 {
     #[allow(clippy::len_without_is_empty)]
     /// Return the number of keys added/built into the bitmap index.
@@ -573,8 +579,7 @@ impl CborFuse8 {
 
 #[cfg(feature = "cbordata")]
 impl<H> IntoCbor for Fuse8<H>
-where
-    H: BuildHasher + Into<Vec<u8>>,
+where H: BuildHasher + Into<Vec<u8>>
 {
     fn into_cbor(self) -> cbor::Result<Cbor> {
         let finger_prints = self.finger_prints.to_vec();
@@ -594,8 +599,7 @@ where
 
 #[cfg(feature = "cbordata")]
 impl<H> FromCbor for Fuse8<H>
-where
-    H: BuildHasher + From<Vec<u8>>,
+where H: BuildHasher + From<Vec<u8>>
 {
     fn from_cbor(val: Cbor) -> cbor::Result<Self> {
         let val = CborFuse8::from_cbor(val)?;

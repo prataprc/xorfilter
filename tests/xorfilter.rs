@@ -1,8 +1,12 @@
-use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
-
 use std::ffi;
 
-use xorfilter::{BuildHasherDefault, Xor8};
+use rand::prelude::random;
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
+use xorfilter::BuildHasherDefault;
+use xorfilter::Xor8;
+use xorfilter::Xor8Builder;
 
 #[test]
 fn test_same_filter_encode_decode() {
@@ -95,9 +99,9 @@ fn test_string_keys() {
         "learning curves are a blessing in disguise",
     ];
     let hash_builder = BuildHasherDefault::default();
-    let mut filter = Xor8::with_hasher(hash_builder);
-    filter.populate(&rust_tips);
-    filter.build().expect("build failed");
+    let mut builder = Xor8Builder::with_hasher(hash_builder);
+    builder.populate(&rust_tips);
+    let filter = builder.build().expect("build failed");
 
     // Test all keys(rust_tips)
     for tip in rust_tips {
@@ -120,19 +124,16 @@ fn generate_filter(seed: u64) -> Xor8<BuildHasherDefault> {
         *key = rng.gen();
     }
 
-    let mut filter = Xor8::<BuildHasherDefault>::new();
-    filter.populate(&keys);
-    filter.build().expect("build failed");
-    filter
+    let mut builder = Xor8Builder::<BuildHasherDefault>::new();
+    builder.populate(&keys);
+    builder.build().expect("build failed")
 }
 
 // hack to generate tl1 serialized Xor8 instance.
 #[allow(dead_code)]
 fn save_file(file_path: ffi::OsString, keys: &[u32]) {
-    let mut filter = Xor8::<BuildHasherDefault>::new();
-    filter.populate(keys);
-    filter.build().expect("build failed");
-    filter
-        .write_file(&file_path)
-        .expect("error saving tl1 to file");
+    let mut builder = Xor8Builder::<BuildHasherDefault>::new();
+    builder.populate(keys);
+    let filter = builder.build().expect("build failed");
+    filter.write_file(&file_path).expect("error saving tl1 to file");
 }

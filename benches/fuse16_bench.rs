@@ -1,9 +1,13 @@
-use criterion::{criterion_group, criterion_main, Criterion};
-
-use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
-use xorfilter::Fuse16;
-
 use std::collections::hash_map::RandomState;
+
+use criterion::criterion_group;
+use criterion::criterion_main;
+use criterion::Criterion;
+use rand::prelude::random;
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
+use xorfilter::Fuse16;
 
 const SIZE: usize = 1_000_000;
 

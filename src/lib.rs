@@ -2,12 +2,11 @@
 //!
 //! Provides hasher types:
 //!
-//! * [NoHash], to be used when hash feature is not needed on [Xor8], [Fuse8] and
-//!   [Fuse16] types. Note that type methods that accept parametrized key cannot be
-//!   used.
+//! * [NoHash], to be used when hash feature is not needed on [Xor8], [Fuse8] and [Fuse16]
+//!   types. Note that type methods that accept parametrized key cannot be used.
 //! * [BuildHasherDefault] is the default hasher when `H` is not supplied. Note that
-//!   [DefaultHasher] uses an unspecified internal algorithm and so its hashes should
-//!   not be relied upon over releases.
+//!   [DefaultHasher] uses an unspecified internal algorithm and so its hashes should not
+//!   be relied upon over releases.
 //!
 //! Refer to original implementation under `github.com/FastFilter` to learn the
 //! differences between [Xor8], [Fuse8] and [Fuse16] filters. Otherwise, all the types
@@ -19,8 +18,8 @@
 //!   generated from keys are unique, this avoids duplicates but decreases the build
 //!   performance significantly.
 //! * [Fuse8] implementation computes duplicates on the fly leading to significantly
-//!   better build performance. On the other hand, Fuse8 cannot handle more than
-//!   few duplicates.
+//!   better build performance. On the other hand, Fuse8 cannot handle more than few
+//!   duplicates.
 //!
 //! **Cloning**
 //!
@@ -35,11 +34,14 @@
 //!   types using CBOR spec.
 //!
 //! * [Xor8] from <https://github.com/FastFilter/xorfilter>, written in golang.
-//! * [Fuse8] and [Fuse16] from <https://github.com/FastFilter/xor_singleheader>  written in C.
+//! * [Fuse8] and [Fuse16] from <https://github.com/FastFilter/xor_singleheader>  written
+//!   in C.
 
 #[allow(unused_imports)]
 use std::collections::hash_map::DefaultHasher;
-use std::{error, fmt, result};
+use std::error;
+use std::fmt;
+use std::result;
 
 /// Short form to compose Error values.
 ///
@@ -59,7 +61,6 @@ use std::{error, fmt, result};
 /// use crate::Error;
 /// err_at!(ParseError, std::fs::read(file_path), "read failed");
 /// ```
-///
 macro_rules! err_at {
     ($v:ident, msg: $($arg:expr),+) => {{
         let prefix = format!("{}:{}", file!(), line!());
@@ -122,5 +123,7 @@ mod xor8;
 
 pub use fuse16::Fuse16;
 pub use fuse8::Fuse8;
-pub use hasher::{BuildHasherDefault, NoHash};
+pub use hasher::BuildHasherDefault;
+pub use hasher::NoHash;
 pub use xor8::Xor8;
+pub use xor8::Xor8Builder;

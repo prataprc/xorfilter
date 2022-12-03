@@ -1,5 +1,9 @@
+use rand::prelude::random;
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
+
 use super::*;
-use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
 
 fn generate_unique_keys(rng: &mut StdRng, size: usize) -> Vec<u64> {
     let mut keys: Vec<u64> = Vec::with_capacity(size);
@@ -22,9 +26,7 @@ fn generate_unique_keys(rng: &mut StdRng, size: usize) -> Vec<u64> {
 }
 
 fn test_fuse16_build<H>(name: &str, seed: u64, size: u32)
-where
-    H: Default + BuildHasher,
-{
+where H: Default + BuildHasher {
     let (x, y) = {
         let size = size as usize;
         (size / 3, size / 3)
@@ -88,9 +90,7 @@ where
 }
 
 fn test_fuse16_build_keys<H>(name: &str, seed: u64, size: u32)
-where
-    H: Default + BuildHasher,
-{
+where H: Default + BuildHasher {
     println!("test_fuse16_build_keys<{}> size:{}", name, size);
     let mut rng = StdRng::seed_from_u64(seed);
 
@@ -107,9 +107,7 @@ where
         })
         .collect();
 
-    filter
-        .build_keys(&digests)
-        .expect("failed to build fuse16 filter");
+    filter.build_keys(&digests).expect("failed to build fuse16 filter");
 
     // contains api
     for key in keys.iter() {

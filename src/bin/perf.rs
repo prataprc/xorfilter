@@ -1,8 +1,16 @@
-use rand::{random, rngs::StdRng, Rng, SeedableRng};
-use structopt::StructOpt;
-use xorfilter::{BuildHasherDefault, Fuse16, Fuse8, Xor8};
+use std::sync::Arc;
+use std::thread;
+use std::time;
 
-use std::{sync::Arc, thread, time};
+use rand::random;
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
+use structopt::StructOpt;
+use xorfilter::BuildHasherDefault;
+use xorfilter::Fuse16;
+use xorfilter::Fuse8;
+use xorfilter::Xor8;
 
 /// Command line options.
 #[derive(Clone, StructOpt)]

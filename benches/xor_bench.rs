@@ -1,9 +1,13 @@
-use criterion::{criterion_group, criterion_main, Criterion};
-
-use rand::{prelude::random, rngs::StdRng, Rng, SeedableRng};
-use xorfilter::Xor8;
-
 use std::collections::hash_map::RandomState;
+
+use criterion::criterion_group;
+use criterion::criterion_main;
+use criterion::Criterion;
+use rand::prelude::random;
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
+use xorfilter::Xor8Builder;
 
 const SIZE: usize = 1_000_000;
 
@@ -35,9 +39,9 @@ fn bench_xor8_populate_digests(c: &mut Criterion) {
 
     c.bench_function("xor8_populate_digests", |b| {
         b.iter(|| {
-            let mut filter = Xor8::<RandomState>::new();
-            filter.populate_keys(&keys);
-            filter.build().expect("failed build");
+            let mut builder = Xor8Builder::<RandomState>::new();
+            filter.populate_digests(&keys);
+            let _filter = criterion::black_box(builder.build().expect("failed build"));
         })
     });
 }
@@ -50,8 +54,10 @@ fn bench_xor8_build_from_digests(c: &mut Criterion) {
 
     c.bench_function("xor8_build_from_digests", |b| {
         b.iter(|| {
-            let mut filter = Xor8::<RandomState>::new();
-            filter.build_from_digests(&keys).expect("failed build");
+            let mut builder = Xor8Builder::<RandomState>::new();
+            let _filter = criterion::black_box(
+                builder.build_from_digests(&keys).expect("failed build"),
+            );
         })
     });
 }
@@ -64,9 +70,9 @@ fn bench_xor8_populate(c: &mut Criterion) {
 
     c.bench_function("xor8_populate", |b| {
         b.iter(|| {
-            let mut filter = Xor8::<RandomState>::new();
-            filter.populate(&keys);
-            filter.build().expect("failed build");
+            let mut builder = Xor8Builder::<RandomState>::new();
+            builder.populate(&keys);
+            let _filter = criterion::black_box(builder.build().expect("failed build"));
         })
     });
 }
@@ -79,9 +85,9 @@ fn bench_xor8_insert(c: &mut Criterion) {
 
     c.bench_function("xor8_insert", |b| {
         b.iter(|| {
-            let mut filter = Xor8::<RandomState>::new();
-            keys.iter().for_each(|key| filter.insert(key));
-            filter.build().expect("failed build");
+            let mut builder = Xor8Builder::<RandomState>::new();
+            keys.iter().for_each(|key| builder.insert(key));
+            let _f = criterion::black_box(builder.build().expect("failed build"));
         })
     });
 }
@@ -93,10 +99,9 @@ fn bench_xor8_contains(c: &mut Criterion) {
     let keys = generate_unique_keys(&mut rng, SIZE);
 
     let filter = {
-        let mut filter = Xor8::<RandomState>::new();
-        filter.populate(&keys);
-        filter.build().expect("failed build");
-        filter
+        let mut builder = Xor8Builder::<RandomState>::new();
+        builder.populate(&keys);
+        builder.build().expect("failed build")
     };
 
     let mut n = 0;
@@ -115,10 +120,9 @@ fn bench_xor8_contains_digest(c: &mut Criterion) {
     let keys = generate_unique_keys(&mut rng, SIZE);
 
     let filter = {
-        let mut filter = Xor8::<RandomState>::new();
-        filter.populate(&keys);
-        filter.build().expect("failed build");
-        filter
+        let mut builder = Xor8Builder::<RandomState>::new();
+        builder.populate(&keys);
+        builder.build().expect("failed build")
     };
 
     let mut n = 0;
