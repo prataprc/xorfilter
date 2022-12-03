@@ -13,7 +13,6 @@ use rand::Rng;
 use rand::SeedableRng;
 
 use crate::BuildHasherDefault;
-use crate::Xor8;
 use crate::Xor8Builder;
 
 fn generate_unique_keys(rng: &mut StdRng, size: usize) -> Vec<u64> {
@@ -245,6 +244,8 @@ fn test_xor8_billion() {
 #[cfg(feature = "cbordata")]
 #[test]
 fn test_xor8_cbor() {
+    use crate::Xor8;
+
     let seed: u64 = random();
     println!("test_xor8_cbor seed:{}", seed);
     let mut rng = StdRng::seed_from_u64(seed);
