@@ -103,10 +103,10 @@ where H: BuildHasher + Clone
     }
 
     /// Populate with pre-compute collection of 64-bit digests.
-    pub fn populate_digests<'i, I: Iterator<Item = &'i u64>>(&mut self, digests: I) {
+    pub fn populate_digests<'i, I: IntoIterator<Item = &'i u64>>(&mut self, digests: I) {
         let mut n = 0;
 
-        for digest in digests {
+        for digest in digests.into_iter() {
             n += 1;
             self.keys.insert(*digest);
         }

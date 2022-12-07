@@ -35,12 +35,12 @@ fn bench_xor8_populate_digests(c: &mut Criterion) {
     let seed: u64 = random();
     let mut rng = StdRng::seed_from_u64(seed);
 
-    let keys = generate_unique_keys(&mut rng, SIZE);
+    let digests = generate_unique_keys(&mut rng, SIZE);
 
     c.bench_function("xor8_populate_digests", |b| {
         b.iter(|| {
             let mut builder = Xor8Builder::<RandomState>::new();
-            filter.populate_digests(&keys);
+            builder.populate_digests(&digests);
             let _filter = criterion::black_box(builder.build().expect("failed build"));
         })
     });
