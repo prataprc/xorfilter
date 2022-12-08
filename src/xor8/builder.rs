@@ -53,7 +53,7 @@ where H: BuildHasher + Clone + Default
 impl<H> Xor8Builder<H>
 where H: BuildHasher + Clone
 {
-    /// New Xor8 builder initialized with [DefaultHasher].
+    /// New Xor8 builder initialized with [BuildHasherDefault].
     pub fn new() -> Self
     where H: Default {
         Self::default()
@@ -83,7 +83,7 @@ where H: BuildHasher + Clone
     /// Insert 64-bit digest of a single key.
     ///
     /// Digest for the key shall be generated using the default-hasher or via hasher
-    /// supplied via [Xor8::with_hasher] method.
+    /// supplied via [Xor8Builder::with_hasher] method.
     pub fn insert<K: ?Sized + Hash>(&mut self, key: &K) {
         let digest = self.hash(key);
 
@@ -94,7 +94,7 @@ where H: BuildHasher + Clone
     /// Populate with 64-bit digests for a collection of keys of type `K`.
     ///
     /// Digest for key shall be generated using the default-hasher or via hasher supplied
-    /// via [Xor8::with_hasher] method.
+    /// via [Xor8Builder::with_hasher] method.
     pub fn populate<'i, K: Hash + 'i, I: IntoIterator<Item = &'i K>>(&mut self, keys: I) {
         let mut n = 0;
 
@@ -120,8 +120,8 @@ where H: BuildHasher + Clone
         self.num_digests += n;
     }
 
-    /// Build bitmap for keys that where previously inserted using [Xor8::insert],
-    /// [Xor8::populate] and [Xor8::populate_keys] method.
+    /// Build bitmap for keys that where previously inserted using [Xor8Builder::insert],
+    /// [Xor8Builder::populate] and [Xor8Builder::populate_digests] method.
     pub fn build(&mut self) -> Result<Xor8<H>, crate::Error> {
         let digests = self.digests.iter().copied().collect::<Vec<u64>>();
         self.build_from_digests(&digests)
@@ -129,8 +129,9 @@ where H: BuildHasher + Clone
 
     /// Build a bitmap for pre-computed 64-bit digests for keys.
     ///
-    /// If keys where previously inserted using [Xor8::insert] or [Xor8::populate] or
-    /// [Xor8::populate_keys] methods, they shall be ignored.
+    /// If keys where previously inserted using [Xor8Builder::insert] or
+    /// [Xor8Builder::populate] or [Xor8Builder::populate_digests] methods, they shall be
+    /// ignored.
     ///
     /// It is upto the caller to ensure that digests are unique, that there no duplicates.
     pub fn build_from_digests(
