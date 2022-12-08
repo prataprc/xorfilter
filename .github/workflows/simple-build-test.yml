@@ -45,3 +45,25 @@ jobs:
         with:
           command: "${{ matrix.cmd }}"
           args: --verbose ${{ matrix.profile }}
+
+  build-benchmark:
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - name: Install toolchain with clippy available
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: "nightly"
+          override: true
+
+
+      - uses: actions/checkout@v1
+
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: bench
+          args: --verbose nothing-to-run
+
