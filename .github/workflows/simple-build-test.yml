@@ -80,6 +80,7 @@ jobs:
           override: true
           components: rustfmt, clippy
 
+
       - name: Format
         uses: actions-rs/cargo@v1
         with:
@@ -91,7 +92,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-targets -- -D warnings
+          args: --all-targets -- -D warnings -A clippy::uninlined_format_args
 
 
       - name: Build-doc

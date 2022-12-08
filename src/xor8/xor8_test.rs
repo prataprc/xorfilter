@@ -139,7 +139,7 @@ fn test_xor8_build_keys_simple() {
     let seed: u64 = random();
     println!("test_xor8 seed:{}", seed);
 
-    let size = 1_00_000;
+    let size = 100_000;
     let name = "BuildHasherDefault";
 
     println!("test_xor8_build_keys<{}> size:{}", name, size);
