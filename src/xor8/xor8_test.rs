@@ -1,7 +1,5 @@
 use std::collections::hash_map::RandomState;
 use std::hash::BuildHasher;
-use std::hash::Hash;
-use std::hash::Hasher;
 
 #[cfg(feature = "cbordata")]
 use cbordata::FromCbor;
