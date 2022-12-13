@@ -7,8 +7,8 @@ use std::sync::Arc;
 use crate::xor8::filter::fingerprint;
 use crate::xor8::filter::splitmix64;
 use crate::xor8::filter::XorSet;
+use crate::xor8::Xor8;
 use crate::BuildHasherDefault;
-use crate::Xor8;
 
 #[derive(Clone, Copy, Default)]
 struct KeyIndex {
@@ -20,7 +20,7 @@ struct KeyIndex {
 ///
 /// Example:
 /// ```
-/// # use xorfilter::Xor8Builder;
+/// # use xorfilter::xor8::Xor8Builder;
 ///
 /// let mut b: Xor8Builder = Xor8Builder::new();
 ///

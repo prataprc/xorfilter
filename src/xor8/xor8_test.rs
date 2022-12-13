@@ -10,8 +10,8 @@ use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng;
 
+use crate::xor8::Xor8Builder;
 use crate::BuildHasherDefault;
-use crate::Xor8Builder;
 
 fn generate_unique_keys(rng: &mut StdRng, size: usize) -> Vec<u64> {
     let mut keys: Vec<u64> = Vec::with_capacity(size);

@@ -4,9 +4,9 @@ use rand::prelude::random;
 use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng;
+use xorfilter::xor8::Xor8;
+use xorfilter::xor8::Xor8Builder;
 use xorfilter::BuildHasherDefault;
-use xorfilter::Xor8;
-use xorfilter::Xor8Builder;
 
 #[test]
 fn test_same_filter_encode_decode() {
