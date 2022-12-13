@@ -2,17 +2,22 @@
 
 //! Library implements xor-filter.
 //!
-//! Provides hasher types:
-//!
-//! * [NoHash], to be used when hash feature is not needed on [Xor8], [Fuse8] and [Fuse16]
-//!   types. Note that type methods that accept parametrized key cannot be used.
-//! * [BuildHasherDefault] is the default hasher when `H` is not supplied. Note that
-//!   [DefaultHasher] uses an unspecified internal algorithm and so its hashes should not
-//!   be relied upon over releases.
-//!
 //! Refer to original implementation under `github.com/FastFilter` to learn the
 //! differences between [Xor8], [Fuse8] and [Fuse16] filters. Otherwise, all the types
 //! provides similar methods.
+//!
+//! Starting from version `0.6.0` [Xor8] type is split into [xor8::Xor8] and
+//! [xor8::Xor8Builder] under module [xor8]. And [Xor8] type is now deprecated.
+//!
+//! Provides hasher types:
+//!
+//! All filter-types are parametrised over user supplied hasher-type.
+//!
+//! * Use [NoHash] when hash feature is not needed on [Xor8], [Fuse8] and [Fuse16] types.
+//!   Note that type methods that accept parametrized key cannot be used.
+//! * [BuildHasherDefault] is the default hasher when `H` is not supplied. Note that
+//!   [DefaultHasher] uses an unspecified internal algorithm and so its hashes should not
+//!   be relied upon over releases.
 //!
 //! **Handling duplicates**
 //!
@@ -121,11 +126,12 @@ pub type Result<T> = result::Result<T, Error>;
 mod fuse16;
 mod fuse8;
 mod hasher;
-mod xor8;
+mod xor8_old;
 
+pub mod xor8;
 pub use fuse16::Fuse16;
 pub use fuse8::Fuse8;
 pub use hasher::BuildHasherDefault;
 pub use hasher::NoHash;
-pub use xor8::Xor8;
-pub use xor8::Xor8Builder;
+#[deprecated(since = "0.6.0", note = "Use xor8::Xor8 and xor8::Xor8Builder types")]
+pub use xor8_old::Xor8;
