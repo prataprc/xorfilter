@@ -1,3 +1,9 @@
+0.6.0
+=====
+
+* Added len() method for Fuse8
+* Added len() method for Fuse16
+
 0.5.1
 =====
 
