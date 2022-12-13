@@ -337,9 +337,9 @@ where H: BuildHasher
 
         let mut reverse_order: Vec<u64> = vec![0; size + 1];
         let mut reverse_h: Vec<u8> = vec![0; size];
-        let mut alone: Vec<u32> = vec![0; capacity as usize];
-        let mut t2count: Vec<u8> = vec![0; capacity as usize];
-        let mut t2hash: Vec<u64> = vec![0; capacity as usize];
+        let mut alone: Vec<u32> = vec![0; capacity];
+        let mut t2count: Vec<u8> = vec![0; capacity];
+        let mut t2hash: Vec<u64> = vec![0; capacity];
 
         let mut block_bits: u32 = 1;
         while (1_u32 << block_bits) < self.segment_count {

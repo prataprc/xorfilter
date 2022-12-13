@@ -1,7 +1,5 @@
 use std::collections::hash_map::RandomState;
 use std::hash::BuildHasher;
-use std::hash::Hash;
-use std::hash::Hasher;
 
 #[cfg(feature = "cbordata")]
 use cbordata::FromCbor;
@@ -52,14 +50,7 @@ where H: BuildHasher + Clone + Default {
     // populate api
     builder.populate(keys1);
     // populate_keys api
-    let digests: Vec<u64> = keys2
-        .iter()
-        .map(|k| {
-            let mut hasher = builder.get_hasher();
-            k.hash(&mut hasher);
-            hasher.finish()
-        })
-        .collect();
+    let digests: Vec<u64> = keys2.iter().map(|k| builder.hash(k)).collect();
     builder.populate_digests(digests.iter());
     // insert api
     keys3.iter().for_each(|key| builder.insert(key));
@@ -72,11 +63,7 @@ where H: BuildHasher + Clone + Default {
     }
     // contains_key api
     for key in keys.iter() {
-        let digest = {
-            let mut hasher = filter.get_hasher();
-            key.hash(&mut hasher);
-            hasher.finish()
-        };
+        let digest = filter.hash(key);
         assert!(filter.contains_digest(digest), "key {} not present", key);
     }
 
@@ -108,14 +95,7 @@ where H: Default + BuildHasher + Clone {
 
     // build_keys api
     let keys = generate_unique_keys(&mut rng, size as usize);
-    let digests: Vec<u64> = keys
-        .iter()
-        .map(|k| {
-            let mut hasher = builder.get_hasher();
-            k.hash(&mut hasher);
-            hasher.finish()
-        })
-        .collect();
+    let digests: Vec<u64> = keys.iter().map(|k| builder.hash(k)).collect();
     let filter = builder.build_from_digests(&digests).expect("failed build_keys");
 
     // contains api
@@ -159,7 +139,7 @@ fn test_xor8_build_keys_simple() {
     let seed: u64 = random();
     println!("test_xor8 seed:{}", seed);
 
-    let size = 1_00_000;
+    let size = 100_000;
     let name = "BuildHasherDefault";
 
     println!("test_xor8_build_keys<{}> size:{}", name, size);
@@ -169,14 +149,7 @@ fn test_xor8_build_keys_simple() {
 
     // build_keys api
     let keys = generate_unique_keys(&mut rng, size as usize);
-    let digests: Vec<u64> = keys
-        .iter()
-        .map(|k| {
-            let mut hasher = builder.get_hasher();
-            k.hash(&mut hasher);
-            hasher.finish()
-        })
-        .collect();
+    let digests: Vec<u64> = keys.iter().map(|k| builder.hash(k)).collect();
 
     let filter = builder.build_from_digests(&digests).expect("failed build_from_digests");
 

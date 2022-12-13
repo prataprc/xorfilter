@@ -37,7 +37,7 @@ jobs:
           components: clippy
 
 
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
 
       - name: "${{ matrix.toolchain }} ${{ matrix.cmd }} ${{ matrix.profile }}"
@@ -59,7 +59,7 @@ jobs:
           override: true
 
 
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
 
       - uses: actions-rs/cargo@v1
@@ -67,3 +67,38 @@ jobs:
           command: bench
           args: --verbose nothing-to-run
 
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1.0.6
+        with:
+          profile: minimal
+          toolchain: "nightly"
+          override: true
+          components: rustfmt, clippy
+
+
+      - name: Format
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+
+      - name: Clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-targets -- -D warnings -A clippy::uninlined_format_args
+
+
+      - name: Build-doc
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --all --no-deps
+        env:
+          RUSTDOCFLAGS: "-D warnings"

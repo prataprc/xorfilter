@@ -1,3 +1,5 @@
+#![allow(clippy::bool_to_int_with_if)]
+
 //! Library implements xor-filter.
 //!
 //! Provides hasher types:

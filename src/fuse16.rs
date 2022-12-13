@@ -233,7 +233,7 @@ where H: BuildHasher
     pub fn build(&mut self) -> Result<()> {
         match self.keys.take() {
             Some(keys) => {
-                let digests = keys.iter().map(|(k, _)| *k).collect::<Vec<u64>>();
+                let digests = keys.keys().copied().collect::<Vec<u64>>();
                 self.build_keys(&digests)
             }
             None => Ok(()),

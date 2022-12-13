@@ -31,6 +31,13 @@ test:
 	cargo +stable test --no-run
 	cargo +stable test --no-run --features cbordata
 
+lint:
+	cargo fmt
+	cargo clippy --all-targets -- -D warnings
+
+doc:
+	RUSTDOCFLAGS="-D warnings" cargo doc --all --no-deps
+
 bench:
 	# ... test ...
 	cargo +nightly bench

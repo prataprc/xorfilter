@@ -178,6 +178,14 @@ where H: BuildHasher
     pub fn get_hasher(&self) -> H::Hasher {
         self.hash_builder.build_hasher()
     }
+
+    /// Calculate hash of a key.
+    #[inline]
+    pub fn hash<K: Hash + ?Sized>(&self, key: &K) -> u64 {
+        let mut hasher = self.get_hasher();
+        key.hash(&mut hasher);
+        hasher.finish()
+    }
 }
 
 impl<H> Xor8<H>
