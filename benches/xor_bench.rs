@@ -7,7 +7,7 @@ use rand::prelude::random;
 use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng;
-use xorfilter::Xor8Builder;
+use xorfilter::xor8::Xor8Builder;
 
 const SIZE: usize = 1_000_000;
 
