@@ -177,7 +177,7 @@ where
 
 #[test]
 fn test_fuse8_u8() {
-    let mut seed: u64 = random();
+    let mut seed: u64 = [6509898893809465102_u64, random()][random::<usize>() % 2];
     println!("test_fuse8_u8 seed:{}", seed);
 
     for size in [0, 1, 2, 10, 100].iter() {
