@@ -36,6 +36,9 @@ impl Hasher for U64IdentifyHasher {
 }
 
 type U64IdentifyBuildHasher = std::hash::BuildHasherDefault<U64IdentifyHasher>;
+
+/// [XorBuilder].[digests] holds u64 which are already hashed. In this case, [U64HashSet]
+/// is better than [std::collections::HashSet] because there is no need to compute hash again.
 type U64HashSet = ::std::collections::HashSet<u64, U64IdentifyBuildHasher>;
 
 /// Builds an Xor8 filter.
