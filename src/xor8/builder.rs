@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::hash::BuildHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -15,6 +14,29 @@ struct KeyIndex {
     hash: u64,
     index: u32,
 }
+
+#[derive(Clone, Copy, Default)]
+struct U64IdentifyHasher(u64);
+
+impl Hasher for U64IdentifyHasher {
+    #[inline]
+    fn finish(&self) -> u64 {
+        self.0
+    }
+
+    #[inline]
+    fn write(&mut self, _bytes: &[u8]) {
+        panic!("U64IdentifyHasher only supports write_u64(..)")
+    }
+
+    #[inline]
+    fn write_u64(&mut self, i: u64) {
+        self.0 = i;
+    }
+}
+
+type U64IdentifyBuildHasher = std::hash::BuildHasherDefault<U64IdentifyHasher>;
+type U64HashSet = ::std::collections::HashSet<u64, U64IdentifyBuildHasher>;
 
 /// Builds an Xor8 filter.
 ///
@@ -33,7 +55,7 @@ struct KeyIndex {
 pub struct Xor8Builder<H = BuildHasherDefault>
 where H: BuildHasher + Clone
 {
-    digests: HashSet<u64>,
+    digests: U64HashSet,
     pub num_digests: usize,
     pub hash_builder: H,
 }
@@ -43,7 +65,7 @@ where H: BuildHasher + Clone + Default
 {
     fn default() -> Self {
         Self {
-            digests: Default::default(),
+            digests: U64HashSet::default(),
             num_digests: 0,
             hash_builder: H::default(),
         }
@@ -62,7 +84,7 @@ where H: BuildHasher + Clone
     /// New Xor8 builder initialized with supplied `hasher`.
     pub fn with_hasher(hash_builder: H) -> Self {
         Self {
-            digests: HashSet::new(),
+            digests: U64HashSet::default(),
             num_digests: 0,
             hash_builder,
         }
